@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  UNPAID
+  PAID
+  ADMIN
+}
+
+enum CreativeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  INACTIVE
+}
+
+enum ContactRequestStatus {
+  PENDING
+  FORWARDED
+  ACCEPTED
+  DECLINED
+  UNAVAILABLE
+}
+
+enum FeatureRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  passwordHash       String
+  name               String?
+  role               UserRole  @default(UNPAID)
+  earlyAccess        Boolean   @default(false)   // registered before public launch
+  stripeCustomerId   String?   @unique
+  stripeSubId        String?   @unique
+  subStatus          String?                      // active | past_due | canceled | …
+  subCurrentPeriodEnd DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  contactRequests ContactRequest[]
+}
+
+// ─── Creatives ────────────────────────────────────────────────────────────────
+
+model Creative {
+  id        String         @id @default(cuid())
+  slug      String         @unique
+  status    CreativeStatus @default(PENDING)
+
+  // ── Public (unpaid) ────────────────────────────────────────────────────────
+  firstName  String
+  lastName   String
+  pronouns   String?
+  bio        String        @db.Text
+  publicLink String?       // single link chosen by creative
+
+  // ── Paid tier ──────────────────────────────────────────────────────────────
+  headshot              String?
+  roles                 String[]
+  experienceLevel       String?
+  mediums               String[]
+  workSamples           Json?    // [{title, medium, year, role, link}]
+  notableAchievements   String?  @db.Text
+  languages             String[]
+  availability          String?
+  preferredProjectTypes String[]
+  previousCollaborators String?  @db.Text
+  rateStructure         String?
+  rateRange             String?
+  ratePublic            Boolean  @default(false)
+  website               String?
+  imdb                  String?
+  instagram             String?
+  linkedin              String?
+  vimeo                 String?
+
+  // ── Admin only ─────────────────────────────────────────────────────────────
+  email                    String
+  phone                    String?
+  address                  String?
+  unionMemberships         String?
+  references               String?  @db.Text
+  education                String?  @db.Text
+  equipment                String?  @db.Text
+  collaborationPreferences String?
+  pccGoals                 String?  @db.Text
+  referralName             String?
+  adminNotes               String?  @db.Text
+
+  // ── Featured ───────────────────────────────────────────────────────────────
+  featured      Boolean   @default(false)
+  featuredUntil DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contactRequests ContactRequest[]
+  featureRequests FeatureRequest[]
+}
+
+// ─── Contact Requests ────────────────────────────────────────────────────────
+
+model ContactRequest {
+  id               String               @id @default(cuid())
+  userId           String
+  creativeId       String
+  user             User                 @relation(fields: [userId], references: [id])
+  creative         Creative             @relation(fields: [creativeId], references: [id])
+  organization     String?
+  projectDesc      String               @db.Text
+  lookingFor       String               @db.Text
+  status           ContactRequestStatus @default(PENDING)
+  creativeResponse String?
+  adminNotes       String?              @db.Text
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+}
+
+// ─── Feature Requests ────────────────────────────────────────────────────────
+
+model FeatureRequest {
+  id         String               @id @default(cuid())
+  creativeId String
+  creative   Creative             @relation(fields: [creativeId], references: [id])
+  reason     String               @db.Text
+  status     FeatureRequestStatus @default(PENDING)
+  adminNotes String?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+}

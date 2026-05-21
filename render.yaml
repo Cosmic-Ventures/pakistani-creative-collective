@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: pcc-web
+    runtime: node
+    region: oregon
+    plan: starter
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pcc-db
+          property: connectionString
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false   # set in Render dashboard: https://your-app.onrender.com
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: GOOGLE_SHEETS_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_EARLY
+        sync: false   # $30/year price ID from Stripe dashboard
+      - key: STRIPE_PRICE_STANDARD
+        sync: false   # $50/year price ID from Stripe dashboard
+      - key: RESEND_API_KEY
+        sync: false
+
+databases:
+  - name: pcc-db
+    region: oregon
+    plan: starter
+    databaseName: pcc
+    user: pcc
