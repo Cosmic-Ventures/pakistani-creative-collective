@@ -42,10 +42,10 @@ export async function forwardContactRequest(requestId: string) {
   });
   await sendContactRequestNotification(
     `${req.creative.firstName} ${req.creative.lastName}`,
-    req.creative.email,
-    req.organization ?? req.user.name ?? req.user.email,
-    req.projectDesc,
-    req.lookingFor,
+    req.requesterName,
+    req.requestType === "Other" ? `Other — ${req.requestTypeOther}` : req.requestType,
+    req.message,
+    req.timeline,
     `${process.env.NEXT_PUBLIC_APP_URL}/admin/contact-requests`
   ).catch(console.error);
   revalidatePath("/admin/contact-requests");

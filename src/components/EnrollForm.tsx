@@ -45,7 +45,7 @@ const AVAILABILITY = [
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-10">
-      <h2 className="text-lg font-semibold text-white border-b border-stone-800 pb-3 mb-5">{title}</h2>
+      <h2 className="font-heading font-extrabold uppercase text-lg text-brand-green border-b border-brand-green/15 pb-3 mb-5">{title}</h2>
       {children}
     </div>
   );
@@ -54,16 +54,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Field({ label, required, children, hint }: { label: string; required?: boolean; children: React.ReactNode; hint?: string }) {
   return (
     <div className="mb-5">
-      <label className="block text-sm text-stone-400 mb-1.5">
-        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
+      <label className="block text-sm text-brand-brown/70 mb-1.5">
+        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       {children}
-      {hint && <p className="text-xs text-stone-600 mt-1">{hint}</p>}
+      {hint && <p className="text-xs text-brand-brown/40 mt-1">{hint}</p>}
     </div>
   );
 }
 
-const inputCls = "w-full bg-stone-800 border border-stone-700 rounded-lg px-4 py-2.5 text-white placeholder-stone-500 focus:outline-none focus:border-emerald-600 text-sm";
+const inputCls = "w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm";
 const textareaCls = `${inputCls} resize-none`;
 
 export default function EnrollForm() {
@@ -72,7 +72,7 @@ export default function EnrollForm() {
   return (
     <form action={formAction} className="space-y-0">
       {state && "error" in state && (
-        <p className="text-sm text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 mb-6">
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2 mb-6">
           {state.error}
         </p>
       )}
@@ -99,8 +99,11 @@ export default function EnrollForm() {
         <Field label="Phone Number">
           <input name="phone" type="tel" className={inputCls} />
         </Field>
-        <Field label="Address" hint="City and country is fine; full address is optional">
+        <Field label="Address" hint="City and country is fine; full address is optional. Kept private — never shown publicly.">
           <input name="address" className={inputCls} placeholder="e.g. Los Angeles, CA, USA" />
+        </Field>
+        <Field label="Public Location" hint="Shown on your public profile, e.g. city/state only">
+          <input name="location" className={inputCls} placeholder="e.g. NJ/NYC" />
         </Field>
         <Field label="How did you hear about PCC?">
           <select name="howHeard" className={inputCls}>
@@ -139,11 +142,11 @@ export default function EnrollForm() {
       </Section>
 
       <Section title="Professional Roles">
-        <p className="text-xs text-stone-500 mb-4">Select all that apply.</p>
+        <p className="text-xs text-brand-brown/50 mb-4">Select all that apply.</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {ROLES.map((r) => (
-            <label key={r} className="flex items-center gap-2 text-sm text-stone-300 cursor-pointer">
-              <input type="checkbox" name="roles" value={r} className="accent-emerald-500" />
+            <label key={r} className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
+              <input type="checkbox" name="roles" value={r} className="accent-brand-green" />
               {r}
             </label>
           ))}
@@ -153,8 +156,8 @@ export default function EnrollForm() {
       <Section title="Mediums">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {MEDIUMS.map((m) => (
-            <label key={m} className="flex items-center gap-2 text-sm text-stone-300 cursor-pointer">
-              <input type="checkbox" name="mediums" value={m} className="accent-emerald-500" />
+            <label key={m} className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
+              <input type="checkbox" name="mediums" value={m} className="accent-brand-green" />
               {m}
             </label>
           ))}
@@ -196,8 +199,8 @@ export default function EnrollForm() {
         </Field>
 
         {[1, 2, 3].map((n) => (
-          <div key={n} className="bg-stone-800/40 border border-stone-800 rounded-xl p-4 mb-3">
-            <p className="text-xs text-stone-500 uppercase tracking-wide mb-3">Work Sample {n}</p>
+          <div key={n} className="bg-brand-green/5 border border-brand-green/10 rounded-xl p-4 mb-3">
+            <p className="text-xs text-brand-brown/50 uppercase tracking-wide mb-3">Work Sample {n}</p>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Title"><input name={`ws${n}Title`} className={inputCls} /></Field>
               <Field label="Medium"><input name={`ws${n}Medium`} className={inputCls} placeholder="Short Film, Music Video…" /></Field>
@@ -232,11 +235,20 @@ export default function EnrollForm() {
             {AVAILABILITY.map((a) => <option key={a}>{a}</option>)}
           </select>
         </Field>
+        <Field label="Travel">
+          <select name="travel" className={inputCls}>
+            <option value="">Select…</option>
+            <option>Will travel/open to international work</option>
+            <option>Domestic travel only</option>
+            <option>Local only</option>
+            <option>Remote work only</option>
+          </select>
+        </Field>
         <Field label="Preferred Project Types">
           <div className="grid grid-cols-2 gap-2">
             {PROJECT_TYPES.map((t) => (
-              <label key={t} className="flex items-center gap-2 text-sm text-stone-300 cursor-pointer">
-                <input type="checkbox" name="preferredProjectTypes" value={t} className="accent-emerald-500" />
+              <label key={t} className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
+                <input type="checkbox" name="preferredProjectTypes" value={t} className="accent-brand-green" />
                 {t}
               </label>
             ))}
@@ -248,8 +260,8 @@ export default function EnrollForm() {
         <Field label="Languages Spoken" hint="Select all that apply">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {LANGUAGES.map((l) => (
-              <label key={l} className="flex items-center gap-2 text-sm text-stone-300 cursor-pointer">
-                <input type="checkbox" name="languagesCheck" value={l} className="accent-emerald-500" />
+              <label key={l} className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
+                <input type="checkbox" name="languagesCheck" value={l} className="accent-brand-green" />
                 {l}
               </label>
             ))}
@@ -268,13 +280,13 @@ export default function EnrollForm() {
         <Field label="Preferred collaborator experience level(s)">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {EXPERIENCE_LEVELS.map((l) => (
-              <label key={l} className="flex items-center gap-2 text-sm text-stone-300 cursor-pointer">
-                <input type="checkbox" name="collaborationPreferences" value={l} className="accent-emerald-500" />
+              <label key={l} className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
+                <input type="checkbox" name="collaborationPreferences" value={l} className="accent-brand-green" />
                 {l}
               </label>
             ))}
-            <label className="flex items-center gap-2 text-sm text-stone-300 cursor-pointer">
-              <input type="checkbox" name="collaborationPreferences" value="Any level" className="accent-emerald-500" />
+            <label className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
+              <input type="checkbox" name="collaborationPreferences" value="Any level" className="accent-brand-green" />
               Any level
             </label>
           </div>
@@ -291,8 +303,8 @@ export default function EnrollForm() {
             "I agree to notify PCC if my information changes significantly.",
             "I understand that PCC reserves the right to reject any application at their discretion.",
           ].map((text, i) => (
-            <label key={i} className="flex items-start gap-3 text-sm text-stone-300 cursor-pointer">
-              <input type="checkbox" required name={`consent${i}`} className="accent-emerald-500 mt-0.5 shrink-0" />
+            <label key={i} className="flex items-start gap-3 text-sm text-brand-brown/80 cursor-pointer">
+              <input type="checkbox" required name={`consent${i}`} className="accent-brand-green mt-0.5 shrink-0" />
               <span>{text}</span>
             </label>
           ))}
@@ -305,7 +317,7 @@ export default function EnrollForm() {
       <button
         type="submit"
         disabled={pending}
-        className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold py-4 rounded-full transition-colors text-base"
+        className="w-full bg-brand-green hover:bg-brand-green/90 disabled:opacity-50 text-brand-cream font-semibold py-4 rounded-full transition-colors text-base"
       >
         {pending ? "Submitting application…" : "Submit Application"}
       </button>

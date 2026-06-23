@@ -1,5 +1,7 @@
 import { Resend } from "resend";
 
+export const isResendConfigured = !!process.env.RESEND_API_KEY;
+
 // Lazy init so build doesn't fail without credentials
 function getResend() {
   const key = process.env.RESEND_API_KEY;
@@ -36,10 +38,10 @@ export async function sendEnrollmentNotification(
 
 export async function sendContactRequestNotification(
   creativeName: string,
-  creativeEmail: string,
-  requesterOrg: string,
-  projectDesc: string,
-  lookingFor: string,
+  requesterName: string,
+  requestType: string,
+  message: string,
+  timeline: string,
   adminRequestUrl: string
 ) {
   if (!process.env.RESEND_API_KEY) return;
@@ -50,9 +52,10 @@ export async function sendContactRequestNotification(
     subject: `New Contact Request for ${creativeName}`,
     html: `
       <p><strong>Creative:</strong> ${creativeName}</p>
-      <p><strong>From:</strong> ${requesterOrg}</p>
-      <p><strong>Project:</strong> ${projectDesc}</p>
-      <p><strong>Looking for:</strong> ${lookingFor}</p>
+      <p><strong>From:</strong> ${requesterName}</p>
+      <p><strong>Request type:</strong> ${requestType}</p>
+      <p><strong>Timeline:</strong> ${timeline}</p>
+      <p><strong>Message:</strong> ${message}</p>
       <p><a href="${adminRequestUrl}">Review in admin panel →</a></p>
     `,
   });

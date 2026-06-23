@@ -1,11 +1,13 @@
 import Link from "next/link";
+import Image from "next/image";
+import Logo from "@/components/Logo";
 
 const tiers = [
-  { name: "Emerging", years: "0–2 years", color: "text-sky-400" },
-  { name: "Developing", years: "2–5 years", color: "text-teal-400" },
-  { name: "Mid-Level", years: "5–8 years", color: "text-emerald-400" },
-  { name: "Established", years: "8–12 years", color: "text-lime-400" },
-  { name: "Veteran / Master", years: "12+ years", color: "text-amber-400" },
+  { name: "Emerging", years: "0–2 years" },
+  { name: "Developing", years: "2–5 years" },
+  { name: "Mid-Level", years: "5–8 years" },
+  { name: "Established", years: "8–12 years" },
+  { name: "Veteran / Master", years: "12+ years" },
 ];
 
 const howItWorks = [
@@ -29,32 +31,47 @@ const howItWorks = [
 export default function Home() {
   return (
     <>
-      <section className="relative overflow-hidden border-b border-stone-800">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_60%_0%,rgba(16,185,129,0.12),transparent_70%)]"
+      <section className="relative overflow-hidden bg-brand-green text-brand-cream">
+        <Image
+          src="/brand/hero-bg.png"
+          alt=""
+          fill
+          priority
+          className="object-cover opacity-80 pointer-events-none select-none"
         />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32">
-          <p className="text-emerald-400 text-sm font-medium tracking-widest uppercase mb-4">
-            Pakistani Creative Collective
-          </p>
-          <h1 className="text-4xl sm:text-6xl font-bold text-white leading-tight max-w-3xl">
+        <Image
+          src="/brand/vector-singer.png"
+          alt=""
+          width={1080}
+          height={1080}
+          className="hidden lg:block absolute -right-8 bottom-0 w-72 opacity-30 pointer-events-none select-none"
+        />
+        <Image
+          src="/brand/vector-guitarist.png"
+          alt=""
+          width={1080}
+          height={1080}
+          className="hidden lg:block absolute right-56 -bottom-6 w-56 opacity-20 pointer-events-none select-none"
+        />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32">
+          <Logo variant="light" className="h-12 sm:h-14 w-auto mb-8 opacity-95" />
+          <h1 className="font-heading font-extrabold uppercase text-4xl sm:text-6xl leading-[1.05] max-w-3xl">
             The networking infrastructure Pakistani creatives have always needed.
           </h1>
-          <p className="mt-6 text-lg text-stone-400 max-w-2xl leading-relaxed">
+          <p className="mt-6 text-lg text-brand-cream/80 max-w-2xl leading-relaxed">
             A curated database of Pakistani talent in film, music, and media —
             searchable, vetted, and built for sustainable global collaboration.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <Link
               href="/directory"
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 py-3 rounded-full transition-colors"
+              className="bg-brand-mint hover:bg-brand-mint/90 text-brand-green font-semibold px-6 py-3 rounded-full transition-colors"
             >
               Browse the Directory
             </Link>
             <Link
               href="/join"
-              className="border border-stone-600 hover:border-stone-400 text-stone-300 hover:text-white font-semibold px-6 py-3 rounded-full transition-colors"
+              className="border border-brand-cream/40 hover:border-brand-cream text-brand-cream font-semibold px-6 py-3 rounded-full transition-colors"
             >
               Apply to Join
             </Link>
@@ -63,37 +80,37 @@ export default function Home() {
       </section>
 
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
-        <h2 className="text-2xl font-bold text-white mb-10">How it works</h2>
+        <h2 className="font-heading font-extrabold uppercase text-2xl text-brand-green mb-10">How it works</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {howItWorks.map(({ step, title, body }) => (
             <div
               key={step}
-              className="bg-stone-900 border border-stone-800 rounded-xl p-6"
+              className="bg-white border border-brand-green/10 rounded-xl p-6 shadow-sm"
             >
-              <div className="w-8 h-8 rounded-full bg-emerald-900/60 border border-emerald-700/40 flex items-center justify-center text-emerald-400 font-bold text-sm mb-4">
+              <div className="w-8 h-8 rounded-full bg-brand-mint/30 border border-brand-mint flex items-center justify-center text-brand-green font-bold text-sm mb-4">
                 {step}
               </div>
-              <h3 className="font-semibold text-white mb-2">{title}</h3>
-              <p className="text-stone-400 text-sm leading-relaxed">{body}</p>
+              <h3 className="font-semibold text-brand-green mb-2">{title}</h3>
+              <p className="text-brand-brown/70 text-sm leading-relaxed">{body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="border-t border-stone-800 bg-stone-900/40">
+      <section className="border-y border-brand-green/10 bg-brand-mint/15">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
-          <h2 className="text-2xl font-bold text-white mb-2">Five experience tiers</h2>
-          <p className="text-stone-400 mb-10 text-sm">
+          <h2 className="font-heading font-extrabold uppercase text-2xl text-brand-green mb-2">Five experience tiers</h2>
+          <p className="text-brand-brown/70 mb-10 text-sm">
             Members are categorized based on professional experience, project count, and achievements.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-            {tiers.map(({ name, years, color }) => (
+            {tiers.map(({ name, years }) => (
               <div
                 key={name}
-                className="bg-stone-900 border border-stone-800 rounded-lg p-4 text-center"
+                className="bg-white border border-brand-green/10 rounded-lg p-4 text-center"
               >
-                <p className={`font-semibold text-sm ${color}`}>{name}</p>
-                <p className="text-stone-500 text-xs mt-1">{years}</p>
+                <p className="font-semibold text-sm text-brand-green">{name}</p>
+                <p className="text-brand-brown/60 text-xs mt-1">{years}</p>
               </div>
             ))}
           </div>
@@ -101,18 +118,18 @@ export default function Home() {
       </section>
 
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
-        <div className="bg-stone-900 border border-stone-800 rounded-2xl p-8 sm:p-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="bg-brand-green text-brand-cream rounded-2xl p-8 sm:p-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
-            <h2 className="text-xl font-bold text-white mb-2">
+            <h2 className="font-heading font-extrabold uppercase text-xl mb-2">
               Looking to hire Pakistani creative talent?
             </h2>
-            <p className="text-stone-400 text-sm max-w-lg">
-              Submit a talent request and we'll match you with vetted professionals. All requests are screened before matching.
+            <p className="text-brand-cream/80 text-sm max-w-lg">
+              Submit a talent request and we&apos;ll match you with vetted professionals. All requests are screened before matching.
             </p>
           </div>
           <Link
             href="/request"
-            className="shrink-0 bg-white text-stone-950 hover:bg-stone-100 font-semibold px-6 py-3 rounded-full transition-colors"
+            className="shrink-0 bg-brand-mint hover:bg-brand-mint/90 text-brand-green font-semibold px-6 py-3 rounded-full transition-colors"
           >
             Submit a Request
           </Link>

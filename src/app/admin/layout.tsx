@@ -11,6 +11,7 @@ const NAV = [
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
+    <div className="bg-stone-950 text-stone-100 min-h-[calc(100vh-4rem)]">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
       <div className="flex items-center gap-3 mb-8">
         <span className="text-xs bg-amber-900/40 border border-amber-700/50 text-amber-400 px-2 py-0.5 rounded">
@@ -41,6 +42,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         {/* Content */}
         <div className="flex-1 min-w-0">{children}</div>
       </div>
+    </div>
     </div>
   );
 }

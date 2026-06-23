@@ -9,14 +9,14 @@ export default function SignupPage() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-white mb-2">Create an account</h1>
-        <p className="text-stone-400 text-sm mb-8">
+        <h1 className="font-heading font-extrabold uppercase text-2xl text-brand-green mb-2">Create an account</h1>
+        <p className="text-brand-brown/70 text-sm mb-8">
           Free to sign up. A paid subscription unlocks the full directory.
         </p>
         <AuthForm mode="signup" action={signupAction} />
-        <p className="text-center text-sm text-stone-500 mt-6">
+        <p className="text-center text-sm text-brand-brown/50 mt-6">
           Already have an account?{" "}
-          <Link href="/auth/signin" className="text-emerald-400 hover:text-emerald-300">
+          <Link href="/auth/signin" className="text-brand-green hover:text-brand-green/70">
             Sign in
           </Link>
         </p>

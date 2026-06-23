@@ -11,11 +11,12 @@ type Member = {
   pronouns?: string | null;
   bio: string;
   publicLink?: string | null;
+  location?: string | null;
+  roles: string[];
+  experienceLevel?: string | null;
   featured: boolean;
   featuredUntil?: Date | null;
-  // paid fields (undefined when not paid)
-  roles?: string[];
-  experienceLevel?: string | null;
+  // paid-only fields (undefined when not paid)
   mediums?: string[];
   languages?: string[];
   availability?: string | null;
@@ -38,52 +39,73 @@ function MemberCard({ member, isPaid }: { member: Member; isPaid: boolean }) {
   return (
     <Link
       href={`/directory/${member.slug}`}
-      className={`group block bg-stone-900 border rounded-xl p-5 hover:border-emerald-700 hover:bg-stone-800/80 transition-all ${
-        active ? "border-amber-700/60" : "border-stone-800"
+      className={`group block bg-white border rounded-xl p-5 hover:border-brand-green/60 hover:shadow-md transition-all ${
+        active ? "border-brand-mint" : "border-brand-green/10"
       }`}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-emerald-900/60 border border-emerald-700/40 flex items-center justify-center text-emerald-300 font-semibold text-sm shrink-0">
-          {initials}
-        </div>
+        {isPaid && member.headshot ? (
+          <img
+            src={member.headshot}
+            alt={name}
+            className="w-10 h-10 rounded-full object-cover border border-brand-green/20 shrink-0"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-brand-mint/30 border border-brand-mint flex items-center justify-center text-brand-green font-semibold text-sm shrink-0">
+            {initials}
+          </div>
+        )}
         <div className="flex flex-col items-end gap-1">
           {active && (
-            <span className="text-xs bg-amber-900/40 border border-amber-700/50 text-amber-400 px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-brand-mint/30 border border-brand-mint text-brand-green px-2 py-0.5 rounded-full">
               Featured
             </span>
           )}
           {isPaid && member.availability && (
-            <span className="text-xs text-stone-500">{member.availability}</span>
+            <span className="text-xs text-brand-brown/50">{member.availability}</span>
           )}
         </div>
       </div>
 
-      <h3 className="font-semibold text-white group-hover:text-emerald-300 transition-colors leading-tight">
+      <h3 className="font-semibold text-brand-green group-hover:text-brand-green/70 transition-colors leading-tight">
         {name}
         {member.pronouns && (
-          <span className="ml-2 text-xs text-stone-500 font-normal">({member.pronouns})</span>
+          <span className="ml-2 text-xs text-brand-brown/50 font-normal">({member.pronouns})</span>
         )}
       </h3>
 
-      {isPaid && member.roles && member.roles.length > 0 && (
-        <p className="text-sm text-stone-400 mt-1">{member.roles.slice(0, 3).join(", ")}</p>
+      {member.location && <p className="text-xs text-brand-brown/50 mt-0.5">{member.location}</p>}
+
+      {member.roles.length > 0 && (
+        isPaid ? (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {member.roles.slice(0, 3).map((r) => (
+              <span key={r} className="text-xs bg-brand-mint/20 border border-brand-mint/60 text-brand-green px-2 py-0.5 rounded-full">
+                {r}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-brand-brown/70 mt-1">{member.roles.join(", ")}</p>
+        )
       )}
+
       {isPaid && member.mediums && member.mediums.length > 0 && (
-        <p className="text-xs text-stone-500 mt-0.5">{member.mediums.slice(0, 2).join(", ")}</p>
+        <p className="text-xs text-brand-brown/50 mt-1.5">{member.mediums.slice(0, 2).join(", ")}</p>
       )}
 
       {!isPaid && (
-        <p className="text-sm text-stone-500 mt-1 line-clamp-2">{member.bio}</p>
+        <p className="text-sm text-brand-brown/60 mt-2 line-clamp-2">{member.bio}</p>
       )}
 
-      {isPaid && member.experienceLevel && (
-        <span className="inline-block mt-3 text-xs bg-stone-800 border border-stone-700 text-stone-400 px-2 py-0.5 rounded">
+      {member.experienceLevel && (
+        <span className="inline-block mt-3 text-xs bg-brand-green/5 border border-brand-green/20 text-brand-green/80 px-2 py-0.5 rounded">
           {member.experienceLevel}
         </span>
       )}
 
       {!isPaid && member.publicLink && (
-        <span className="inline-block mt-2 text-xs text-emerald-500">
+        <span className="inline-block mt-2 ml-2 text-xs text-brand-green/70">
           {member.publicLink.replace(/^https?:\/\//, "")}
         </span>
       )}
@@ -104,18 +126,16 @@ export default function DirectoryClient({
   const [availFilter, setAvailFilter] = useState("");
 
   const roles = useMemo(() => {
-    if (!isPaid) return [];
     const set = new Set<string>();
     members.forEach((m) => m.roles?.forEach((r) => r && set.add(r)));
     return Array.from(set).sort();
-  }, [members, isPaid]);
+  }, [members]);
 
   const levels = useMemo(() => {
-    if (!isPaid) return [];
     const set = new Set<string>();
     members.forEach((m) => m.experienceLevel && set.add(m.experienceLevel));
     return Array.from(set).sort();
-  }, [members, isPaid]);
+  }, [members]);
 
   const avails = useMemo(() => {
     if (!isPaid) return [];
@@ -145,12 +165,12 @@ export default function DirectoryClient({
             placeholder="Search by name or role…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-stone-900 border border-stone-700 rounded-lg px-4 py-2.5 text-white placeholder-stone-500 focus:outline-none focus:border-emerald-600 text-sm"
+            className="flex-1 bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm"
           />
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="bg-stone-900 border border-stone-700 rounded-lg px-4 py-2.5 text-stone-300 focus:outline-none focus:border-emerald-600 text-sm"
+            className="bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown focus:outline-none focus:border-brand-green text-sm"
           >
             <option value="">All Roles</option>
             {roles.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -158,7 +178,7 @@ export default function DirectoryClient({
           <select
             value={levelFilter}
             onChange={(e) => setLevelFilter(e.target.value)}
-            className="bg-stone-900 border border-stone-700 rounded-lg px-4 py-2.5 text-stone-300 focus:outline-none focus:border-emerald-600 text-sm"
+            className="bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown focus:outline-none focus:border-brand-green text-sm"
           >
             <option value="">All Levels</option>
             {levels.map((l) => <option key={l} value={l}>{l}</option>)}
@@ -166,7 +186,7 @@ export default function DirectoryClient({
           <select
             value={availFilter}
             onChange={(e) => setAvailFilter(e.target.value)}
-            className="bg-stone-900 border border-stone-700 rounded-lg px-4 py-2.5 text-stone-300 focus:outline-none focus:border-emerald-600 text-sm"
+            className="bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown focus:outline-none focus:border-brand-green text-sm"
           >
             <option value="">All Availability</option>
             {avails.map((a) => <option key={a} value={a}>{a}</option>)}
@@ -174,13 +194,13 @@ export default function DirectoryClient({
         </div>
       )}
 
-      <p className="text-stone-500 text-sm mb-5">
+      <p className="text-brand-brown/60 text-sm mb-5">
         {filtered.length} member{filtered.length !== 1 ? "s" : ""}
         {isPaid ? " found" : " in the directory"}
       </p>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-20 text-stone-500">No members match your search.</div>
+        <div className="text-center py-20 text-brand-brown/50">No members match your search.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((m) => (

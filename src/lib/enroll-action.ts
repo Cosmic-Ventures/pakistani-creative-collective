@@ -34,6 +34,7 @@ const EnrollSchema = z.object({
   email: z.email(),
   phone: z.string().optional(),
   address: z.string().optional(),
+  location: z.string().optional(),
   howHeard: z.string().optional(),
   headshotLink: z.string().optional(),
   bio: z.string().min(100, "Bio must be at least 100 characters"),
@@ -56,6 +57,7 @@ const EnrollSchema = z.object({
   rateRange: z.string().optional(),
   ratePublic: z.string().optional(),
   availability: z.string().min(1, "Select your availability"),
+  travel: z.string().optional(),
   languages: z.string().optional(),
   specialSkills: z.string().optional(),
   equipment: z.string().optional(),
@@ -74,6 +76,9 @@ export async function enrollAction(
   const roles = formData.getAll("roles") as string[];
   const mediums = formData.getAll("mediums") as string[];
   const preferredProjectTypes = formData.getAll("preferredProjectTypes") as string[];
+  const languagesCheck = formData.getAll("languagesCheck") as string[];
+  const collaborationPreferences = (formData.getAll("collaborationPreferences") as string[]).join(", ");
+  formData.set("collaborationPreferences", collaborationPreferences);
 
   // Work samples
   const workSamples = [1, 2, 3]
@@ -104,6 +109,7 @@ export async function enrollAction(
       email: d.email,
       phone: d.phone,
       address: d.address,
+      location: d.location,
       bio: d.bio,
       publicLink: d.publicLink,
       headshot: d.headshotLink,
@@ -122,9 +128,13 @@ export async function enrollAction(
       rateRange: d.rateRange,
       ratePublic: d.ratePublic === "yes",
       availability: d.availability,
-      languages: d.languages ? d.languages.split(",").map((l) => l.trim()).filter(Boolean) : [],
+      travel: d.travel,
+      languages: [
+        ...languagesCheck,
+        ...(d.languages ? d.languages.split(",").map((l) => l.trim()).filter(Boolean) : []),
+      ],
       equipment: d.equipment,
-      collaborationPreferences: d.collaborationPreferences,
+      collaborationPreferences: d.collaborationPreferences || undefined,
       references: d.references,
       referralName: d.referralName,
       roles,

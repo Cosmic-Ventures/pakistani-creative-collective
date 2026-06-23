@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { DM_Sans, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 
-const geist = Geist({
-  variable: "--font-geist-sans",
+const bodyFont = DM_Sans({
+  variable: "--font-body-sans",
+  subsets: ["latin"],
+});
+
+// Closest open-license match to the brand's Garet header font — see globals.css note.
+const headingFont = Plus_Jakarta_Sans({
+  variable: "--font-heading-sans",
+  weight: ["700", "800"],
   subsets: ["latin"],
 });
 
@@ -28,8 +35,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geist.variable} h-full`}>
-      <body className="min-h-full flex flex-col bg-stone-950 text-stone-100 antialiased">
+    <html lang="en" className={`${bodyFont.variable} ${headingFont.variable} h-full`}>
+      <body className="min-h-full flex flex-col bg-brand-cream text-brand-brown font-body antialiased">
         <Nav />
         <main className="flex-1">{children}</main>
         <Footer />

@@ -64,16 +64,17 @@ model Creative {
   status    CreativeStatus @default(PENDING)
 
   // ── Public (unpaid) ────────────────────────────────────────────────────────
-  firstName  String
-  lastName   String
-  pronouns   String?
-  bio        String        @db.Text
-  publicLink String?       // single link chosen by creative
+  firstName       String
+  lastName        String
+  pronouns        String?
+  bio             String        @db.Text
+  publicLink      String?       // single link chosen by creative
+  location        String?       // city/state — safe to show publicly, distinct from full `address`
+  roles           String[]      // shown publicly as a combined pill; shown individually to paid users
+  experienceLevel String?       // shown publicly as a badge
 
   // ── Paid tier ──────────────────────────────────────────────────────────────
   headshot              String?
-  roles                 String[]
-  experienceLevel       String?
   mediums               String[]
   workSamples           Json?    // [{title, medium, year, role, link}]
   notableAchievements   String?  @db.Text
@@ -89,6 +90,8 @@ model Creative {
   instagram             String?
   linkedin              String?
   vimeo                 String?
+  travel                String?  // e.g. "Will travel/open to international work"
+  education             String?  @db.Text
 
   // ── Admin only ─────────────────────────────────────────────────────────────
   email                    String
@@ -96,7 +99,6 @@ model Creative {
   address                  String?
   unionMemberships         String?
   references               String?  @db.Text
-  education                String?  @db.Text
   equipment                String?  @db.Text
   collaborationPreferences String?
   pccGoals                 String?  @db.Text
@@ -122,9 +124,21 @@ model ContactRequest {
   creativeId       String
   user             User                 @relation(fields: [userId], references: [id])
   creative         Creative             @relation(fields: [creativeId], references: [id])
-  organization     String?
-  projectDesc      String               @db.Text
-  lookingFor       String               @db.Text
+
+  // ── About You ──────────────────────────────────────────────────────────────
+  requesterName    String
+  requesterEmail   String
+  company          String?
+  requesterRole    String?
+  portfolioLink    String?
+  experienceLevel  String               // Emerging | Developing | Established | Accomplished | Veteran
+
+  // ── Request ────────────────────────────────────────────────────────────────
+  requestType      String               // General Connection | Collaboration Opportunity | Script Feedback | PR / Press Request | Work for Hire | Other
+  requestTypeOther String?
+  message          String               @db.Text
+  timeline         String               // Immediately/ASAP | Within next month | Within next 3 months | Within next 6 months | No set timeline
+
   status           ContactRequestStatus @default(PENDING)
   creativeResponse String?
   adminNotes       String?              @db.Text

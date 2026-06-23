@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+/*
+ * Brand palette and type from "Pakistani Creative Collective - Website Outline".
+ * Header font spec calls for Garet (bold, all-caps, letter-spacing -60), which is a
+ * paid/licensed font not distributed on Google Fonts — Plus Jakarta Sans (extrabold)
+ * is substituted as the closest open-license geometric match until the client
+ * provides licensed Garet font files.
+ */
+@theme {
+  --color-brand-green: #294d3d;
+  --color-brand-brown: #2a1511;
+  --color-brand-cream: #fffcf9;
+  --color-brand-mint: #91d2a6;
+
+  --font-heading: var(--font-heading-sans), sans-serif;
+  --font-body: var(--font-body-sans), sans-serif;
+}
+
+.font-heading {
+  letter-spacing: -0.03em;
+}

@@ -14,14 +14,14 @@ export default function AuthForm({ mode, action }: Props) {
   return (
     <form action={formAction} className="space-y-4">
       {state && "error" in state && (
-        <p className="text-sm text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2">
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
           {state.error}
         </p>
       )}
 
       {mode === "signup" && (
         <div>
-          <label className="block text-sm text-stone-400 mb-1.5" htmlFor="name">
+          <label className="block text-sm text-brand-brown/70 mb-1.5" htmlFor="name">
             Full name
           </label>
           <input
@@ -30,13 +30,13 @@ export default function AuthForm({ mode, action }: Props) {
             type="text"
             required
             autoComplete="name"
-            className="w-full bg-stone-800 border border-stone-700 rounded-lg px-4 py-2.5 text-white placeholder-stone-500 focus:outline-none focus:border-emerald-600 text-sm"
+            className="w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm"
           />
         </div>
       )}
 
       <div>
-        <label className="block text-sm text-stone-400 mb-1.5" htmlFor="email">
+        <label className="block text-sm text-brand-brown/70 mb-1.5" htmlFor="email">
           Email address
         </label>
         <input
@@ -45,12 +45,12 @@ export default function AuthForm({ mode, action }: Props) {
           type="email"
           required
           autoComplete="email"
-          className="w-full bg-stone-800 border border-stone-700 rounded-lg px-4 py-2.5 text-white placeholder-stone-500 focus:outline-none focus:border-emerald-600 text-sm"
+          className="w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm"
         />
       </div>
 
       <div>
-        <label className="block text-sm text-stone-400 mb-1.5" htmlFor="password">
+        <label className="block text-sm text-brand-brown/70 mb-1.5" htmlFor="password">
           Password
         </label>
         <input
@@ -59,10 +59,10 @@ export default function AuthForm({ mode, action }: Props) {
           type="password"
           required
           autoComplete={mode === "signup" ? "new-password" : "current-password"}
-          className="w-full bg-stone-800 border border-stone-700 rounded-lg px-4 py-2.5 text-white placeholder-stone-500 focus:outline-none focus:border-emerald-600 text-sm"
+          className="w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm"
         />
         {mode === "signup" && (
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-brand-brown/40 mt-1">
             At least 8 characters, one letter, one number.
           </p>
         )}
@@ -71,7 +71,7 @@ export default function AuthForm({ mode, action }: Props) {
       <button
         type="submit"
         disabled={pending}
-        className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold py-3 rounded-full transition-colors"
+        className="w-full bg-brand-green hover:bg-brand-green/90 disabled:opacity-50 text-brand-cream font-semibold py-3 rounded-full transition-colors"
       >
         {pending
           ? mode === "signup"

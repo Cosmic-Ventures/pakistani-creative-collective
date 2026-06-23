@@ -26,13 +26,13 @@ export default async function ContactRequestPage({
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
-      <Link href={`/directory/${slug}`} className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 transition-colors mb-8">
+      <Link href={`/directory/${slug}`} className="inline-flex items-center gap-1 text-sm text-brand-brown/50 hover:text-brand-brown transition-colors mb-8">
         ← Back to profile
       </Link>
-      <h1 className="text-2xl font-bold text-white mb-2">
+      <h1 className="font-heading font-extrabold uppercase text-2xl text-brand-green mb-2">
         Contact Request for {creative.firstName} {creative.lastName}
       </h1>
-      <p className="text-stone-400 text-sm mb-8">
+      <p className="text-brand-brown/70 text-sm mb-8">
         This request will be reviewed by Aneesa Talks and forwarded to the creative. They decide whether to connect.
       </p>
       <ContactRequestForm creativeId={creative.id} creativeSlug={slug} userId={session.userId} />

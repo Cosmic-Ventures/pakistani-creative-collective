@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
-import { stripe } from "@/lib/stripe";
 import { logoutAction } from "@/lib/auth-actions";
+import { manageSubscriptionPortal } from "@/lib/subscribe-actions";
 
 export const metadata: Metadata = { title: "My Account" };
 export const dynamic = "force-dynamic";
@@ -15,44 +15,30 @@ export default async function AccountPage() {
   const user = await db.user.findUnique({ where: { id: session.userId } });
   if (!user) redirect("/auth/signin");
 
-  async function manageSubscription() {
-    "use server";
-    const s = await getSession();
-    if (!s) return;
-    const u = await db.user.findUnique({ where: { id: s.userId } });
-    if (!u?.stripeCustomerId) return;
-
-    const portal = await stripe.billingPortal.sessions.create({
-      customer: u.stripeCustomerId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/account`,
-    });
-    redirect(portal.url);
-  }
-
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
-      <h1 className="text-2xl font-bold text-white mb-8">My Account</h1>
+      <h1 className="font-heading font-extrabold uppercase text-2xl text-brand-green mb-8">My Account</h1>
 
-      <div className="bg-stone-900 border border-stone-800 rounded-2xl p-6 mb-6">
-        <h2 className="font-semibold text-white mb-4">Account Details</h2>
+      <div className="bg-white border border-brand-green/10 rounded-2xl p-6 mb-6">
+        <h2 className="font-semibold text-brand-green mb-4">Account Details</h2>
         <dl className="space-y-3 text-sm">
           <div className="flex justify-between">
-            <dt className="text-stone-500">Name</dt>
-            <dd className="text-stone-200">{user.name ?? "—"}</dd>
+            <dt className="text-brand-brown/50">Name</dt>
+            <dd className="text-brand-brown/90">{user.name ?? "—"}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-stone-500">Email</dt>
-            <dd className="text-stone-200">{user.email}</dd>
+            <dt className="text-brand-brown/50">Email</dt>
+            <dd className="text-brand-brown/90">{user.email}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-stone-500">Access</dt>
+            <dt className="text-brand-brown/50">Access</dt>
             <dd>
               <span className={`text-xs px-2 py-0.5 rounded-full border ${
                 user.role === "PAID"
-                  ? "text-emerald-400 bg-emerald-950/40 border-emerald-700/40"
+                  ? "text-brand-green bg-brand-mint/20 border-brand-mint"
                   : user.role === "ADMIN"
-                  ? "text-amber-400 bg-amber-950/40 border-amber-700/40"
-                  : "text-stone-400 bg-stone-800 border-stone-700"
+                  ? "text-amber-700 bg-amber-50 border-amber-300"
+                  : "text-brand-brown/60 bg-brand-green/5 border-brand-green/15"
               }`}>
                 {user.role === "PAID" ? "Paid subscriber" : user.role === "ADMIN" ? "Admin" : "Free"}
               </span>
@@ -60,14 +46,14 @@ export default async function AccountPage() {
           </div>
           {user.subCurrentPeriodEnd && (
             <div className="flex justify-between">
-              <dt className="text-stone-500">Subscription renews</dt>
-              <dd className="text-stone-200">{new Date(user.subCurrentPeriodEnd).toLocaleDateString()}</dd>
+              <dt className="text-brand-brown/50">Subscription renews</dt>
+              <dd className="text-brand-brown/90">{new Date(user.subCurrentPeriodEnd).toLocaleDateString()}</dd>
             </div>
           )}
           {user.earlyAccess && user.role === "UNPAID" && (
             <div className="flex justify-between">
-              <dt className="text-stone-500">Pricing</dt>
-              <dd className="text-emerald-400 text-xs">Early access rate ($30/yr) — first year only</dd>
+              <dt className="text-brand-brown/50">Pricing</dt>
+              <dd className="text-brand-green text-xs">Early access rate ($30/yr) — first year only</dd>
             </div>
           )}
         </dl>
@@ -75,8 +61,8 @@ export default async function AccountPage() {
 
       <div className="flex flex-wrap gap-3">
         {user.role === "PAID" && user.stripeCustomerId && (
-          <form action={manageSubscription}>
-            <button className="text-sm bg-stone-800 hover:bg-stone-700 border border-stone-700 text-stone-300 px-5 py-2.5 rounded-full transition-colors">
+          <form action={manageSubscriptionPortal}>
+            <button className="text-sm bg-brand-green/5 hover:bg-brand-green/10 border border-brand-green/20 text-brand-brown/80 px-5 py-2.5 rounded-full transition-colors">
               Manage Subscription
             </button>
           </form>
@@ -84,13 +70,13 @@ export default async function AccountPage() {
         {user.role === "UNPAID" && (
           <a
             href="/subscribe"
-            className="text-sm bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-5 py-2.5 rounded-full transition-colors"
+            className="text-sm bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-5 py-2.5 rounded-full transition-colors"
           >
             Subscribe — from ${user.earlyAccess ? 30 : 50}/year
           </a>
         )}
         <form action={logoutAction}>
-          <button className="text-sm text-stone-500 hover:text-stone-300 transition-colors px-2 py-2.5">
+          <button className="text-sm text-brand-brown/50 hover:text-brand-brown transition-colors px-2 py-2.5">
             Sign out
           </button>
         </form>

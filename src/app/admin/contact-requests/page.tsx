@@ -37,7 +37,7 @@ export default async function ContactRequestsPage() {
                   Request for {r.creative.firstName} {r.creative.lastName}
                 </h3>
                 <p className="text-sm text-stone-400">
-                  From: {r.organization ?? r.user.name ?? r.user.email}
+                  From: {r.requesterName} ({r.requesterEmail}){r.company && ` · ${r.company}`}
                 </p>
                 <p className="text-xs text-stone-600">{new Date(r.createdAt).toLocaleDateString()}</p>
               </div>
@@ -47,8 +47,12 @@ export default async function ContactRequestsPage() {
             </div>
 
             <div className="text-sm text-stone-400 space-y-2 mb-4">
-              <div><span className="text-stone-600">Project: </span>{r.projectDesc}</div>
-              <div><span className="text-stone-600">Looking for: </span>{r.lookingFor}</div>
+              <div><span className="text-stone-600">Request type: </span>{r.requestType === "Other" ? `Other — ${r.requestTypeOther}` : r.requestType}</div>
+              <div><span className="text-stone-600">Experience level: </span>{r.experienceLevel}</div>
+              <div><span className="text-stone-600">Timeline: </span>{r.timeline}</div>
+              {r.requesterRole && <div><span className="text-stone-600">Role/Title: </span>{r.requesterRole}</div>}
+              {r.portfolioLink && <div><span className="text-stone-600">Portfolio: </span><a href={r.portfolioLink} target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:text-emerald-400">{r.portfolioLink} ↗</a></div>}
+              <div><span className="text-stone-600">Message: </span>{r.message}</div>
             </div>
 
             {r.adminNotes && (

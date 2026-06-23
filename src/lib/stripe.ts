@@ -1,5 +1,7 @@
 import Stripe from "stripe";
 
+export const isStripeConfigured = !!process.env.STRIPE_SECRET_KEY;
+
 // Lazy initialization to avoid build-time errors when env vars aren't set
 let _stripe: Stripe | null = null;
 
