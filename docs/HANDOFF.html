@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PCC Build Handoff</title>
+<style>
+  @page { size: A4; margin: 22mm 18mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #2A1511;
+    line-height: 1.55;
+    font-size: 11pt;
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cover {
+    background: #294D3D;
+    color: #FFFCF9;
+    padding: 26px 28px;
+    border-radius: 14px;
+    margin-bottom: 26px;
+  }
+  .cover .kicker { text-transform: uppercase; letter-spacing: .12em; font-size: 9pt; color: #91D2A6; margin: 0 0 6px; }
+  .cover h1 { font-size: 26pt; margin: 0; font-weight: 800; letter-spacing: -.02em; text-transform: uppercase; line-height: 1.02; }
+  .cover p { margin: 10px 0 0; color: rgba(255,252,249,.8); font-size: 10.5pt; }
+  h2 {
+    color: #294D3D; font-size: 15pt; font-weight: 800; text-transform: uppercase;
+    letter-spacing: -.01em; margin: 26px 0 8px; padding-bottom: 5px;
+    border-bottom: 2px solid rgba(41,77,61,.18);
+  }
+  h3 { color: #294D3D; font-size: 12pt; margin: 16px 0 4px; }
+  p { margin: 7px 0; }
+  ul, ol { margin: 6px 0 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  code {
+    background: rgba(41,77,61,.08); color: #294D3D; padding: 1px 5px;
+    border-radius: 4px; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 9.5pt;
+  }
+  strong { color: #2A1511; }
+  .vendor {
+    background: rgba(145,210,166,.16); border: 1px solid rgba(145,210,166,.55);
+    border-radius: 10px; padding: 4px 16px 12px; margin: 10px 0;
+  }
+  .used-for { background: rgba(41,77,61,.06); border-left: 3px solid #91D2A6; padding: 6px 12px; border-radius: 4px; margin: 8px 0; }
+  footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid rgba(41,77,61,.15); font-size: 8.5pt; color: rgba(42,21,17,.5); }
+
+  /* ── Screenshot gallery (laptop browser-frame chrome) ──────────── */
+  .shots { margin-top: 10px; }
+  .shot { margin: 0 0 22px; break-inside: avoid; }
+  .frame {
+    border-radius: 10px; overflow: hidden;
+    border: 1px solid rgba(41,77,61,.25);
+    box-shadow: 0 8px 24px rgba(42,21,17,.14);
+    background: #fff;
+  }
+  .bar {
+    background: #e9efe9; height: 26px; display: flex; align-items: center;
+    padding: 0 12px; gap: 7px; border-bottom: 1px solid rgba(41,77,61,.15);
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .url {
+    margin-left: 10px; background: #fff; border-radius: 5px; height: 16px; flex: 1;
+    max-width: 360px; font-size: 7.5pt; color: rgba(42,21,17,.5);
+    display: flex; align-items: center; padding: 0 8px;
+  }
+  .frame img { display: block; width: 100%; }
+  .caption { font-size: 9pt; color: rgba(42,21,17,.6); margin: 7px 2px 0; }
+  .caption b { color: #294D3D; }
+  .page-break { break-before: page; }
+</style>
+</head>
+<body>
+  <div class="cover">
+    <p class="kicker">Pakistani Creative Collective · Created by Aneesa Talks</p>
+    <h1>Build Handoff</h1>
+    <p>What we built, a look at the screens, and what's needed to take Stripe &amp; Resend live.</p>
+  </div>
+
+  <h2>What we built</h2>
+  <p>The Pakistani Creative Collective platform is a Next.js app with a Postgres database (Supabase), styled to the brand spec (colors, fonts, logo, illustrations) with the full creative-profile and contact-request experience implemented.</p>
+
+  <h3>Public site</h3>
+  <ul>
+    <li>Home page, member directory (free preview vs. full paid view), and individual creative profiles.</li>
+    <li><strong>Free visitors</strong> see: name, role(s), experience level, location, bio, and one public link.</li>
+    <li><strong>Paid subscribers</strong> additionally see: headshot, education, languages, mediums, social/portfolio links, primary work sample, and a "Work For Hire" card (rate info, travel, collaboration preferences).</li>
+  </ul>
+
+  <h3>Creative application flow</h3>
+  <ul><li>Public "Apply to Join" form (free) → admin review queue → approve/reject → applicant is emailed and gets a live profile.</li></ul>
+
+  <h3>Contact requests</h3>
+  <ul>
+    <li>Paid subscribers request an introduction via a form matching the spec: requester info, experience level, request type, message, timeline, and consent.</li>
+    <li>Submissions route to the admin panel; admin can forward to the creative or mark accepted/declined.</li>
+  </ul>
+
+  <h3>Subscriptions</h3>
+  <ul>
+    <li>$30/year early-access rate (pre-launch signups) vs. $50/year standard, enforced server-side.</li>
+    <li>Stripe Checkout + Billing Portal are wired up, but <strong>currently run in a safe demo mode</strong> (below) since live keys aren't set.</li>
+  </ul>
+
+  <h3>Admin panel &amp; tests</h3>
+  <ul>
+    <li>Applications, contact requests, feature requests, and basic analytics (kept on a simple internal dark theme).</li>
+    <li>Vitest suite (<code>npm test</code>) covering signup/login, enrollment, contact requests, feature requests, admin moderation, and checkout — 30 tests, all passing.</li>
+  </ul>
+
+  <!-- ── Screens ──────────────────────────────────────────────── -->
+  <div class="page-break"></div>
+  <h2>The screens</h2>
+  <div class="shots">
+    <div class="shot">
+      <div class="frame">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">pakistanicreativecollective.com</span></div>
+        <img src="screenshots/home.png" alt="Home page">
+      </div>
+      <p class="caption"><b>Home.</b> Hero on the brand's textured green with the logo lockup and primary calls to action.</p>
+    </div>
+
+    <div class="shot">
+      <div class="frame">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">pakistanicreativecollective.com/directory</span></div>
+        <img src="screenshots/directory.png" alt="Member directory">
+      </div>
+      <p class="caption"><b>Directory.</b> Searchable, filterable grid of vetted members (role, level, availability).</p>
+    </div>
+
+    <div class="shot page-break">
+      <div class="frame">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">pakistanicreativecollective.com/directory/aneesa-khan</span></div>
+        <img src="screenshots/directory-aneesa-khan.png" alt="Paid creative profile">
+      </div>
+      <p class="caption"><b>Creative profile (paid view).</b> Identity card, biography, education/availability/languages/connect, an embedded work sample, and the "Work For Hire" card — matching the brand mockups.</p>
+    </div>
+
+    <div class="shot">
+      <div class="frame">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">pakistanicreativecollective.com/directory/aneesa-khan/request</span></div>
+        <img src="screenshots/directory-aneesa-khan-request.png" alt="Contact request form">
+      </div>
+      <p class="caption"><b>Contact request.</b> The full intake form (about you, experience level, request type, timeline, consent) routed to the admin queue.</p>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+  <h2>Demo mode (no real charges or emails yet)</h2>
+  <p>With <code>STRIPE_SECRET_KEY</code> and <code>RESEND_API_KEY</code> unset:</p>
+  <ul>
+    <li>The subscribe page shows a "demo flow" banner and a "Simulate payment" button instead of real checkout. Clicking it marks the account paid (no money moves) and shows a success page noting the payment was simulated.</li>
+    <li>Application / approval / rejection / contact-request emails silently no-op — the in-app success screens still show, but no email is sent.</li>
+  </ul>
+  <p>So the site is fully demoable end-to-end today without either vendor account.</p>
+
+  <h2>What's needed before going live</h2>
+
+  <div class="vendor">
+    <h3>Stripe — subscription billing</h3>
+    <div class="used-for"><strong>Used for:</strong> charging the $30/$50 annual subscription, the self-serve billing portal (update card, cancel), and keeping subscription status in sync via webhooks.</div>
+    <ol>
+      <li>Create a Stripe account and switch to live mode.</li>
+      <li>Create two recurring Prices: $30/year ("early access") and $50/year ("standard").</li>
+      <li>Set environment variables on the host:
+        <ul>
+          <li><code>STRIPE_SECRET_KEY</code> — from the Stripe dashboard</li>
+          <li><code>STRIPE_PRICE_EARLY</code> / <code>STRIPE_PRICE_STANDARD</code> — the two Price IDs</li>
+          <li><code>STRIPE_WEBHOOK_SECRET</code> — from a webhook endpoint pointed at <code>/api/webhooks/stripe</code>, listening for <code>customer.subscription.created/updated/deleted</code></li>
+        </ul>
+      </li>
+      <li>Once set, the demo banner disappears and real Checkout takes over — no code changes needed.</li>
+    </ol>
+  </div>
+
+  <div class="vendor">
+    <h3>Resend — transactional email</h3>
+    <div class="used-for"><strong>Used for:</strong> notifying the team of new applications and contact requests, and notifying applicants/creatives of approval, rejection, and feature selection.</div>
+    <ol>
+      <li>Create a Resend account.</li>
+      <li>Verify the sending domain (<code>aneesatalks.com</code>) by adding the DNS records Resend provides — required before it will deliver mail from <code>noreply@aneesatalks.com</code>.</li>
+      <li>Set <code>RESEND_API_KEY</code> on the host. Every email flow then activates automatically.</li>
+    </ol>
+  </div>
+
+  <h2>Other required environment variables</h2>
+  <ul>
+    <li><code>DATABASE_URL</code> — Supabase connection. <strong>Use the pooler connection</strong> (<code>...pooler.supabase.com:5432</code>), not the direct <code>db.&lt;ref&gt;.supabase.co</code> host (which is IPv6-only and won't resolve from many networks).</li>
+    <li><code>SESSION_SECRET</code> — random 32+ character string for signing login sessions.</li>
+    <li><code>NEXT_PUBLIC_APP_URL</code> — the deployed site URL (used in email links and Stripe redirects).</li>
+  </ul>
+
+  <h2>Note on the header font</h2>
+  <p>The spec calls for <strong>Garet</strong> (bold, all-caps, tight letter-spacing). Garet is a licensed font not available on Google Fonts, so <strong>Plus Jakarta Sans (extrabold)</strong> is substituted as the closest open-license match. If you license Garet, swapping it in is a small change in <code>src/app/layout.tsx</code>.</p>
+
+  <footer>Pakistani Creative Collective — build handoff. Generated for client review.</footer>
+</body>
+</html>
