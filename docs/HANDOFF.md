@@ -8,7 +8,11 @@ There is no charge to Cosmic Ventures for implementation. Ongoing hosting (Verce
 
 ## Pages to review
 
-Click through these and send feedback on anything that's off. Demo logins (already seeded, no setup needed): **paid@demo.test** / **free@demo.test** / **admin@demo.test**, password **password123** for all three.
+**Everything below is demo/fake data** — the creatives, applications, and accounts are sample data for testing, not your real members. Real member data doesn't go in until you're happy with the design and flows (see "Moving to real data" below).
+
+Click through every page and send us feedback — the more detail the better. Page by page is most useful: what feels off about the layout, copy, navigation, anything missing or confusing. Once we have your notes we'll iterate and send back an updated version for another pass.
+
+Demo logins (already seeded, no setup needed): **paid@demo.test** / **free@demo.test** / **admin@demo.test**, password **password123** for all three.
 
 **Public — no login needed**
 - [Home](https://pakistani-creative-collective.vercel.app/)
@@ -65,6 +69,13 @@ This means the site is fully demoable end-to-end today without either vendor acc
 
 ## What's needed from the client before going live
 
+### Domain
+**Used for:** the real address members and visitors will use, instead of the `vercel.app` placeholder — also required as the sending domain for Resend emails below.
+
+To go live:
+1. Purchase a domain (or tell us which existing one to use, e.g. a subdomain of `aneesatalks.com`).
+2. Give us access to manage its DNS — either share the registrar/DNS provider login, or we'll send you the exact records to add yourself. We'll use this to point the domain at the deployment and verify it for Resend.
+
 ### Stripe — handles subscription billing
 **Used for:** charging the $30/$50 annual subscription, the self-serve billing portal (update card, cancel), and keeping subscription status in sync via webhooks.
 
@@ -86,6 +97,14 @@ To go live:
 3. Set `RESEND_API_KEY` on the hosting platform.
 
 Once set, every existing email flow activates automatically — no code changes needed.
+
+### Moving to real data
+Once you're happy with the design and flows, we'll replace the demo data with the real one:
+1. Upload your existing member list from the Google Sheet into the directory.
+2. Pre-create login accounts for those existing members so they don't have to re-apply.
+3. Optionally, send an outreach email to those members letting them know their profile is live and how to log in — we can draft this with you.
+
+This happens after your feedback round above, not before — no point migrating real data onto a design that's still changing.
 
 ## Other environment variables already required
 - `DATABASE_URL` — Supabase connection string. **Use the pooler connection** (`...pooler.supabase.com:5432`), not the direct `db.<ref>.supabase.co` host — the direct host is IPv6-only and won't resolve from IPv4-only networks/hosts.

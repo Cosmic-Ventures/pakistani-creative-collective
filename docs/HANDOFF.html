@@ -90,7 +90,9 @@
   </div>
 
   <h2>Pages to review</h2>
-  <p>Click through these and send feedback on anything that's off. Demo logins (already seeded, no setup needed): <strong>paid@demo.test</strong> / <strong>free@demo.test</strong> / <strong>admin@demo.test</strong>, password <strong>password123</strong> for all three.</p>
+  <p><strong>Everything below is demo/fake data</strong> — the creatives, applications, and accounts are sample data for testing, not real members. Real member data doesn't go in until you're happy with the design and flows (see "Moving to real data" below).</p>
+  <p>Click through every page and send us feedback — the more detail the better. Page by page is most useful: what feels off about the layout, copy, navigation, anything missing or confusing. Once we have your notes we'll iterate and send back an updated version for another pass.</p>
+  <p>Demo logins (already seeded, no setup needed): <strong>paid@demo.test</strong> / <strong>free@demo.test</strong> / <strong>admin@demo.test</strong>, password <strong>password123</strong> for all three.</p>
 
   <h3>Public — no login needed</h3>
   <ul>
@@ -197,6 +199,15 @@
   <h2>What's needed before going live</h2>
 
   <div class="vendor">
+    <h3>Domain</h3>
+    <div class="used-for"><strong>Used for:</strong> the real address members and visitors will use, instead of the <code>vercel.app</code> placeholder — also required as the sending domain for Resend emails below.</div>
+    <ol>
+      <li>Purchase a domain (or tell us which existing one to use, e.g. a subdomain of <code>aneesatalks.com</code>).</li>
+      <li>Give us access to manage its DNS — either share the registrar/DNS provider login, or we'll send you the exact records to add yourself. We'll use this to point the domain at the deployment and verify it for Resend.</li>
+    </ol>
+  </div>
+
+  <div class="vendor">
     <h3>Stripe — subscription billing</h3>
     <div class="used-for"><strong>Used for:</strong> charging the $30/$50 annual subscription, the self-serve billing portal (update card, cancel), and keeping subscription status in sync via webhooks.</div>
     <ol>
@@ -221,6 +232,17 @@
       <li>Verify the sending domain (<code>aneesatalks.com</code>) by adding the DNS records Resend provides — required before it will deliver mail from <code>noreply@aneesatalks.com</code>.</li>
       <li>Set <code>RESEND_API_KEY</code> on the host. Every email flow then activates automatically.</li>
     </ol>
+  </div>
+
+  <div class="vendor">
+    <h3>Moving to real data</h3>
+    <div class="used-for">Once you're happy with the design and flows, we'll replace the demo data with the real one.</div>
+    <ol>
+      <li>Upload your existing member list from the Google Sheet into the directory.</li>
+      <li>Pre-create login accounts for those existing members so they don't have to re-apply.</li>
+      <li>Optionally, send an outreach email to those members letting them know their profile is live and how to log in — we can draft this with you.</li>
+    </ol>
+    <p style="margin:6px 0 0; font-size:10pt; color:rgba(42,21,17,.6);">This happens after your feedback round above, not before — no point migrating real data onto a design that's still changing.</p>
   </div>
 
   <h2>Other required environment variables</h2>
