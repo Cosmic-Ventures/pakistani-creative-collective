@@ -26,7 +26,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 You'll need a `.env.local` with at least `DATABASE_URL` and `SESSION_SECRET` set (see `.env.local` for the full list of optional vars — Stripe/Resend/Google Sheets keys). Without `STRIPE_SECRET_KEY`/`RESEND_API_KEY`, those integrations run in demo mode automatically.
 
-To populate the directory with demo data (a couple of sample creatives, plus `paid@demo.test` / `free@demo.test` login accounts, password `password123`):
+To populate the directory with demo data (a couple of sample creatives, plus `paid@demo.test` / `free@demo.test` / `admin@demo.test` login accounts, password `password123`):
 
 ```bash
 pnpm seed

@@ -47,10 +47,10 @@ Recurring layout idioms from the mockups:
 
 **Use pnpm, not npm, for everything in this repo** (install/build/dev/test) — see the deployment section below for why. `pnpm-lock.yaml` is the lockfile of record; there is no `package-lock.json`.
 
-- **Seed demo data:** `pnpm seed` (idempotent upsert; runs `tsx prisma/seed.ts`). Creates `paid@demo.test` / `free@demo.test` (password `password123`) and the Aneesa Khan founder profile + sample creatives. Use the paid account to view full profiles, the free account for the locked/public view.
+- **Seed demo data:** `pnpm seed` (idempotent upsert; runs `tsx prisma/seed.ts`). Creates `paid@demo.test` / `free@demo.test` / `admin@demo.test` (password `password123`) and the Aneesa Khan founder profile + sample creatives. Use the paid account to view full profiles, the free account for the locked/public view, the admin account for `/admin`.
 - **Tests:** `pnpm test` (Vitest). One file per user flow under `tests/`, testing server actions with mocked `@/lib/db`, `@/lib/email`, `@/lib/stripe`, `@/lib/session`, `next/navigation`. Mock objects referenced inside `vi.mock()` factories must use `vi.hoisted()`; mocked async fns must return resolved promises (code calls `.catch()` on them).
 - **Browser verify:** the preview server (`.claude/launch.json` → `pcc-dev`) is the way to catch the two classes of bug that build/typecheck miss — the `"use server"` export bug and theme/contrast regressions. Always screenshot real pages after a redesign.
-- **Admin access:** no seed admin. Promote a user with SQL `UPDATE "User" SET role='ADMIN' WHERE email=...` (needs user approval).
+- **Admin access:** use the seeded `admin@demo.test`, or promote a real user with SQL `UPDATE "User" SET role='ADMIN' WHERE email=...` (needs user approval).
 
 ## Deployment (Vercel) — read this before redeploying
 

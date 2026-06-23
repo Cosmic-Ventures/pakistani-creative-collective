@@ -7,12 +7,13 @@
  * Seeds:
  *  - one PAID demo account (paid@demo.test / password123) for viewing full profiles
  *  - one UNPAID demo account (free@demo.test / password123)
+ *  - one ADMIN demo account (admin@demo.test / password123) for the admin panel
  *  - the founder profile (Aneesa Khan) matching the brand mockup, plus a few
  *    sample creatives so the directory grid isn't empty.
  */
 import "dotenv/config";
 import bcrypt from "bcryptjs";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const db = new PrismaClient();
 
@@ -28,6 +29,11 @@ async function main() {
     where: { email: "free@demo.test" },
     update: { role: "UNPAID" },
     create: { email: "free@demo.test", passwordHash, name: "Free Demo", role: "UNPAID" },
+  });
+  await db.user.upsert({
+    where: { email: "admin@demo.test" },
+    update: { role: "ADMIN" },
+    create: { email: "admin@demo.test", passwordHash, name: "Admin Demo", role: "ADMIN" },
   });
 
   // Founder profile — content mirrors the brand mockup exactly.

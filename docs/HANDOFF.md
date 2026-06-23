@@ -6,6 +6,29 @@
 
 There is no charge to Cosmic Ventures for implementation. Ongoing hosting (Vercel) and the database (Supabase) currently run about **$20/month** combined, and that may increase if traffic, storage, or usage scales up.
 
+## Pages to review
+
+Click through these and send feedback on anything that's off. Demo logins (already seeded, no setup needed): **paid@demo.test** / **free@demo.test** / **admin@demo.test**, password **password123** for all three.
+
+**Public — no login needed**
+- [Home](https://pakistani-creative-collective.vercel.app/)
+- [Directory](https://pakistani-creative-collective.vercel.app/directory) — browse all approved creatives
+- [Apply to Join](https://pakistani-creative-collective.vercel.app/enroll) — the public application form
+
+**Sign in as `paid@demo.test` to see the full paid experience**
+- [Sign in](https://pakistani-creative-collective.vercel.app/auth/signin)
+- [Aneesa Khan's profile](https://pakistani-creative-collective.vercel.app/directory/aneesa-khan) — the full paid view (headshot, education, languages, rate info, etc.); compare against the same page while signed out or signed in as `free@demo.test` to see the locked/public view
+- [Request an introduction](https://pakistani-creative-collective.vercel.app/directory/aneesa-khan/request) — link from any profile's "Request Intro" button
+- [My Account](https://pakistani-creative-collective.vercel.app/account) — subscription status, billing portal link
+- [Subscribe / upgrade](https://pakistani-creative-collective.vercel.app/subscribe) — shown to free accounts; currently in demo mode (see below)
+
+**Admin (internal tool — sign in as `admin@demo.test`)**
+- [Admin dashboard](https://pakistani-creative-collective.vercel.app/admin)
+- [Applications queue](https://pakistani-creative-collective.vercel.app/admin/applications)
+- [Contact requests](https://pakistani-creative-collective.vercel.app/admin/contact-requests)
+- [Feature requests](https://pakistani-creative-collective.vercel.app/admin/feature-requests)
+- [Analytics](https://pakistani-creative-collective.vercel.app/admin/analytics)
+
 ## What we built
 
 The Pakistani Creative Collective platform is a Next.js app with a Postgres database (Supabase), now restyled to match the brand spec (colors, fonts, logo, illustrations) and with the full creative-profile and contact-request experience implemented.
