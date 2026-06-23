@@ -28,6 +28,17 @@ const howItWorks = [
   },
 ];
 
+const heroIllustrations = [
+  { name: "dancer", width: 1080, height: 1080 },
+  { name: "videoguy", width: 468, height: 934 },
+  { name: "director", width: 1080, height: 1080 },
+  { name: "tapestry-worker", width: 810, height: 860 },
+  { name: "cameraman", width: 1080, height: 1080 },
+  { name: "performer", width: 472, height: 859 },
+  { name: "guitarist", width: 1080, height: 1080 },
+  { name: "singer", width: 1080, height: 1080 },
+];
+
 export default function Home() {
   return (
     <>
@@ -39,20 +50,11 @@ export default function Home() {
           priority
           className="object-cover opacity-80 pointer-events-none select-none"
         />
-        <Image
-          src="/brand/vector-singer.png"
-          alt=""
-          width={1080}
-          height={1080}
-          className="hidden lg:block absolute -right-8 bottom-0 w-72 opacity-30 pointer-events-none select-none"
-        />
-        <Image
-          src="/brand/vector-guitarist.png"
-          alt=""
-          width={1080}
-          height={1080}
-          className="hidden lg:block absolute right-56 -bottom-6 w-56 opacity-20 pointer-events-none select-none"
-        />
+        <div className="hidden lg:grid absolute inset-y-0 right-0 w-3/5 grid-cols-4 grid-rows-2 items-center justify-items-center py-10 pointer-events-none select-none">
+          {heroIllustrations.map(({ name, width, height }) => (
+            <Image key={name} src={`/brand/vector-${name}.png`} alt="" width={width} height={height} className="h-28 w-auto opacity-20" />
+          ))}
+        </div>
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32">
           <Logo variant="light" className="h-12 sm:h-14 w-auto mb-8 opacity-95" />
           <h1 className="font-heading font-extrabold uppercase text-4xl sm:text-6xl leading-[1.05] max-w-3xl">

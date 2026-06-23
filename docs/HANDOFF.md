@@ -1,5 +1,11 @@
 # PCC Build Handoff
 
+**Live site:** https://pakistani-creative-collective.vercel.app
+
+## Cost & billing
+
+There is no charge to Cosmic Ventures for implementation. Ongoing hosting (Vercel) and the database (Supabase) currently run about **$30/month** combined, and that may increase if traffic, storage, or usage scales up.
+
 ## What we built
 
 The Pakistani Creative Collective platform is a Next.js app with a Postgres database (Supabase), now restyled to match the brand spec (colors, fonts, logo, illustrations) and with the full creative-profile and contact-request experience implemented.

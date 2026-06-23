@@ -1,12 +1,13 @@
 /**
  * Capture laptop-width screenshots of key pages for the handoff PDF.
- * Requires the dev server running on :3000 and seeded demo data.
+ * Requires the target (dev server or deployed site) to have seeded demo data.
  * Run: npx tsx scripts/screenshots.ts
+ * Run against production: SCREENSHOT_BASE=https://pakistani-creative-collective.vercel.app npx tsx scripts/screenshots.ts
  */
 import puppeteer from "puppeteer-core";
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
-const BASE = "http://localhost:3000";
+const BASE = process.env.SCREENSHOT_BASE ?? "http://localhost:3000";
 const OUT = "docs/screenshots";
 const WIDTH = 1440;
 const HEIGHT = 900;
