@@ -1,0 +1,11 @@
+{
+  "experimentalServices": {
+    "pcc-web": {
+      "type": "web",
+      "routePrefix": "/",
+      "framework": "nextjs",
+      "installCommand": "pnpm install",
+      "buildCommand": "pnpm exec prisma generate && pnpm build"
+    }
+  }
+}
