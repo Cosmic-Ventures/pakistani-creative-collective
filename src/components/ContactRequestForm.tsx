@@ -23,12 +23,15 @@ export default function ContactRequestForm({
 
   if (state && "success" in state) {
     return (
-      <div className="bg-brand-mint text-brand-green rounded-2xl p-8 text-center">
-        <p className="font-heading font-extrabold uppercase text-xl mb-2">
+      <div className="bg-brand-mint text-brand-green rounded-3xl p-10 sm:p-12 text-center">
+        <p className="font-heading font-extrabold uppercase text-2xl sm:text-3xl leading-tight mb-3">
           Your request has been submitted.
         </p>
-        <p className="text-brand-green/80 text-sm">
+        <p className="text-brand-green/80 italic mb-8">
           You&apos;ll be notified for further communications.
+        </p>
+        <p className="font-heading font-extrabold lowercase text-brand-green/90 tracking-tight">
+          aneesa talks
         </p>
       </div>
     );

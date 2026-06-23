@@ -42,5 +42,5 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# large design source files — not needed in version control, see docs/SPEC.md and media/ for what's used
-docs/*.pdf
+# large design source export — not needed in version control, see docs/SPEC.md and media/ for what's used
+docs/Pakistani Creative Collective - Website Outline.pdf

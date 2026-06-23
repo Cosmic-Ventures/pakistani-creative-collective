@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 
@@ -11,6 +12,18 @@ function formatRoleLine(roles: string[]): string {
   if (roles.length === 1) return roles[0];
   if (roles.length === 2) return `${roles[0]} & ${roles[1]}`;
   return `${roles.slice(0, -1).join(", ")}, & ${roles[roles.length - 1]}`;
+}
+
+function toEmbedUrl(link: string): string | null {
+  const yt = link.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vimeo = link.match(/vimeo\.com\/(\d+)/);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+  return null;
+}
+
+function normalizeUrl(href: string, prefix = "https://"): string {
+  return href.startsWith("http") ? href : `${prefix}${href.replace(/^@/, "")}`;
 }
 
 export async function generateMetadata({
@@ -48,217 +61,169 @@ export default async function MemberPage({
     | null) ?? [];
   const [primarySample, ...otherSamples] = workSamples;
 
+  const fullName = `${creative.firstName} ${creative.lastName}`;
+  const subtitle = [creative.pronouns].filter(Boolean).join(" ");
+
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
-      <Link
-        href="/directory"
-        className="inline-flex items-center gap-1 text-sm text-brand-brown/50 hover:text-brand-brown transition-colors mb-8"
-      >
-        ← Directory
-      </Link>
+    <div className="relative min-h-[calc(100vh-4rem)] bg-brand-green">
+      <Image
+        src="/brand/hero-bg.png"
+        alt=""
+        fill
+        priority
+        className="object-cover opacity-70 pointer-events-none select-none"
+      />
 
-      <div className="bg-white border border-brand-green/10 rounded-2xl p-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-5">
-          {showFull && creative.headshot ? (
-            <img
-              src={creative.headshot}
-              alt={`${creative.firstName} ${creative.lastName}`}
-              className="w-16 h-16 rounded-full object-cover border border-brand-green/15"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-brand-mint/30 border border-brand-mint flex items-center justify-center text-brand-green font-bold text-xl">
-              {creative.firstName[0]}{creative.lastName[0]}
-            </div>
-          )}
-          <div>
-            <h1 className="font-heading font-extrabold uppercase text-2xl text-brand-green leading-tight">
-              {creative.firstName} {creative.lastName}
-            </h1>
-            <p className="text-sm text-brand-brown/60">
-              {creative.pronouns && `${creative.pronouns}`}
-              {creative.pronouns && creative.location && " · "}
-              {creative.location}
-            </p>
-          </div>
-        </div>
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <Link
+          href="/directory"
+          className="inline-flex items-center gap-1 text-sm text-brand-cream/70 hover:text-brand-cream transition-colors mb-8"
+        >
+          ← Directory
+        </Link>
 
-        {/* Badges — role(s) + experience level, visible to everyone */}
-        <div className="flex flex-wrap gap-2 mb-5">
-          {showFull
-            ? creative.roles.map((r) => (
-                <span key={r} className="text-xs uppercase font-semibold bg-brand-mint/25 border border-brand-mint text-brand-green px-3 py-1 rounded-full">
-                  {r}
-                </span>
-              ))
-            : creative.roles.length > 0 && (
-                <span className="text-xs uppercase font-semibold bg-brand-mint/25 border border-brand-mint text-brand-green px-3 py-1 rounded-full">
-                  {formatRoleLine(creative.roles)}
-                </span>
-              )}
-          {creative.experienceLevel && (
-            <span className="text-xs uppercase font-semibold bg-brand-green text-brand-cream px-3 py-1 rounded-full">
-              {creative.experienceLevel}
-            </span>
-          )}
-        </div>
+        {/* ── Row 1 ─────────────────────────────────────────────── */}
+        <div className={`grid gap-6 ${showFull ? "lg:grid-cols-3" : "lg:grid-cols-5"}`}>
+          {/* Identity card — white */}
+          <IdentityCard
+            fullName={fullName}
+            subtitle={subtitle}
+            headshot={showFull ? creative.headshot : null}
+            location={creative.location}
+            roles={creative.roles}
+            experienceLevel={creative.experienceLevel}
+            headlineLink={headlineLink}
+            showRolesAsPills={showFull}
+            className={showFull ? "" : "lg:col-span-2"}
+          />
 
-        {/* Headline link — always visible */}
-        {headlineLink && (
-          <a
-            href={headlineLink.startsWith("http") ? headlineLink : `https://${headlineLink}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-brand-green font-medium hover:text-brand-green/70 transition-colors mb-6"
-          >
-            {headlineLink.replace(/^https?:\/\//, "")} ↗
-          </a>
-        )}
-
-        {/* Bio — always visible */}
-        <div className="bg-brand-mint/15 border border-brand-mint/40 rounded-xl p-5 mb-6">
-          <p className="text-xs uppercase tracking-wide text-brand-green/70 font-semibold mb-2">Biography</p>
-          <p className="text-brand-brown/90 text-sm leading-relaxed">{creative.bio}</p>
-        </div>
-
-        {/* PAID TIER CONTENT */}
-        {showFull ? (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm mb-6">
-              {creative.education && (
+          {showFull ? (
+            <>
+              {/* Details column — on green */}
+              <div className="text-brand-cream space-y-5">
+                {creative.education && <Detail label="Education" value={creative.education} />}
+                {creative.availability && <Detail label="Availability" value={creative.availability} />}
+                {creative.languages.length > 0 && (
+                  <Detail label="Languages" value={creative.languages.join(", ")} />
+                )}
+                {creative.mediums.length > 0 && (
+                  <Detail label="Medium(s)" value={creative.mediums.join(", ")} />
+                )}
                 <div>
-                  <dt className="text-brand-brown/50 text-xs uppercase tracking-wide mb-1">Education</dt>
-                  <dd className="text-brand-brown/90">{creative.education}</dd>
+                  <p className="font-heading font-extrabold uppercase text-sm tracking-wide mb-2">Connect</p>
+                  <div className="flex flex-wrap gap-2">
+                    {headlineLink && <SocialIcon href={normalizeUrl(headlineLink)} kind="globe" />}
+                    {creative.instagram && (
+                      <SocialIcon href={normalizeUrl(creative.instagram, "https://instagram.com/")} kind="instagram" />
+                    )}
+                    {creative.linkedin && (
+                      <SocialIcon href={normalizeUrl(creative.linkedin, "https://linkedin.com/in/")} kind="linkedin" />
+                    )}
+                    {creative.imdb && <SocialIcon href={normalizeUrl(creative.imdb)} kind="imdb" />}
+                    {creative.vimeo && <SocialIcon href={normalizeUrl(creative.vimeo)} kind="play" />}
+                  </div>
                 </div>
-              )}
-              {creative.availability && (
-                <div>
-                  <dt className="text-brand-brown/50 text-xs uppercase tracking-wide mb-1">Availability</dt>
-                  <dd className="text-brand-brown/90">{creative.availability}</dd>
-                </div>
-              )}
-              {creative.languages.length > 0 && (
-                <div>
-                  <dt className="text-brand-brown/50 text-xs uppercase tracking-wide mb-1">Language(s)</dt>
-                  <dd className="text-brand-brown/90">{creative.languages.join(", ")}</dd>
-                </div>
-              )}
-              {creative.mediums.length > 0 && (
-                <div>
-                  <dt className="text-brand-brown/50 text-xs uppercase tracking-wide mb-1">Medium(s)</dt>
-                  <dd className="text-brand-brown/90">{creative.mediums.join(", ")}</dd>
-                </div>
-              )}
-            </div>
+              </div>
 
-            {/* Connect — social icons row */}
-            <div className="flex flex-wrap gap-3 mb-6">
-              {headlineLink && <SocialLink href={headlineLink} label="Website" />}
-              {creative.instagram && <SocialLink href={creative.instagram} label="Instagram" prefix="https://instagram.com/" />}
-              {creative.linkedin && <SocialLink href={creative.linkedin} label="LinkedIn" prefix="https://linkedin.com/in/" />}
-              {creative.imdb && <SocialLink href={creative.imdb} label="IMDb" />}
-              {creative.vimeo && <SocialLink href={creative.vimeo} label="Vimeo / YouTube" />}
-            </div>
-
-            {/* Primary Work Sample */}
-            {primarySample && (
-              <div className="border border-brand-green/15 rounded-xl p-5 mb-6">
-                <p className="text-xs uppercase tracking-wide text-brand-green/70 font-semibold mb-3">Primary Work Sample</p>
-                <p className="text-brand-brown font-semibold">
-                  {primarySample.title}
-                  {primarySample.medium && <span className="text-brand-brown/50 font-normal"> · {primarySample.medium}</span>}
-                  {primarySample.year && <span className="text-brand-brown/50 font-normal"> · {primarySample.year}</span>}
-                </p>
-                {primarySample.role && <p className="text-sm text-brand-brown/60 mt-1">Role(s): {primarySample.role}</p>}
-                {primarySample.link && (
-                  <a
-                    href={primarySample.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 mt-3 text-sm bg-brand-green text-brand-cream px-4 py-2 rounded-full hover:bg-brand-green/90 transition-colors"
-                  >
-                    View Project ↗
-                  </a>
+              {/* Primary work sample column — on green */}
+              <div className="text-brand-cream space-y-5">
+                {primarySample && (
+                  <>
+                    <Detail
+                      label="Primary Work Sample"
+                      value={[primarySample.title, primarySample.medium, primarySample.year]
+                        .filter(Boolean)
+                        .join(", ")}
+                    />
+                    {primarySample.role && <Detail label="Role(s)" value={primarySample.role} />}
+                    {primarySample.link && <ProjectEmbed link={primarySample.link} />}
+                  </>
                 )}
               </div>
-            )}
+            </>
+          ) : (
+            /* Biography card — mint (public view) */
+            <BiographyCard bio={creative.bio} className="lg:col-span-3" />
+          )}
+        </div>
 
-            {otherSamples.length > 0 && (
-              <div className="mb-6">
-                <p className="text-xs uppercase tracking-wide text-brand-green/70 font-semibold mb-3">More Work Samples</p>
-                <div className="space-y-2">
-                  {otherSamples.map((ws, i) => (
-                    <div key={i} className="flex items-start justify-between gap-2 text-sm">
-                      <div>
-                        <span className="text-brand-brown">{ws.title}</span>
-                        {ws.role && <span className="text-brand-brown/50"> · {ws.role}</span>}
-                        {ws.medium && <span className="text-brand-brown/50"> · {ws.medium}</span>}
-                        {ws.year && <span className="text-brand-brown/50"> · {ws.year}</span>}
-                      </div>
-                      {ws.link && (
-                        <a href={ws.link} target="_blank" rel="noopener noreferrer" className="text-brand-green hover:text-brand-green/70 shrink-0">↗</a>
-                      )}
-                    </div>
-                  ))}
+        {/* ── Row 2 (paid) ──────────────────────────────────────── */}
+        {showFull && (
+          <div className="grid gap-6 lg:grid-cols-2 mt-6">
+            <BiographyCard bio={creative.bio} />
+
+            {(creative.rateStructure ||
+              creative.collaborationPreferences ||
+              creative.travel ||
+              headlineLink ||
+              creative.preferredProjectTypes.length > 0) && (
+              <div className="bg-brand-cream rounded-3xl p-7 sm:p-8">
+                <div className="flex items-center justify-center gap-3 mb-6">
+                  <span className="h-px flex-1 bg-brand-green/30" />
+                  <span className="text-brand-green text-xs">☾</span>
+                  <h2 className="font-heading font-extrabold uppercase text-brand-green text-lg tracking-tight">
+                    Work For Hire
+                  </h2>
+                  <span className="text-brand-green text-xs">☾</span>
+                  <span className="h-px flex-1 bg-brand-green/30" />
                 </div>
-              </div>
-            )}
-
-            {creative.notableAchievements && (
-              <div className="mb-6">
-                <p className="text-brand-green/70 text-xs uppercase tracking-wide font-semibold mb-2">Notable Achievements</p>
-                <p className="text-brand-brown/90 text-sm leading-relaxed">{creative.notableAchievements}</p>
-              </div>
-            )}
-
-            {/* Work For Hire */}
-            {(creative.rateStructure || creative.collaborationPreferences || creative.travel || headlineLink) && (
-              <div className="border-2 border-brand-green/20 rounded-xl p-5">
-                <p className="text-xs uppercase tracking-wide text-brand-green font-semibold mb-3">Work For Hire</p>
-                <dl className="space-y-3 text-sm">
-                  {creative.ratePublic && creative.rateRange && (
-                    <div>
-                      <dt className="text-brand-brown/50 text-xs uppercase tracking-wide mb-1">Rate Structure</dt>
-                      <dd className="text-brand-brown/90">
-                        {creative.rateStructure && `${creative.rateStructure} · `}{creative.rateRange}
-                      </dd>
-                    </div>
+                <dl className="space-y-4">
+                  {creative.ratePublic && (creative.rateRange || creative.rateStructure) && (
+                    <WfhRow
+                      label="Rate structure"
+                      value={[creative.rateStructure, creative.ratePublic ? creative.rateRange : null]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    />
                   )}
                   {headlineLink && (
                     <div>
-                      <dt className="text-brand-brown/50 text-xs uppercase tracking-wide mb-1">Work Portfolio</dt>
-                      <dd><a href={headlineLink.startsWith("http") ? headlineLink : `https://${headlineLink}`} target="_blank" rel="noopener noreferrer" className="text-brand-green hover:text-brand-green/70">{headlineLink.replace(/^https?:\/\//, "")} ↗</a></dd>
+                      <dt className="font-semibold text-brand-brown mb-0.5">Work Portfolio</dt>
+                      <dd>
+                        <a
+                          href={normalizeUrl(headlineLink)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-brand-green underline decoration-brand-green/30 underline-offset-2 hover:decoration-brand-green"
+                        >
+                          <GlobeGlyph /> {headlineLink.replace(/^https?:\/\//, "")}
+                        </a>
+                      </dd>
                     </div>
                   )}
                   {creative.collaborationPreferences && (
+                    <WfhRow label="Open to working with" value={creative.collaborationPreferences} />
+                  )}
+                  {creative.roles.length > 0 && (
                     <div>
-                      <dt className="text-brand-brown/50 text-xs uppercase tracking-wide mb-1">Open to working with</dt>
-                      <dd className="text-brand-brown/90">{creative.collaborationPreferences}</dd>
+                      <dt className="font-semibold text-brand-brown mb-2">Role(s)</dt>
+                      <dd className="flex flex-wrap gap-2">
+                        {creative.roles.map((r) => (
+                          <span
+                            key={r}
+                            className="text-xs uppercase font-semibold border border-brand-green/40 text-brand-green px-3 py-1 rounded-full"
+                          >
+                            {r}
+                          </span>
+                        ))}
+                      </dd>
                     </div>
                   )}
-                  {creative.preferredProjectTypes.length > 0 && (
-                    <div>
-                      <dt className="text-brand-brown/50 text-xs uppercase tracking-wide mb-1">Preferred Projects</dt>
-                      <dd className="text-brand-brown/90">{creative.preferredProjectTypes.join(", ")}</dd>
-                    </div>
-                  )}
-                  {creative.travel && (
-                    <div>
-                      <dt className="text-brand-brown/50 text-xs uppercase tracking-wide mb-1">Travel</dt>
-                      <dd className="text-brand-brown/90">{creative.travel}</dd>
-                    </div>
-                  )}
+                  {creative.travel && <WfhRow label="Travel" value={creative.travel} />}
                 </dl>
               </div>
             )}
-          </>
-        ) : (
-          /* LOCKED CTA */
-          <div className="bg-brand-green/5 border border-brand-green/15 rounded-xl p-5 text-center">
+          </div>
+        )}
+
+        {/* Locked CTA for non-paid viewers */}
+        {!showFull && (
+          <div className="mt-6 bg-brand-cream/95 rounded-3xl p-7 text-center max-w-xl">
             <div className="text-2xl mb-2">🔒</div>
             <p className="text-brand-green font-semibold mb-1">Full profile locked</p>
             <p className="text-brand-brown/60 text-sm mb-4">
-              Subscribe to see education, languages, work samples, all social links, and to submit contact requests.
+              Subscribe to see education, languages, work samples, all social links, and to submit
+              contact requests.
             </p>
             <Link
               href="/subscribe"
@@ -268,37 +233,244 @@ export default async function MemberPage({
             </Link>
           </div>
         )}
+
+        {/* Contact request CTA for paid users */}
+        {showFull && session && (
+          <div className="mt-6 bg-brand-mint rounded-3xl p-7 max-w-xl">
+            <p className="text-brand-green mb-3 text-sm">
+              <span className="font-semibold">Want to work with {creative.firstName}?</span>{" "}
+              Submit a contact request and our team will facilitate the introduction.
+            </p>
+            <Link
+              href={`/directory/${creative.slug}/request`}
+              className="inline-block bg-brand-green text-brand-cream font-semibold px-5 py-2.5 rounded-full hover:bg-brand-green/90 transition-colors text-sm"
+            >
+              Submit contact request →
+            </Link>
+          </div>
+        )}
+
+        {/* More work samples (paid) */}
+        {showFull && otherSamples.length > 0 && (
+          <div className="mt-6 bg-brand-cream rounded-3xl p-7 max-w-xl">
+            <p className="font-heading font-extrabold uppercase text-brand-green text-sm mb-3">
+              More Work Samples
+            </p>
+            <div className="space-y-2">
+              {otherSamples.map((ws, i) => (
+                <div key={i} className="flex items-start justify-between gap-2 text-sm">
+                  <div>
+                    <span className="text-brand-brown">{ws.title}</span>
+                    {ws.role && <span className="text-brand-brown/50"> · {ws.role}</span>}
+                    {ws.medium && <span className="text-brand-brown/50"> · {ws.medium}</span>}
+                    {ws.year && <span className="text-brand-brown/50"> · {ws.year}</span>}
+                  </div>
+                  {ws.link && (
+                    <a
+                      href={ws.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-brand-green hover:text-brand-green/70 shrink-0"
+                    >
+                      ↗
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function IdentityCard({
+  fullName,
+  subtitle,
+  headshot,
+  location,
+  roles,
+  experienceLevel,
+  headlineLink,
+  showRolesAsPills,
+  className = "",
+}: {
+  fullName: string;
+  subtitle: string;
+  headshot: string | null;
+  location: string | null;
+  roles: string[];
+  experienceLevel: string | null;
+  headlineLink: string | null;
+  showRolesAsPills: boolean;
+  className?: string;
+}) {
+  const initials = fullName
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("");
+  return (
+    <div className={`bg-brand-cream rounded-3xl p-7 sm:p-8 ${className}`}>
+      {headshot ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={headshot}
+          alt={fullName}
+          className="w-28 h-28 rounded-2xl object-cover mb-5"
+        />
+      ) : (
+        <div className="w-20 h-20 rounded-2xl bg-brand-mint/40 flex items-center justify-center text-brand-green font-heading font-extrabold text-2xl mb-5">
+          {initials}
+        </div>
+      )}
+      <h1 className="font-heading font-extrabold uppercase text-3xl sm:text-4xl text-brand-brown leading-[0.95] tracking-tight">
+        {fullName}
+      </h1>
+      {subtitle && <p className="text-sm text-brand-brown/60 mt-2">{subtitle}</p>}
+
+      <div className="flex flex-wrap gap-2 mt-5">
+        {location && (
+          <span className="text-xs uppercase font-semibold bg-brand-mint text-brand-green px-3 py-1 rounded-full">
+            {location}
+          </span>
+        )}
+        {showRolesAsPills
+          ? roles.map((r) => (
+              <span
+                key={r}
+                className="text-xs uppercase font-semibold bg-brand-mint text-brand-green px-3 py-1 rounded-full"
+              >
+                {r}
+              </span>
+            ))
+          : roles.length > 0 && (
+              <span className="text-xs uppercase font-semibold bg-brand-green text-brand-cream px-3 py-1 rounded-full">
+                {formatRoleLine(roles)}
+              </span>
+            )}
+        {experienceLevel && (
+          <span className="text-xs uppercase font-semibold bg-brand-green text-brand-cream px-3 py-1 rounded-full">
+            {experienceLevel}
+          </span>
+        )}
       </div>
 
-      {/* Contact request CTA for paid users */}
-      {showFull && session && (
-        <div className="mt-6 bg-brand-mint/15 border border-brand-mint/40 rounded-xl p-6 text-sm">
-          <p className="text-brand-brown/80 mb-3">
-            <span className="text-brand-green font-semibold">Want to work with {creative.firstName}?</span>{" "}
-            Submit a contact request and our team will facilitate the introduction.
-          </p>
-          <Link
-            href={`/directory/${creative.slug}/request`}
-            className="inline-block text-brand-green font-medium hover:text-brand-green/70 transition-colors"
-          >
-            Submit contact request →
-          </Link>
-        </div>
+      {headlineLink && (
+        <a
+          href={normalizeUrl(headlineLink)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm text-brand-green font-medium hover:text-brand-green/70 transition-colors mt-5"
+        >
+          <GlobeGlyph /> {headlineLink.replace(/^https?:\/\//, "")}
+        </a>
       )}
     </div>
   );
 }
 
-function SocialLink({ href, label, prefix }: { href: string; label: string; prefix?: string }) {
-  const url = href.startsWith("http") ? href : `${prefix ?? "https://"}${href.replace(/^@/, "")}`;
+function BiographyCard({ bio, className = "" }: { bio: string; className?: string }) {
+  return (
+    <div className={`bg-brand-mint rounded-3xl p-7 sm:p-8 ${className}`}>
+      <p className="font-heading font-extrabold uppercase text-brand-green text-sm tracking-wide mb-3">
+        Biography
+      </p>
+      <p className="text-brand-green/90 text-sm leading-relaxed">{bio}</p>
+    </div>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="font-heading font-extrabold uppercase text-sm tracking-wide">{label}</p>
+      <p className="text-brand-cream/80 text-sm mt-1 leading-relaxed">{value}</p>
+    </div>
+  );
+}
+
+function WfhRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="font-semibold text-brand-brown mb-0.5">{label}</dt>
+      <dd className="text-brand-brown/80 text-sm">{value}</dd>
+    </div>
+  );
+}
+
+function ProjectEmbed({ link }: { link: string }) {
+  const embed = toEmbedUrl(link);
+  return (
+    <div>
+      <p className="font-heading font-extrabold uppercase text-sm tracking-wide mb-2">Project Link</p>
+      {embed ? (
+        <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
+          <iframe
+            src={embed}
+            title="Work sample"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full"
+          />
+        </div>
+      ) : (
+        <a
+          href={normalizeUrl(link)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex aspect-video w-full items-center justify-center rounded-xl bg-black text-brand-cream/80 hover:text-brand-cream"
+        >
+          <span className="inline-flex items-center gap-2 text-sm">
+            <span className="grid place-items-center w-10 h-10 rounded-full bg-red-600 text-white">▶</span>
+            View Project ↗
+          </span>
+        </a>
+      )}
+    </div>
+  );
+}
+
+function GlobeGlyph() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" />
+    </svg>
+  );
+}
+
+function SocialIcon({ href, kind }: { href: string; kind: "globe" | "instagram" | "linkedin" | "imdb" | "play" }) {
+  const glyph: Record<typeof kind, React.ReactNode> = {
+    globe: <GlobeGlyph />,
+    instagram: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+      </svg>
+    ),
+    linkedin: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.3c0-1.26-.02-2.9-1.77-2.9-1.77 0-2.04 1.38-2.04 2.8V21H9z" />
+      </svg>
+    ),
+    imdb: <span className="text-[10px] font-bold tracking-tight">IMDb</span>,
+    play: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    ),
+  };
   return (
     <a
-      href={url}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 text-sm bg-brand-green/5 hover:bg-brand-green/10 border border-brand-green/20 text-brand-green px-4 py-2 rounded-lg transition-colors"
+      className="grid place-items-center w-9 h-9 rounded-lg bg-brand-cream/15 hover:bg-brand-cream/30 text-brand-cream transition-colors"
     >
-      {label} ↗
+      {glyph[kind]}
     </a>
   );
 }
