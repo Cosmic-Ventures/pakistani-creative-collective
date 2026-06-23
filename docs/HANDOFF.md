@@ -4,7 +4,7 @@
 
 ## Cost & billing
 
-There is no charge to Cosmic Ventures for implementation. Ongoing hosting (Vercel) and the database (Supabase) currently run about **$30/month** combined, and that may increase if traffic, storage, or usage scales up.
+There is no charge to Cosmic Ventures for implementation. Ongoing hosting (Vercel) and the database (Supabase) currently run about **$20/month** combined, and that may increase if traffic, storage, or usage scales up.
 
 ## What we built
 
