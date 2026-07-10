@@ -50,7 +50,7 @@ export default async function SubscribeSuccessPage({
         <div className="w-16 h-16 rounded-full bg-brand-mint/30 border border-brand-mint flex items-center justify-center text-3xl mx-auto mb-6">
           ✓
         </div>
-        <h1 className="font-heading font-extrabold uppercase text-2xl text-brand-green mb-3">You&apos;re subscribed!</h1>
+        <h1 className="font-heading font-bold text-2xl text-brand-green mb-3">You&apos;re subscribed!</h1>
         <p className="text-brand-brown/70 mb-6 leading-relaxed">
           Welcome to the full Pakistani Creative Collective. You now have access to all profiles, search & filter, and contact requests.
         </p>

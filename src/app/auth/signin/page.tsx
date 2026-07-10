@@ -9,7 +9,7 @@ export default function SigninPage() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="font-heading font-extrabold uppercase text-2xl text-brand-green mb-2">Sign in</h1>
+        <h1 className="font-heading font-bold text-2xl text-brand-green mb-2">Sign in</h1>
         <p className="text-brand-brown/70 text-sm mb-8">
           Welcome back to the Pakistani Creative Collective.
         </p>

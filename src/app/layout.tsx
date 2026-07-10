@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Plus_Jakarta_Sans } from "next/font/google";
+import { DM_Sans, Playfair_Display_SC } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
@@ -9,10 +9,10 @@ const bodyFont = DM_Sans({
   subsets: ["latin"],
 });
 
-// Closest open-license match to the brand's Garet header font — see globals.css note.
-const headingFont = Plus_Jakarta_Sans({
+// Client-specified header font — see globals.css note on the small-caps treatment.
+const headingFont = Playfair_Display_SC({
   variable: "--font-heading-sans",
-  weight: ["700", "800"],
+  weight: ["400", "700", "900"],
   subsets: ["latin"],
 });
 

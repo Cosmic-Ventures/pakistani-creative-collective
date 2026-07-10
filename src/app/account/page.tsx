@@ -17,7 +17,7 @@ export default async function AccountPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
-      <h1 className="font-heading font-extrabold uppercase text-2xl text-brand-green mb-8">My Account</h1>
+      <h1 className="font-heading font-bold text-2xl text-brand-green mb-8">My Account</h1>
 
       <div className="bg-white border border-brand-green/10 rounded-2xl p-6 mb-6">
         <h2 className="font-semibold text-brand-green mb-4">Account Details</h2>

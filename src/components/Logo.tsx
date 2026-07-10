@@ -12,8 +12,8 @@ export default function Logo({
     <Image
       src={isLight ? "/brand/logo-light.png" : "/brand/logo-dark.png"}
       alt="Pakistani Creative Collective — created by Aneesa Talks"
-      width={isLight ? 829 : 841}
-      height={isLight ? 566 : 575}
+      width={isLight ? 1709 : 1690}
+      height={isLight ? 770 : 748}
       priority
       className={className}
     />

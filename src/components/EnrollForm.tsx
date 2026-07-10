@@ -1,23 +1,49 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { enrollAction, type EnrollResult } from "@/lib/enroll-action";
+import { EXPERIENCE_LEVELS } from "@/lib/experience-levels";
 
-const ROLES = [
-  "Director", "Writer", "Producer", "Director of Photography", "Camera Operator",
-  "Gaffer/Lighting", "Grip", "Sound Mixer", "Boom Operator", "Sound Designer",
-  "Film Editor", "Colorist", "VFX Artist", "Composer", "Musician", "Singer",
-  "Production Designer", "Art Director", "Set Decorator", "Costume Designer",
-  "Hair & Makeup", "Stylist", "Casting Director", "Actor/Talent",
-  "Graphic Designer", "Illustrator", "Animator", "Photographer",
-  "Marketing", "Publicist", "Social Media Manager", "Journalist", "Film Critic",
-  "Festival Programmer", "Event Producer",
-];
+// Categories and roles copied verbatim from the PCC enrollment Jotform
+// (jotform.com/form/253118193860054) per client request — this list is the
+// source of truth, not an approximation.
+const ROLE_CATEGORIES: Record<string, string[]> = {
+  Directing: ["1st Assistant Director", "2nd Assistant Director", "Director", "Script Supervisor"],
+  Writing: ["Journalist", "Script Consultant", "Screenwriter", "Story Analyst/Reader", "Writer (Narrative Fiction)"],
+  Producing: [
+    "Associate Producer", "Co-Producer", "Creative Producer", "Executive Producer", "Showrunner",
+    "Line Producer", "Post-Production Supervisor", "Producer", "Production Coordinator", "Unit Production Manager (UPM)",
+  ],
+  Camera: [
+    "1st Assistant Camera (1st AC/Focus Puller)", "2nd Assistant Camera (2nd AC/Clapper Loader)",
+    "Camera Operator", "Digital Imaging Technician (DIT)", "Director of Photography (DP/Cinematographer)",
+    "Photographer", "Still Photographer/BTS",
+  ],
+  "Lighting & Grip": ["Best Boy", "Gaffer (Chief Lighting Technician)", "Grip", "Key Grip", "Lighting Technician"],
+  Sound: ["Boom Operator", "Foley Artist", "Sound Designer", "Sound Editor/Mixer", "Sound Recordist/Production Sound Mixer"],
+  "Editing & Post-Production": ["Assistant Editor", "Colorist", "Editor", "Visual Effects (VFX) Artist"],
+  Music: ["Composer", "DJ", "Music Producer", "Singer", "Songwriter"],
+  "Production Design/Art": ["Art Director", "Production Designer", "Props Master", "Set Designer", "Storyboard Artist"],
+  Styling: ["Costume Designer", "Hair Stylist", "Key Costumer", "Makeup Artist", "Special Effects Makeup Artist", "Wardrobe Supervisor"],
+  "Casting & Talent": [
+    "Actor", "Casting Assistant", "Casting Director", "Choreographer", "Comedian",
+    "Dancer", "Model", "Talent Agent", "Voice Actor/Voice-Over Artist",
+  ],
+  "Creative & Design": ["Animator", "Artist", "Curator", "Graphic Designer", "Illustrator", "Motion Graphics Designer"],
+  "Marketing, Publicity, & Media": [
+    "Content Creator/Influencer", "Marketing Manager", "Publicist",
+    "Social Media Manager", "Social Media/Content Editor", "Podcaster",
+  ],
+  "Film Criticism & Festivals": ["Film Critic", "Film Programmer"],
+  Events: ["Event Producer", "Host/MC", "Panel Moderator"],
+};
 
+// Mediums copied verbatim from the same Jotform.
 const MEDIUMS = [
-  "Short Film", "Feature Film", "Documentary", "Music Video", "Animation",
-  "Photography", "Theater", "Television/Streaming", "Web Series", "Podcast",
-  "Books/Publishing", "Social Media Content",
+  "Animation", "Art Installation", "Branded Content", "Ceramics/Pottery", "Choreography/Dance",
+  "Comic", "Documentary", "Drawing/Illustration", "Fashion/Costume", "Feature Film",
+  "Graphic Design", "Graphic Novel", "Live Performance", "Music", "Music Video", "Novel",
+  "Painting", "Photography", "Sculpture", "Short Film", "Social Media Content", "Theater",
 ];
 
 const PROJECT_TYPES = [
@@ -25,27 +51,31 @@ const PROJECT_TYPES = [
   "Short Form Digital", "Live Events", "Editorial/Print", "Animation",
 ];
 
-const EXPERIENCE_LEVELS = [
-  "Emerging (0–2 years)",
-  "Developing (2–5 years)",
-  "Established (5–8 years)",
-  "Accomplished (8–12 years)",
-  "Veteran / Master (12+ years)",
-];
-
 const LANGUAGES = [
   "English", "Urdu", "Punjabi", "Sindhi", "Pashto", "Balochi",
-  "Hindi", "Arabic", "French", "Spanish",
+  "Hindi", "Arabic", "Gujarati", "French", "Spanish",
 ];
 
 const AVAILABILITY = [
   "Available now", "Available in 1–3 months", "Selectively available", "Not currently available",
 ];
 
+const HOW_HEARD = [
+  "Direct email from Aneesa Talks",
+  "Social Media",
+  "Word of Mouth/Referral",
+  "Film Festival or Industry Event",
+  "Other",
+];
+
+const CURRENCIES = ["USD", "PKR", "GBP", "EUR", "CAD", "AUD", "Other"];
+
+const REFERRAL_TRIGGER = "Word of Mouth/Referral";
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-10">
-      <h2 className="font-heading font-extrabold uppercase text-lg text-brand-green border-b border-brand-green/15 pb-3 mb-5">{title}</h2>
+      <h2 className="font-heading font-bold text-lg text-brand-green border-b border-brand-green/15 pb-3 mb-5">{title}</h2>
       {children}
     </div>
   );
@@ -66,8 +96,118 @@ function Field({ label, required, children, hint }: { label: string; required?: 
 const inputCls = "w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm";
 const textareaCls = `${inputCls} resize-none`;
 
+type Values = Record<string, string>;
+
+function TextField({
+  name, label, required, hint, type = "text", placeholder, values, update,
+}: {
+  name: string; label: string; required?: boolean; hint?: string; type?: string; placeholder?: string;
+  values: Values; update: (name: string, value: string) => void;
+}) {
+  return (
+    <Field label={label} required={required} hint={hint}>
+      <input
+        name={name}
+        type={type}
+        required={required}
+        value={values[name] ?? ""}
+        onChange={(e) => update(name, e.target.value)}
+        className={inputCls}
+        placeholder={placeholder}
+      />
+    </Field>
+  );
+}
+
+function TextAreaField({
+  name, label, required, hint, rows = 3, placeholder, values, update,
+}: {
+  name: string; label: string; required?: boolean; hint?: string; rows?: number; placeholder?: string;
+  values: Values; update: (name: string, value: string) => void;
+}) {
+  return (
+    <Field label={label} required={required} hint={hint}>
+      <textarea
+        name={name}
+        required={required}
+        rows={rows}
+        value={values[name] ?? ""}
+        onChange={(e) => update(name, e.target.value)}
+        className={textareaCls}
+        placeholder={placeholder}
+      />
+    </Field>
+  );
+}
+
+function SelectField({
+  name, label, required, hint, options, values, update, placeholder = "Select…",
+}: {
+  name: string; label: string; required?: boolean; hint?: string; options: readonly string[];
+  values: Values; update: (name: string, value: string) => void; placeholder?: string;
+}) {
+  return (
+    <Field label={label} required={required} hint={hint}>
+      <select
+        name={name}
+        required={required}
+        value={values[name] ?? ""}
+        onChange={(e) => update(name, e.target.value)}
+        className={inputCls}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </Field>
+  );
+}
+
+function CheckboxGrid({
+  name, options, selected, onToggle, columns = "sm:grid-cols-3",
+}: {
+  name: string; options: readonly string[]; selected: string[]; onToggle: (value: string) => void; columns?: string;
+}) {
+  return (
+    <div className={`grid grid-cols-2 ${columns} gap-2`}>
+      {options.map((opt) => (
+        <label key={opt} className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
+          <input
+            type="checkbox"
+            name={name}
+            value={opt}
+            checked={selected.includes(opt)}
+            onChange={() => onToggle(opt)}
+            className="accent-brand-green"
+          />
+          {opt}
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function toggleValue(arr: string[], value: string): string[] {
+  return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
+}
+
 export default function EnrollForm() {
   const [state, formAction, pending] = useActionState<EnrollResult | null, FormData>(enrollAction, null);
+
+  // Every field is controlled by local state (not derived from `state`), so
+  // values survive a failed submission — useActionState resets *uncontrolled*
+  // fields after any action runs, which was the cause of the client-reported
+  // "submitting clears the whole form" bug.
+  const [values, setValues] = useState<Values>({ rateCurrency: "USD", ratePublic: "no" });
+  const update = (name: string, value: string) => setValues((v) => ({ ...v, [name]: value }));
+
+  const [roles, setRoles] = useState<string[]>([]);
+  const [mediums, setMediums] = useState<string[]>([]);
+  const [preferredProjectTypes, setPreferredProjectTypes] = useState<string[]>([]);
+  const [languagesCheck, setLanguagesCheck] = useState<string[]>([]);
+  const [collaborationPreferences, setCollaborationPreferences] = useState<string[]>([]);
+  const [consents, setConsents] = useState<boolean[]>(Array(6).fill(false));
+
+  const bioWords = (values.bio ?? "").trim().split(/\s+/).filter(Boolean).length;
 
   return (
     <form action={formAction} className="space-y-0">
@@ -79,216 +219,237 @@ export default function EnrollForm() {
 
       <Section title="Basic Information">
         <div className="grid grid-cols-2 gap-4">
-          <Field label="First Name" required>
-            <input name="firstName" required className={inputCls} />
-          </Field>
-          <Field label="Last Name" required>
-            <input name="lastName" required className={inputCls} />
-          </Field>
+          <TextField name="firstName" label="First Name" required values={values} update={update} />
+          <TextField name="lastName" label="Last Name" required values={values} update={update} />
         </div>
-        <Field label="Pronouns">
-          <select name="pronouns" className={inputCls}>
-            <option value="">Select…</option>
-            <option>She/Her</option><option>He/Him</option><option>They/Them</option>
-            <option>She/They</option><option>He/They</option><option>Any</option>
-          </select>
-        </Field>
-        <Field label="Email Address" required>
-          <input name="email" type="email" required className={inputCls} />
-        </Field>
-        <Field label="Phone Number">
-          <input name="phone" type="tel" className={inputCls} />
-        </Field>
-        <Field label="Address" hint="City and country is fine; full address is optional. Kept private — never shown publicly.">
-          <input name="address" className={inputCls} placeholder="e.g. Los Angeles, CA, USA" />
-        </Field>
-        <Field label="Public Location" hint="Shown on your public profile, e.g. city/state only">
-          <input name="location" className={inputCls} placeholder="e.g. NJ/NYC" />
-        </Field>
-        <Field label="How did you hear about PCC?">
-          <select name="howHeard" className={inputCls}>
-            <option value="">Select…</option>
-            <option>Direct email from Aneesa Talks</option>
-            <option>Referral from another member</option>
-            <option>Social media</option>
-            <option>Event</option>
-            <option>Other</option>
-          </select>
-        </Field>
-        <Field label="Professional Headshot Link" required hint="Google Drive, Dropbox, or direct image URL">
-          <input name="headshotLink" className={inputCls} placeholder="https://…" />
-        </Field>
+        <SelectField
+          name="pronouns"
+          label="Pronouns"
+          options={["She/Her", "He/Him", "They/Them", "She/They", "He/They", "Any"]}
+          values={values}
+          update={update}
+        />
+        <TextField name="email" label="Email Address" type="email" required values={values} update={update} />
+        <TextField name="phone" label="Phone Number" type="tel" values={values} update={update} />
+        <TextField
+          name="address"
+          label="Address"
+          hint="City and country is fine; full address is optional. Kept private — never shown publicly."
+          placeholder="e.g. Los Angeles, CA, USA"
+          values={values}
+          update={update}
+        />
+        <TextField
+          name="location"
+          label="Public Location"
+          hint="Shown on your public profile, e.g. city/state only"
+          placeholder="e.g. NJ/NYC"
+          values={values}
+          update={update}
+        />
+        <SelectField
+          name="howHeard"
+          label="How did you hear about PCC?"
+          options={HOW_HEARD}
+          values={values}
+          update={update}
+        />
+        {values.howHeard === REFERRAL_TRIGGER && (
+          <TextField
+            name="referralName"
+            label="Who referred you?"
+            hint="Name of the member who invited you"
+            values={values}
+            update={update}
+          />
+        )}
+        <TextField
+          name="headshotLink"
+          label="Professional Headshot Link"
+          required
+          hint="Google Drive, Dropbox, or direct image URL"
+          placeholder="https://…"
+          values={values}
+          update={update}
+        />
       </Section>
 
       <Section title="Bio & Background">
-        <Field label="Professional Bio" required hint="300–450 words">
-          <textarea name="bio" required rows={8} className={textareaCls} placeholder="Write your professional bio in third person…" />
+        <Field label="Professional Bio" required hint={`${bioWords} / 200 words max`}>
+          <textarea
+            name="bio"
+            required
+            rows={8}
+            value={values.bio ?? ""}
+            onChange={(e) => update("bio", e.target.value)}
+            className={textareaCls}
+            placeholder="Write your professional bio in third person…"
+          />
         </Field>
-        <Field label="What are you looking for from PCC?">
-          <textarea name="pccGoals" rows={3} className={textareaCls} />
-        </Field>
-        <Field label="Previous Collaborators">
-          <input name="previousCollaborators" className={inputCls} placeholder="Names of collaborators you've worked with" />
-        </Field>
-        <Field label="Union / Guild Memberships">
-          <input name="unionMemberships" className={inputCls} placeholder="e.g. SAG-AFTRA, WGA, IATSE…" />
-        </Field>
-        <Field label="Education / Training">
-          <textarea name="education" rows={2} className={textareaCls} />
-        </Field>
-        <Field label="Additional Notes">
-          <textarea name="additionalNotes" rows={2} className={textareaCls} />
-        </Field>
+        <TextAreaField name="pccGoals" label="What are you looking for from PCC?" rows={3} values={values} update={update} />
+        <TextField name="previousCollaborators" label="Previous Collaborators" placeholder="Names of collaborators you've worked with" values={values} update={update} />
+        <TextField name="unionMemberships" label="Union / Guild Memberships" placeholder="e.g. SAG-AFTRA, WGA, IATSE…" values={values} update={update} />
+        <TextAreaField name="education" label="Education / Training" rows={2} values={values} update={update} />
+        <TextAreaField name="additionalNotes" label="Additional Notes" rows={2} values={values} update={update} />
       </Section>
 
       <Section title="Professional Roles">
         <p className="text-xs text-brand-brown/50 mb-4">Select all that apply.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {ROLES.map((r) => (
-            <label key={r} className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
-              <input type="checkbox" name="roles" value={r} className="accent-brand-green" />
-              {r}
-            </label>
+        <div className="space-y-5">
+          {Object.entries(ROLE_CATEGORIES).map(([category, opts]) => (
+            <div key={category}>
+              <p className="text-xs font-semibold uppercase tracking-wide text-brand-green/70 mb-2">{category}</p>
+              <CheckboxGrid name="roles" options={opts} selected={roles} onToggle={(v) => setRoles((r) => toggleValue(r, v))} />
+            </div>
           ))}
         </div>
+        <TextField
+          name="rolesOther"
+          label="Other role(s) not listed"
+          hint="Optional"
+          values={values}
+          update={update}
+        />
       </Section>
 
       <Section title="Mediums">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {MEDIUMS.map((m) => (
-            <label key={m} className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
-              <input type="checkbox" name="mediums" value={m} className="accent-brand-green" />
-              {m}
-            </label>
-          ))}
-        </div>
+        <CheckboxGrid name="mediums" options={MEDIUMS} selected={mediums} onToggle={(v) => setMediums((m) => toggleValue(m, v))} />
+        <TextField
+          name="mediumsOther"
+          label="Other medium(s) not listed"
+          hint="Optional"
+          values={values}
+          update={update}
+        />
       </Section>
 
       <Section title="Experience & Portfolio">
-        <Field label="Experience Level" required>
-          <select name="experienceLevel" required className={inputCls}>
-            <option value="">Select…</option>
-            {EXPERIENCE_LEVELS.map((l) => <option key={l}>{l}</option>)}
-          </select>
-        </Field>
+        <SelectField name="experienceLevel" label="Experience Level" required options={EXPERIENCE_LEVELS} values={values} update={update} />
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Years of Professional Experience">
-            <input name="yearsExperience" type="number" min="0" className={inputCls} />
-          </Field>
-          <Field label="Completed Projects">
-            <input name="completedProjects" type="number" min="0" className={inputCls} />
-          </Field>
+          <TextField name="yearsExperience" label="Years of Professional Experience" type="number" values={values} update={update} />
+          <TextField name="completedProjects" label="Completed Projects" type="number" values={values} update={update} />
         </div>
-        <Field label="Notable Achievements">
-          <textarea name="notableAchievements" rows={3} className={textareaCls} placeholder="Festival selections, awards, publications…" />
-        </Field>
-        <Field label="Professional References (3 preferred)">
-          <textarea name="references" rows={3} className={textareaCls} placeholder="Name, relationship, contact info" />
-        </Field>
-        <Field label="Website / Portfolio URL" required>
-          <input name="website" type="url" required className={inputCls} placeholder="https://…" />
-        </Field>
+        <TextAreaField name="notableAchievements" label="Notable Achievements" rows={3} placeholder="Festival selections, awards, publications…" values={values} update={update} />
+        <TextAreaField name="references" label="Professional References (3 preferred)" rows={3} placeholder="Name, relationship, contact info" values={values} update={update} />
+        <TextField name="website" label="Website / Portfolio URL" type="url" required placeholder="https://…" values={values} update={update} />
         <div className="grid grid-cols-2 gap-4">
-          <Field label="IMDb"><input name="imdb" className={inputCls} placeholder="IMDb URL or nm…" /></Field>
-          <Field label="Instagram"><input name="instagram" className={inputCls} placeholder="@handle or URL" /></Field>
-          <Field label="LinkedIn"><input name="linkedin" className={inputCls} placeholder="linkedin.com/in/…" /></Field>
-          <Field label="Vimeo / YouTube"><input name="vimeo" className={inputCls} placeholder="vimeo.com/…" /></Field>
+          <TextField name="imdb" label="IMDb" placeholder="IMDb URL or nm…" values={values} update={update} />
+          <TextField name="instagram" label="Instagram" placeholder="@handle or URL" values={values} update={update} />
+          <TextField name="linkedin" label="LinkedIn" placeholder="linkedin.com/in/…" values={values} update={update} />
+          <TextField name="vimeo" label="Vimeo / YouTube" placeholder="vimeo.com/…" values={values} update={update} />
         </div>
-        <Field label="Public link to display on your profile" hint="This is the one link unpaid users will see">
-          <input name="publicLink" className={inputCls} placeholder="Your most representative link" />
-        </Field>
 
         {[1, 2, 3].map((n) => (
           <div key={n} className="bg-brand-green/5 border border-brand-green/10 rounded-xl p-4 mb-3">
             <p className="text-xs text-brand-brown/50 uppercase tracking-wide mb-3">Work Sample {n}</p>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Title"><input name={`ws${n}Title`} className={inputCls} /></Field>
-              <Field label="Medium"><input name={`ws${n}Medium`} className={inputCls} placeholder="Short Film, Music Video…" /></Field>
-              <Field label="Year"><input name={`ws${n}Year`} className={inputCls} placeholder="2024" /></Field>
-              <Field label="Your Role"><input name={`ws${n}Role`} className={inputCls} /></Field>
+              <TextField name={`ws${n}Title`} label="Title" values={values} update={update} />
+              <TextField name={`ws${n}Medium`} label="Medium" placeholder="Short Film, Music Video…" values={values} update={update} />
+              <TextField name={`ws${n}Year`} label="Year" placeholder="2024" values={values} update={update} />
+              <TextField name={`ws${n}Role`} label="Your Role" values={values} update={update} />
             </div>
-            <Field label="Link"><input name={`ws${n}Link`} type="url" className={inputCls} placeholder="https://…" /></Field>
+            <TextField name={`ws${n}Link`} label="Link" type="url" placeholder="https://…" values={values} update={update} />
           </div>
         ))}
       </Section>
 
       <Section title="Work for Hire">
-        <Field label="Rate Structure">
-          <select name="rateStructure" className={inputCls}>
-            <option value="">Select…</option>
-            <option>Day rate</option><option>Weekly rate</option>
-            <option>Project rate</option><option>Hourly</option><option>Negotiable</option>
-          </select>
-        </Field>
-        <Field label="Standard Rate Range" hint="e.g. $500–800/day or $5,000/project">
-          <input name="rateRange" className={inputCls} />
+        <SelectField
+          name="rateStructure"
+          label="Rate Structure"
+          options={["Day rate", "Weekly rate", "Project rate", "Hourly", "Negotiable"]}
+          values={values}
+          update={update}
+        />
+        <Field label="Standard Rate Range" hint="e.g. 500–800/day or 5,000/project">
+          <div className="grid grid-cols-[auto_1fr] gap-2">
+            <select
+              name="rateCurrency"
+              value={values.rateCurrency ?? "USD"}
+              onChange={(e) => update("rateCurrency", e.target.value)}
+              className={`${inputCls} w-auto`}
+            >
+              {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <input
+              name="rateRangeAmount"
+              value={values.rateRangeAmount ?? ""}
+              onChange={(e) => update("rateRangeAmount", e.target.value)}
+              className={inputCls}
+            />
+          </div>
         </Field>
         <Field label="Make rate visible to paid subscribers?">
-          <select name="ratePublic" className={inputCls}>
-            <option value="no">No — keep private</option>
-            <option value="yes">Yes — show to paid subscribers</option>
+          <select
+            value={values.ratePublic === "yes" ? "Yes — show to paid subscribers" : "No — keep private"}
+            onChange={(e) => update("ratePublic", e.target.value.startsWith("Yes") ? "yes" : "no")}
+            className={inputCls}
+          >
+            <option>No — keep private</option>
+            <option>Yes — show to paid subscribers</option>
           </select>
+          <input type="hidden" name="ratePublic" value={values.ratePublic ?? "no"} />
         </Field>
-        <Field label="Current Availability" required>
-          <select name="availability" required className={inputCls}>
-            <option value="">Select…</option>
-            {AVAILABILITY.map((a) => <option key={a}>{a}</option>)}
-          </select>
-        </Field>
-        <Field label="Travel">
-          <select name="travel" className={inputCls}>
-            <option value="">Select…</option>
-            <option>Will travel/open to international work</option>
-            <option>Domestic travel only</option>
-            <option>Local only</option>
-            <option>Remote work only</option>
-          </select>
-        </Field>
+        <SelectField name="availability" label="Current Availability" required options={AVAILABILITY} values={values} update={update} />
+        <SelectField
+          name="travel"
+          label="Travel"
+          options={[
+            "Will travel/open to international work",
+            "Domestic travel only",
+            "Local only",
+            "Remote work only",
+          ]}
+          values={values}
+          update={update}
+        />
         <Field label="Preferred Project Types">
-          <div className="grid grid-cols-2 gap-2">
-            {PROJECT_TYPES.map((t) => (
-              <label key={t} className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
-                <input type="checkbox" name="preferredProjectTypes" value={t} className="accent-brand-green" />
-                {t}
-              </label>
-            ))}
-          </div>
+          <CheckboxGrid
+            name="preferredProjectTypes"
+            options={PROJECT_TYPES}
+            selected={preferredProjectTypes}
+            onToggle={(v) => setPreferredProjectTypes((p) => toggleValue(p, v))}
+            columns="sm:grid-cols-2"
+          />
         </Field>
       </Section>
 
       <Section title="Skills & Languages">
-        <Field label="Languages Spoken" hint="Select all that apply">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {LANGUAGES.map((l) => (
-              <label key={l} className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
-                <input type="checkbox" name="languagesCheck" value={l} className="accent-brand-green" />
-                {l}
-              </label>
-            ))}
-          </div>
-          <input name="languages" className={`${inputCls} mt-3`} placeholder="Other languages (comma-separated)" />
+        <Field label="Languages Spoken" hint="Select all that apply, or add others below">
+          <CheckboxGrid
+            name="languagesCheck"
+            options={LANGUAGES}
+            selected={languagesCheck}
+            onToggle={(v) => setLanguagesCheck((l) => toggleValue(l, v))}
+          />
+          <input
+            name="languages"
+            value={values.languages ?? ""}
+            onChange={(e) => update("languages", e.target.value)}
+            className={`${inputCls} mt-3`}
+            placeholder="Other languages (comma-separated)"
+          />
         </Field>
-        <Field label="Special Skills / Certifications">
-          <textarea name="specialSkills" rows={2} className={textareaCls} />
-        </Field>
-        <Field label="Professional Equipment">
-          <textarea name="equipment" rows={2} className={textareaCls} placeholder="List any owned professional equipment" />
-        </Field>
+        <TextAreaField name="specialSkills" label="Special Skills / Certifications" rows={2} values={values} update={update} />
+        <TextAreaField name="equipment" label="Professional Equipment" rows={2} placeholder="List any owned professional equipment" values={values} update={update} />
       </Section>
 
       <Section title="Collaboration Preferences">
         <Field label="Preferred collaborator experience level(s)">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {EXPERIENCE_LEVELS.map((l) => (
+            {[...EXPERIENCE_LEVELS, "Any level"].map((l) => (
               <label key={l} className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
-                <input type="checkbox" name="collaborationPreferences" value={l} className="accent-brand-green" />
+                <input
+                  type="checkbox"
+                  name="collaborationPreferences"
+                  value={l}
+                  checked={collaborationPreferences.includes(l)}
+                  onChange={() => setCollaborationPreferences((c) => toggleValue(c, l))}
+                  className="accent-brand-green"
+                />
                 {l}
               </label>
             ))}
-            <label className="flex items-center gap-2 text-sm text-brand-brown/80 cursor-pointer">
-              <input type="checkbox" name="collaborationPreferences" value="Any level" className="accent-brand-green" />
-              Any level
-            </label>
           </div>
         </Field>
       </Section>
@@ -304,14 +465,18 @@ export default function EnrollForm() {
             "I understand that PCC reserves the right to reject any application at their discretion.",
           ].map((text, i) => (
             <label key={i} className="flex items-start gap-3 text-sm text-brand-brown/80 cursor-pointer">
-              <input type="checkbox" required name={`consent${i}`} className="accent-brand-green mt-0.5 shrink-0" />
+              <input
+                type="checkbox"
+                required
+                name={`consent${i}`}
+                checked={consents[i]}
+                onChange={() => setConsents((c) => c.map((v, idx) => (idx === i ? !v : v)))}
+                className="accent-brand-green mt-0.5 shrink-0"
+              />
               <span>{text}</span>
             </label>
           ))}
         </div>
-        <Field label="Referred by" hint="Optional — name of the person who invited you">
-          <input name="referralName" className={`${inputCls} mt-3`} />
-        </Field>
       </Section>
 
       <button

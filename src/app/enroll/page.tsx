@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function EnrollPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
-      <h1 className="font-heading font-extrabold uppercase text-3xl text-brand-green mb-2">Apply to Join PCC</h1>
+      <h1 className="font-heading font-bold text-3xl text-brand-green mb-2">Apply to Join PCC</h1>
       <p className="text-brand-brown/70 mb-2">
         All applications are reviewed manually by Aneesa Talks. Being listed is free.
       </p>

@@ -21,7 +21,7 @@ export default async function SubscribePage() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <h1 className="font-heading font-extrabold uppercase text-2xl text-brand-green mb-2">Subscribe to PCC</h1>
+        <h1 className="font-heading font-bold text-2xl text-brand-green mb-2">Subscribe to PCC</h1>
         <p className="text-brand-brown/70 text-sm mb-8">
           Unlock full profiles, search & filter, and contact requests.
         </p>

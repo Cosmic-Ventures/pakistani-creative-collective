@@ -29,7 +29,7 @@ export default async function ContactRequestPage({
       <Link href={`/directory/${slug}`} className="inline-flex items-center gap-1 text-sm text-brand-brown/50 hover:text-brand-brown transition-colors mb-8">
         ← Back to profile
       </Link>
-      <h1 className="font-heading font-extrabold uppercase text-2xl text-brand-green mb-2">
+      <h1 className="font-heading font-bold text-2xl text-brand-green mb-2">
         Contact Request for {creative.firstName} {creative.lastName}
       </h1>
       <p className="text-brand-brown/70 text-sm mb-8">

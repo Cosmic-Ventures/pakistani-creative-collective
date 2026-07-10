@@ -19,18 +19,33 @@ export default function ContactRequestForm({
 }) {
   const action = submitContactRequest.bind(null, creativeId, userId, creativeSlug);
   const [state, formAction, pending] = useActionState<ContactRequestResult | null, FormData>(action, null);
+
+  // Controlled by local state so values survive a failed submission — see
+  // the identical fix (and root-cause explanation) in EnrollForm.tsx.
+  const [requesterName, setRequesterName] = useState("");
+  const [requesterEmail, setRequesterEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [requesterRole, setRequesterRole] = useState("");
+  const [portfolioLink, setPortfolioLink] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("");
   const [requestType, setRequestType] = useState("");
+  const [requestTypeOther, setRequestTypeOther] = useState("");
+  const [message, setMessage] = useState("");
+  const [timeline, setTimeline] = useState("");
+  const [consentAccurate, setConsentAccurate] = useState(false);
+  const [consentRouting, setConsentRouting] = useState(false);
+  const [consentDiscretion, setConsentDiscretion] = useState(false);
 
   if (state && "success" in state) {
     return (
       <div className="bg-brand-mint text-brand-green rounded-3xl p-10 sm:p-12 text-center">
-        <p className="font-heading font-extrabold uppercase text-2xl sm:text-3xl leading-tight mb-3">
+        <p className="font-heading font-bold text-2xl sm:text-3xl leading-tight mb-3">
           Your request has been submitted.
         </p>
         <p className="text-brand-green/80 italic mb-8">
           You&apos;ll be notified for further communications.
         </p>
-        <p className="font-heading font-extrabold lowercase text-brand-green/90 tracking-tight">
+        <p className="font-heading font-bold lowercase text-brand-green/90 tracking-tight">
           aneesa talks
         </p>
       </div>
@@ -46,35 +61,35 @@ export default function ContactRequestForm({
       )}
 
       <div>
-        <h2 className="font-heading font-extrabold uppercase text-brand-green border-b border-brand-green/15 pb-3 mb-5">
+        <h2 className="font-heading font-bold text-brand-green border-b border-brand-green/15 pb-3 mb-5">
           About You
         </h2>
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-brand-brown/70 mb-1.5">Full Name *</label>
-            <input name="requesterName" required className={inputCls} />
+            <input name="requesterName" required value={requesterName} onChange={(e) => setRequesterName(e.target.value)} className={inputCls} />
           </div>
           <div>
             <label className="block text-sm text-brand-brown/70 mb-1.5">Email Address *</label>
-            <input name="requesterEmail" type="email" required className={inputCls} />
+            <input name="requesterEmail" type="email" required value={requesterEmail} onChange={(e) => setRequesterEmail(e.target.value)} className={inputCls} />
           </div>
           <div>
             <label className="block text-sm text-brand-brown/70 mb-1.5">Company (if applicable)</label>
-            <input name="company" className={inputCls} />
+            <input name="company" value={company} onChange={(e) => setCompany(e.target.value)} className={inputCls} />
           </div>
           <div>
             <label className="block text-sm text-brand-brown/70 mb-1.5">Your Role/Title</label>
-            <input name="requesterRole" className={inputCls} />
+            <input name="requesterRole" value={requesterRole} onChange={(e) => setRequesterRole(e.target.value)} className={inputCls} />
           </div>
           <div>
             <label className="block text-sm text-brand-brown/70 mb-1.5">Portfolio Link</label>
-            <input name="portfolioLink" type="url" className={inputCls} placeholder="https://…" />
+            <input name="portfolioLink" type="url" value={portfolioLink} onChange={(e) => setPortfolioLink(e.target.value)} className={inputCls} placeholder="https://…" />
           </div>
         </div>
       </div>
 
       <div>
-        <h2 className="font-heading font-extrabold uppercase text-brand-green border-b border-brand-green/15 pb-3 mb-2">
+        <h2 className="font-heading font-bold text-brand-green border-b border-brand-green/15 pb-3 mb-2">
           Your Experience Level
         </h2>
         <p className="text-xs text-brand-brown/50 mb-4">
@@ -84,7 +99,15 @@ export default function ContactRequestForm({
         <div className="space-y-2">
           {EXPERIENCE_LEVELS.map((level) => (
             <label key={level} className="flex items-start gap-2.5 text-sm text-brand-brown/80 cursor-pointer">
-              <input type="radio" name="experienceLevel" value={level} required className="accent-brand-green mt-0.5 shrink-0" />
+              <input
+                type="radio"
+                name="experienceLevel"
+                value={level}
+                required
+                checked={experienceLevel === level}
+                onChange={() => setExperienceLevel(level)}
+                className="accent-brand-green mt-0.5 shrink-0"
+              />
               {level}
             </label>
           ))}
@@ -92,7 +115,7 @@ export default function ContactRequestForm({
       </div>
 
       <div>
-        <h2 className="font-heading font-extrabold uppercase text-brand-green border-b border-brand-green/15 pb-3 mb-4">
+        <h2 className="font-heading font-bold text-brand-green border-b border-brand-green/15 pb-3 mb-4">
           Request Type
         </h2>
         <p className="text-xs text-brand-brown/50 mb-3">Select the option that best describes your request.</p>
@@ -104,6 +127,7 @@ export default function ContactRequestForm({
                 name="requestType"
                 value={type}
                 required
+                checked={requestType === type}
                 className="accent-brand-green mt-0.5 shrink-0"
                 onChange={() => setRequestType(type)}
               />
@@ -112,7 +136,13 @@ export default function ContactRequestForm({
           ))}
         </div>
         {requestType === "Other" && (
-          <input name="requestTypeOther" className={`${inputCls} mb-4`} placeholder="Please specify…" />
+          <input
+            name="requestTypeOther"
+            value={requestTypeOther}
+            onChange={(e) => setRequestTypeOther(e.target.value)}
+            className={`${inputCls} mb-4`}
+            placeholder="Please specify…"
+          />
         )}
         <label className="block text-sm text-brand-brown/70 mb-1.5">
           Tell us why you&apos;re looking to connect to this individual.
@@ -121,20 +151,30 @@ export default function ContactRequestForm({
           name="message"
           required
           rows={4}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
           className={textareaCls}
           placeholder="Include the creative's name if you have someone specific in mind, or describe the type of creative you're looking for, what the project involves, and what you need from them."
         />
       </div>
 
       <div>
-        <h2 className="font-heading font-extrabold uppercase text-brand-green border-b border-brand-green/15 pb-3 mb-4">
+        <h2 className="font-heading font-bold text-brand-green border-b border-brand-green/15 pb-3 mb-4">
           Timeline
         </h2>
         <p className="text-xs text-brand-brown/50 mb-3">Select the option that best suits your request.</p>
         <div className="space-y-2">
           {TIMELINES.map((t) => (
             <label key={t} className="flex items-start gap-2.5 text-sm text-brand-brown/80 cursor-pointer">
-              <input type="radio" name="timeline" value={t} required className="accent-brand-green mt-0.5 shrink-0" />
+              <input
+                type="radio"
+                name="timeline"
+                value={t}
+                required
+                checked={timeline === t}
+                onChange={() => setTimeline(t)}
+                className="accent-brand-green mt-0.5 shrink-0"
+              />
               {t}
             </label>
           ))}
@@ -142,22 +182,43 @@ export default function ContactRequestForm({
       </div>
 
       <div>
-        <h2 className="font-heading font-extrabold uppercase text-brand-green border-b border-brand-green/15 pb-3 mb-4">
+        <h2 className="font-heading font-bold text-brand-green border-b border-brand-green/15 pb-3 mb-4">
           Consent
         </h2>
         <p className="text-xs text-brand-brown/50 mb-3">Select all of the below.</p>
         <div className="space-y-3">
           <label className="flex items-start gap-2.5 text-sm text-brand-brown/80 cursor-pointer">
-            <input type="checkbox" name="consentAccurate" required className="accent-brand-green mt-0.5 shrink-0" />
+            <input
+              type="checkbox"
+              name="consentAccurate"
+              required
+              checked={consentAccurate}
+              onChange={(e) => setConsentAccurate(e.target.checked)}
+              className="accent-brand-green mt-0.5 shrink-0"
+            />
             I confirm that the information provided in this form is accurate.
           </label>
           <label className="flex items-start gap-2.5 text-sm text-brand-brown/80 cursor-pointer">
-            <input type="checkbox" name="consentRouting" required className="accent-brand-green mt-0.5 shrink-0" />
+            <input
+              type="checkbox"
+              name="consentRouting"
+              required
+              checked={consentRouting}
+              onChange={(e) => setConsentRouting(e.target.checked)}
+              className="accent-brand-green mt-0.5 shrink-0"
+            />
             I understand that all contact is routed through Aneesa Talks LLC and that the creative&apos;s
             personal contact information will not be shared without their consent.
           </label>
           <label className="flex items-start gap-2.5 text-sm text-brand-brown/80 cursor-pointer">
-            <input type="checkbox" name="consentDiscretion" required className="accent-brand-green mt-0.5 shrink-0" />
+            <input
+              type="checkbox"
+              name="consentDiscretion"
+              required
+              checked={consentDiscretion}
+              onChange={(e) => setConsentDiscretion(e.target.checked)}
+              className="accent-brand-green mt-0.5 shrink-0"
+            />
             I understand that Aneesa Talks LLC reserves the right to decline any request at their discretion.
           </label>
         </div>

@@ -26,6 +26,12 @@ function normalizeUrl(href: string, prefix = "https://"): string {
   return href.startsWith("http") ? href : `${prefix}${href.replace(/^@/, "")}`;
 }
 
+function truncateWords(text: string, max: number): string {
+  const words = text.trim().split(/\s+/);
+  if (words.length <= max) return text;
+  return `${words.slice(0, max).join(" ")}…`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -55,7 +61,8 @@ export default async function MemberPage({
   if (!creative) notFound();
 
   const showFull = isPaid || isFeaturedNow(creative);
-  const headlineLink = creative.website ?? creative.publicLink;
+  // Only shown on the full (paid/featured) view — free profiles don't list a link at all.
+  const headlineLink = showFull ? (creative.website ?? creative.publicLink) : null;
   const workSamples = (creative.workSamples as
     | { title?: string; role?: string; link?: string; medium?: string; year?: string }[]
     | null) ?? [];
@@ -63,21 +70,22 @@ export default async function MemberPage({
 
   const fullName = `${creative.firstName} ${creative.lastName}`;
   const subtitle = [creative.pronouns].filter(Boolean).join(" ");
+  const bio = showFull ? creative.bio : truncateWords(creative.bio, 200);
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] bg-brand-green">
+    <div className="relative min-h-[calc(100vh-4rem)] bg-brand-green print-area">
       <Image
         src="/brand/hero-bg.png"
         alt=""
         fill
         priority
-        className="object-cover opacity-70 pointer-events-none select-none"
+        className="object-cover opacity-70 pointer-events-none select-none print:hidden"
       />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
         <Link
           href="/directory"
-          className="inline-flex items-center gap-1 text-sm text-brand-cream/70 hover:text-brand-cream transition-colors mb-8"
+          className="inline-flex items-center gap-1 text-sm text-brand-cream/70 hover:text-brand-cream transition-colors mb-8 print:hidden"
         >
           ← Directory
         </Link>
@@ -110,7 +118,7 @@ export default async function MemberPage({
                   <Detail label="Medium(s)" value={creative.mediums.join(", ")} />
                 )}
                 <div>
-                  <p className="font-heading font-extrabold uppercase text-sm tracking-wide mb-2">Connect</p>
+                  <p className="font-heading font-bold text-sm tracking-wide mb-2">Connect</p>
                   <div className="flex flex-wrap gap-2">
                     {headlineLink && <SocialIcon href={normalizeUrl(headlineLink)} kind="globe" />}
                     {creative.instagram && (
@@ -143,14 +151,14 @@ export default async function MemberPage({
             </>
           ) : (
             /* Biography card — mint (public view) */
-            <BiographyCard bio={creative.bio} className="lg:col-span-3" />
+            <BiographyCard bio={bio} className="lg:col-span-3" />
           )}
         </div>
 
         {/* ── Row 2 (paid) ──────────────────────────────────────── */}
         {showFull && (
           <div className="grid gap-6 lg:grid-cols-2 mt-6">
-            <BiographyCard bio={creative.bio} />
+            <BiographyCard bio={bio} />
 
             {(creative.rateStructure ||
               creative.collaborationPreferences ||
@@ -161,7 +169,7 @@ export default async function MemberPage({
                 <div className="flex items-center justify-center gap-3 mb-6">
                   <span className="h-px flex-1 bg-brand-green/30" />
                   <span className="text-brand-green text-xs">☾</span>
-                  <h2 className="font-heading font-extrabold uppercase text-brand-green text-lg tracking-tight">
+                  <h2 className="font-heading font-bold text-brand-green text-lg tracking-tight">
                     Work For Hire
                   </h2>
                   <span className="text-brand-green text-xs">☾</span>
@@ -218,7 +226,7 @@ export default async function MemberPage({
 
         {/* Locked CTA for non-paid viewers */}
         {!showFull && (
-          <div className="mt-6 bg-brand-cream/95 rounded-3xl p-7 text-center max-w-xl">
+          <div className="mt-6 bg-brand-cream/95 rounded-3xl p-7 text-center max-w-xl print:hidden">
             <div className="text-2xl mb-2">🔒</div>
             <p className="text-brand-green font-semibold mb-1">Full profile locked</p>
             <p className="text-brand-brown/60 text-sm mb-4">
@@ -236,7 +244,7 @@ export default async function MemberPage({
 
         {/* Contact request CTA for paid users */}
         {showFull && session && (
-          <div className="mt-6 bg-brand-mint rounded-3xl p-7 max-w-xl">
+          <div className="mt-6 bg-brand-mint rounded-3xl p-7 max-w-xl print:hidden">
             <p className="text-brand-green mb-3 text-sm">
               <span className="font-semibold">Want to work with {creative.firstName}?</span>{" "}
               Submit a contact request and our team will facilitate the introduction.
@@ -253,7 +261,7 @@ export default async function MemberPage({
         {/* More work samples (paid) */}
         {showFull && otherSamples.length > 0 && (
           <div className="mt-6 bg-brand-cream rounded-3xl p-7 max-w-xl">
-            <p className="font-heading font-extrabold uppercase text-brand-green text-sm mb-3">
+            <p className="font-heading font-bold text-brand-green text-sm mb-3">
               More Work Samples
             </p>
             <div className="space-y-2">
@@ -313,19 +321,22 @@ function IdentityCard({
     .join("");
   return (
     <div className={`bg-brand-cream rounded-3xl p-7 sm:p-8 ${className}`}>
-      {headshot ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={headshot}
-          alt={fullName}
-          className="w-28 h-28 rounded-2xl object-cover mb-5"
-        />
-      ) : (
-        <div className="w-20 h-20 rounded-2xl bg-brand-mint/40 flex items-center justify-center text-brand-green font-heading font-extrabold text-2xl mb-5">
-          {initials}
-        </div>
-      )}
-      <h1 className="font-heading font-extrabold uppercase text-3xl sm:text-4xl text-brand-brown leading-[0.95] tracking-tight">
+      {/* Free profiles don't include a headshot slot at all (not just a hidden one) —
+          per the client's Free Access spec, a photo is a member-tier field. */}
+      {showRolesAsPills &&
+        (headshot ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={headshot}
+            alt={fullName}
+            className="w-28 h-28 rounded-2xl object-cover mb-5"
+          />
+        ) : (
+          <div className="w-20 h-20 rounded-2xl bg-brand-mint/40 flex items-center justify-center text-brand-green font-heading font-bold text-2xl mb-5">
+            {initials}
+          </div>
+        ))}
+      <h1 className="font-heading font-bold text-3xl sm:text-4xl text-brand-brown leading-[0.95] tracking-tight">
         {fullName}
       </h1>
       {subtitle && <p className="text-sm text-brand-brown/60 mt-2">{subtitle}</p>}
@@ -374,7 +385,7 @@ function IdentityCard({
 function BiographyCard({ bio, className = "" }: { bio: string; className?: string }) {
   return (
     <div className={`bg-brand-mint rounded-3xl p-7 sm:p-8 ${className}`}>
-      <p className="font-heading font-extrabold uppercase text-brand-green text-sm tracking-wide mb-3">
+      <p className="font-heading font-bold text-brand-green text-sm tracking-wide mb-3">
         Biography
       </p>
       <p className="text-brand-green/90 text-sm leading-relaxed">{bio}</p>
@@ -385,7 +396,7 @@ function BiographyCard({ bio, className = "" }: { bio: string; className?: strin
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="font-heading font-extrabold uppercase text-sm tracking-wide">{label}</p>
+      <p className="font-heading font-bold text-sm tracking-wide">{label}</p>
       <p className="text-brand-cream/80 text-sm mt-1 leading-relaxed">{value}</p>
     </div>
   );
@@ -404,7 +415,7 @@ function ProjectEmbed({ link }: { link: string }) {
   const embed = toEmbedUrl(link);
   return (
     <div>
-      <p className="font-heading font-extrabold uppercase text-sm tracking-wide mb-2">Project Link</p>
+      <p className="font-heading font-bold text-sm tracking-wide mb-2">Project Link</p>
       {embed ? (
         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
           <iframe

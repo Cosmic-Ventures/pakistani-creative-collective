@@ -9,7 +9,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="font-heading font-extrabold uppercase text-2xl text-brand-green mb-2">Create an account</h1>
+        <h1 className="font-heading font-bold text-2xl text-brand-green mb-2">Create an account</h1>
         <p className="text-brand-brown/70 text-sm mb-8">
           Free to sign up. A paid subscription unlocks the full directory.
         </p>

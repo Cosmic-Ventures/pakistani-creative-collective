@@ -1,11 +1,13 @@
 @import "tailwindcss";
 
 /*
- * Brand palette and type from "Pakistani Creative Collective - Website Outline".
- * Header font spec calls for Garet (bold, all-caps, letter-spacing -60), which is a
- * paid/licensed font not distributed on Google Fonts — Plus Jakarta Sans (extrabold)
- * is substituted as the closest open-license geometric match until the client
- * provides licensed Garet font files.
+ * Brand palette and type from "Pakistani Creative Collective - Website Outline",
+ * updated per client feedback (July 2026) to Playfair Display SC for headers.
+ * Headings are intentionally NOT uppercase-transformed: the "SC" cut renders
+ * lowercase input as small caps and true capitals as full-height caps, so
+ * natural title-case text is what produces the small-caps look. Don't re-add
+ * a global `uppercase` treatment to font-heading elements — it would defeat
+ * the SC variant's whole purpose (see Website Notes doc, "Branding changes").
  */
 @theme {
   --color-brand-green: #294d3d;
@@ -13,10 +15,36 @@
   --color-brand-cream: #fffcf9;
   --color-brand-mint: #91d2a6;
 
-  --font-heading: var(--font-heading-sans), sans-serif;
+  --font-heading: var(--font-heading-sans), serif;
   --font-body: var(--font-body-sans), sans-serif;
 }
 
 .font-heading {
-  letter-spacing: -0.03em;
+  letter-spacing: 0.01em;
+}
+
+/*
+ * Printer-friendly override for full profile pages (.print-area, e.g. the
+ * paid/featured view at /directory/[slug]). The live page relies on cream
+ * text over a brand-green background, which is illegible on white paper —
+ * rather than enumerate every color/opacity utility in play, force the
+ * whole subtree to dark-on-white for print. Chrome (nav/footer/CTAs) is
+ * hidden separately via Tailwind's print:hidden on those elements.
+ */
+@media print {
+  .print-area {
+    background: white !important;
+  }
+  .print-area *,
+  .print-area *::before,
+  .print-area *::after {
+    background: transparent !important;
+    color: var(--color-brand-brown) !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  .print-area img {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
 }

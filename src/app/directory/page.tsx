@@ -49,7 +49,7 @@ export default async function DirectoryPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
       <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="font-heading font-extrabold uppercase text-3xl text-brand-green">Member Directory</h1>
+          <h1 className="font-heading font-bold text-3xl text-brand-green">Member Directory</h1>
           <p className="text-brand-brown/70 mt-1">
             {creatives.length} verified Pakistani creatives in film, music, and media.
           </p>

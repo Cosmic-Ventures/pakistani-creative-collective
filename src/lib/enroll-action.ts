@@ -27,6 +27,10 @@ async function uniqueSlug(first: string, last: string): Promise<string> {
   return `${base}-${Math.max(...suffixes) + 1}`;
 }
 
+function wordCount(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
 const EnrollSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
@@ -36,14 +40,18 @@ const EnrollSchema = z.object({
   address: z.string().optional(),
   location: z.string().optional(),
   howHeard: z.string().optional(),
-  headshotLink: z.string().optional(),
-  bio: z.string().min(100, "Bio must be at least 100 characters"),
-  publicLink: z.string().optional(),
+  headshotLink: z.string().min(1, "Headshot link is required"),
+  bio: z
+    .string()
+    .min(100, "Bio must be at least 100 characters")
+    .refine((b) => wordCount(b) <= 200, "Bio must be 200 words or fewer"),
   previousCollaborators: z.string().optional(),
   unionMemberships: z.string().optional(),
   education: z.string().optional(),
   pccGoals: z.string().optional(),
   additionalNotes: z.string().optional(),
+  rolesOther: z.string().optional(),
+  mediumsOther: z.string().optional(),
   experienceLevel: z.string().min(1, "Select an experience level"),
   yearsExperience: z.string().optional(),
   completedProjects: z.string().optional(),
@@ -54,7 +62,8 @@ const EnrollSchema = z.object({
   linkedin: z.string().optional(),
   vimeo: z.string().optional(),
   rateStructure: z.string().optional(),
-  rateRange: z.string().optional(),
+  rateCurrency: z.string().optional(),
+  rateRangeAmount: z.string().optional(),
   ratePublic: z.string().optional(),
   availability: z.string().min(1, "Select your availability"),
   travel: z.string().optional(),
@@ -80,6 +89,11 @@ export async function enrollAction(
   const collaborationPreferences = (formData.getAll("collaborationPreferences") as string[]).join(", ");
   formData.set("collaborationPreferences", collaborationPreferences);
 
+  const rolesOtherRaw = (formData.get("rolesOther") as string) ?? "";
+  const mediumsOtherRaw = (formData.get("mediumsOther") as string) ?? "";
+  const allRoles = [...roles, ...rolesOtherRaw.split(",").map((r) => r.trim()).filter(Boolean)];
+  const allMediums = [...mediums, ...mediumsOtherRaw.split(",").map((m) => m.trim()).filter(Boolean)];
+
   // Work samples
   const workSamples = [1, 2, 3]
     .map((n) => ({
@@ -100,6 +114,8 @@ export async function enrollAction(
 
   const slug = await uniqueSlug(d.firstName, d.lastName);
 
+  const rateRange = [d.rateCurrency, d.rateRangeAmount].filter(Boolean).join(" ") || undefined;
+
   await db.creative.create({
     data: {
       slug,
@@ -111,7 +127,6 @@ export async function enrollAction(
       address: d.address,
       location: d.location,
       bio: d.bio,
-      publicLink: d.publicLink,
       headshot: d.headshotLink,
       previousCollaborators: d.previousCollaborators,
       unionMemberships: d.unionMemberships,
@@ -125,7 +140,7 @@ export async function enrollAction(
       linkedin: d.linkedin,
       vimeo: d.vimeo,
       rateStructure: d.rateStructure,
-      rateRange: d.rateRange,
+      rateRange,
       ratePublic: d.ratePublic === "yes",
       availability: d.availability,
       travel: d.travel,
@@ -137,8 +152,8 @@ export async function enrollAction(
       collaborationPreferences: d.collaborationPreferences || undefined,
       references: d.references,
       referralName: d.referralName,
-      roles,
-      mediums,
+      roles: allRoles,
+      mediums: allMediums,
       preferredProjectTypes,
       workSamples: workSamples.length > 0 ? workSamples : undefined,
     },
