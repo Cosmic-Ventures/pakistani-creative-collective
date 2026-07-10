@@ -94,6 +94,61 @@ export async function sendRejectionEmail(firstName: string, email: string) {
   });
 }
 
+export async function sendNewCommunityPostNotification(creativeName: string, title: string, category: string) {
+  if (!process.env.RESEND_API_KEY) return;
+
+  await getResend()?.emails.send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `New Community Post for review: ${title}`,
+    html: `
+      <p><strong>${creativeName}</strong> submitted a new Community Dashboard post.</p>
+      <p><strong>Category:</strong> ${category}</p>
+      <p><strong>Title:</strong> ${title}</p>
+      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/community">Review in admin panel →</a></p>
+    `,
+  });
+}
+
+export async function sendPostDecisionEmail(firstName: string, email: string, title: string, approved: boolean) {
+  if (!process.env.RESEND_API_KEY) return;
+
+  await getResend()?.emails.send({
+    from: FROM,
+    to: email,
+    subject: approved ? "Your Community post is live" : "Update on your Community post",
+    html: approved
+      ? `<p>Hi ${firstName},</p><p>Your post "${title}" has been approved and is now live on the Community Dashboard.</p><p><a href="${process.env.NEXT_PUBLIC_APP_URL}/community">View the dashboard →</a></p><p>— Aneesa Talks</p>`
+      : `<p>Hi ${firstName},</p><p>Your post "${title}" wasn't approved for the Community Dashboard at this time.</p><p>— Aneesa Talks</p>`,
+  });
+}
+
+export async function sendCommentRemovedEmail(firstName: string, email: string) {
+  if (!process.env.RESEND_API_KEY) return;
+
+  await getResend()?.emails.send({
+    from: FROM,
+    to: email,
+    subject: "A comment of yours was removed",
+    html: `<p>Hi ${firstName},</p><p>A comment you posted on the Community Dashboard was removed by Aneesa Talks.</p><p>— Aneesa Talks</p>`,
+  });
+}
+
+export async function sendBulkCommunityNotification(recipients: string[], subject: string, message: string) {
+  if (!process.env.RESEND_API_KEY || recipients.length === 0) return;
+
+  await Promise.all(
+    recipients.map((to) =>
+      getResend()?.emails.send({
+        from: FROM,
+        to,
+        subject,
+        html: `<p>${message}</p><p><a href="${process.env.NEXT_PUBLIC_APP_URL}/community">View the Community Dashboard →</a></p><p>— Aneesa Talks</p>`,
+      })
+    )
+  );
+}
+
 export async function sendFeatureNotification(firstName: string, email: string, slug: string) {
   if (!process.env.RESEND_API_KEY) return;
 

@@ -7,7 +7,7 @@ export default async function Nav() {
   const session = await getSession();
 
   return (
-    <header className="border-b border-brand-green/15 bg-brand-cream/90 backdrop-blur-sm sticky top-0 z-50">
+    <header className="border-b border-brand-green/15 bg-brand-cream/90 backdrop-blur-sm sticky top-0 z-50 print:hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         <Link href="/" className="flex items-center group">
           <Logo variant="dark" className="h-9 w-auto group-hover:opacity-80 transition-opacity" />
@@ -23,6 +23,11 @@ export default async function Nav() {
 
           {session ? (
             <>
+              {(session.role === "PAID" || session.role === "ADMIN") && (
+                <Link href="/community" className="text-brand-green/80 hover:text-brand-green transition-colors hidden sm:inline">
+                  Community
+                </Link>
+              )}
               {session.role === "ADMIN" && (
                 <Link href="/admin" className="text-brand-brown hover:text-brand-brown/70 transition-colors hidden sm:inline">
                   Admin

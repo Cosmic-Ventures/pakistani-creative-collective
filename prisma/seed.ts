@@ -20,7 +20,7 @@ const db = new PrismaClient();
 async function main() {
   const passwordHash = await bcrypt.hash("password123", 12);
 
-  await db.user.upsert({
+  const paidUser = await db.user.upsert({
     where: { email: "paid@demo.test" },
     update: { role: "PAID" },
     create: { email: "paid@demo.test", passwordHash, name: "Paid Demo", role: "PAID" },
@@ -142,6 +142,55 @@ async function main() {
       where: { slug: s.slug },
       update: {},
       create: { status: "APPROVED", ...s },
+    });
+  }
+
+  // Link the paid demo account to a listed creative — required to post, react,
+  // or comment on the Community Dashboard, which pulls name/role from this link.
+  const zain = await db.creative.update({
+    where: { slug: "zain-malik" },
+    data: { userId: paidUser.id },
+  });
+  const sara = await db.creative.findUniqueOrThrow({ where: { slug: "sara-ahmed" } });
+
+  const existingCommunityPost = await db.post.findFirst({ where: { creativeId: zain.id, title: "Wrapped my first feature as DP" } });
+  if (!existingCommunityPost) {
+    const approvedPost = await db.post.create({
+      data: {
+        creativeId: zain.id,
+        category: "RECENT_WORK",
+        status: "APPROVED",
+        title: "Wrapped my first feature as DP",
+        body: "Just wrapped principal photography on an indie feature shot across Lahore and Karachi. Huge learning experience working with a mostly local crew — excited to share the trailer once it's cut together.",
+      },
+    });
+    await db.reaction.create({ data: { postId: approvedPost.id, creativeId: sara.id, type: "CONGRATULATIONS" } });
+    await db.comment.create({
+      data: { postId: approvedPost.id, creativeId: sara.id, body: "Congrats Zain! Would love to see stills when you can share them." },
+    });
+
+    const availablePost = await db.post.create({
+      data: {
+        creativeId: sara.id,
+        category: "AVAILABLE_FOR_WORK",
+        status: "APPROVED",
+        title: "Open for scoring work through Q1",
+        body: "I have a few open slots for documentary and narrative scoring work over the next few months. Based in London but happy to work remotely with international crews.",
+        region: "London / Remote",
+        expiresAt: new Date(new Date().setMonth(new Date().getMonth() + 3)),
+      },
+    });
+    await db.reaction.create({ data: { postId: availablePost.id, creativeId: zain.id, type: "INTERESTED" } });
+
+    await db.post.create({
+      data: {
+        creativeId: zain.id,
+        category: "SEEKING_COLLABORATORS",
+        status: "PENDING",
+        title: "Looking for a colorist for a short doc",
+        body: "Wrapping up a short documentary and looking for a colorist familiar with naturalistic grading. Deadline is flexible.",
+        expiresAt: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+      },
     });
   }
 

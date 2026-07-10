@@ -37,6 +37,32 @@ enum FeatureRequestStatus {
   REJECTED
 }
 
+enum PostCategory {
+  RECENT_WORK
+  SEEKING_FUNDING
+  SEEKING_COLLABORATORS
+  AVAILABLE_FOR_WORK
+}
+
+enum PostStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReactionType {
+  CONGRATULATIONS
+  INTERESTED
+  SUPPORT
+  SHARING_THIS
+}
+
+enum CommentReportStatus {
+  PENDING
+  DISMISSED
+  ACTIONED
+}
+
 // ─── Users ────────────────────────────────────────────────────────────────────
 
 model User {
@@ -54,6 +80,7 @@ model User {
   updatedAt          DateTime  @updatedAt
 
   contactRequests ContactRequest[]
+  creative        Creative?
 }
 
 // ─── Creatives ────────────────────────────────────────────────────────────────
@@ -62,6 +89,13 @@ model Creative {
   id        String         @id @default(cuid())
   slug      String         @unique
   status    CreativeStatus @default(PENDING)
+
+  // Links this listing to a login, when the creative is also a paid PCC member —
+  // required to post/comment/react on the Community Dashboard, which pulls
+  // name/role/profile link from this record. Nullable: most listed creatives
+  // don't have (or need) a User login at all.
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
 
   // ── Public (unpaid) ────────────────────────────────────────────────────────
   firstName       String
@@ -109,11 +143,19 @@ model Creative {
   featured      Boolean   @default(false)
   featuredUntil DateTime?
 
+  // ── Community Dashboard moderation ─────────────────────────────────────────
+  commentSuspended Boolean @default(false) // admin-set: blocked from posting new comments
+  commentFlagged   Boolean @default(false) // admin-set: flagged for repeated comment removals
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   contactRequests ContactRequest[]
   featureRequests FeatureRequest[]
+  posts           Post[]           @relation("PostAuthor")
+  reactions       Reaction[]       @relation("ReactionAuthor")
+  comments        Comment[]        @relation("CommentAuthor")
+  commentReports  CommentReport[]  @relation("CommentReporter")
 }
 
 // ─── Contact Requests ────────────────────────────────────────────────────────
@@ -157,4 +199,66 @@ model FeatureRequest {
   adminNotes String?
   createdAt  DateTime             @default(now())
   updatedAt  DateTime             @updatedAt
+}
+
+// ─── Community Dashboard (paid members only) ────────────────────────────────
+
+model Post {
+  id         String       @id @default(cuid())
+  creativeId String
+  creative   Creative     @relation("PostAuthor", fields: [creativeId], references: [id])
+
+  category   PostCategory
+  title      String
+  body       String       @db.Text // 500 words max, enforced in the action
+  region     String? // required for AVAILABLE_FOR_WORK; optional otherwise
+  expiresAt  DateTime? // required for AVAILABLE_FOR_WORK / SEEKING_COLLABORATORS — drives auto-expiry
+  link       String? // attachment or project link
+
+  status     PostStatus @default(PENDING)
+  adminNotes String?    @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reactions Reaction[]
+  comments  Comment[]
+}
+
+model Reaction {
+  id         String       @id @default(cuid())
+  postId     String
+  post       Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  creativeId String
+  creative   Creative     @relation("ReactionAuthor", fields: [creativeId], references: [id])
+  type       ReactionType
+  createdAt  DateTime     @default(now())
+
+  @@unique([postId, creativeId]) // one reaction per member per post
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  postId     String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  creativeId String
+  creative   Creative @relation("CommentAuthor", fields: [creativeId], references: [id])
+  body       String   @db.Text // 300 words max, enforced in the action
+  isRemoved  Boolean  @default(false) // report-and-remove moderation; live immediately otherwise
+
+  createdAt DateTime @default(now())
+
+  reports CommentReport[]
+}
+
+model CommentReport {
+  id         String              @id @default(cuid())
+  commentId  String
+  comment    Comment             @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  creativeId String
+  creative   Creative            @relation("CommentReporter", fields: [creativeId], references: [id])
+  status     CommentReportStatus @default(PENDING)
+  createdAt  DateTime            @default(now())
+
+  @@unique([commentId, creativeId]) // a member can only report a given comment once
 }

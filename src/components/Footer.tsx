@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-brand-green/15 mt-auto py-8 px-4">
+    <footer className="border-t border-brand-green/15 mt-auto py-8 px-4 print:hidden">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-brand-green/60">
         <p>
           © {new Date().getFullYear()} Pakistani Creative Collective · Curated

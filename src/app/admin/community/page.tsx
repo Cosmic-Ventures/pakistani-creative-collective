@@ -1,0 +1,245 @@
+import type { Metadata } from "next";
+import { db } from "@/lib/db";
+import {
+  approvePost,
+  rejectPost,
+  removePost,
+  dismissCommentReport,
+  removeReportedComment,
+  suspendMemberComments,
+  unsuspendMemberComments,
+  clearMemberFlag,
+  sendBulkPostNotification,
+} from "@/lib/community-admin-actions";
+import { POST_CATEGORY_LABELS } from "@/lib/community-constants";
+
+export const metadata: Metadata = { title: "Community · Admin" };
+export const dynamic = "force-dynamic";
+
+const STATUS_COLORS: Record<string, string> = {
+  PENDING: "text-amber-400 bg-amber-950/40 border-amber-700/40",
+  APPROVED: "text-emerald-400 bg-emerald-950/40 border-emerald-700/40",
+  REJECTED: "text-red-400 bg-red-950/40 border-red-700/40",
+};
+
+export default async function AdminCommunityPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; category?: string }>;
+}) {
+  const { status = "PENDING", category = "" } = await searchParams;
+
+  const posts = await db.post.findMany({
+    where: {
+      ...(status === "ALL" ? {} : { status: status as "PENDING" | "APPROVED" | "REJECTED" }),
+      ...(category ? { category: category as keyof typeof POST_CATEGORY_LABELS } : {}),
+    },
+    orderBy: { createdAt: "desc" },
+    include: { creative: { select: { firstName: true, lastName: true, email: true, slug: true } } },
+  });
+
+  const reports = await db.commentReport.findMany({
+    where: { status: "PENDING" },
+    orderBy: { createdAt: "desc" },
+    include: {
+      comment: { include: { creative: { select: { firstName: true, lastName: true } }, post: { select: { title: true } } } },
+      creative: { select: { firstName: true, lastName: true } },
+    },
+  });
+
+  const flaggedOrSuspended = await db.creative.findMany({
+    where: { OR: [{ commentFlagged: true }, { commentSuspended: true }] },
+    select: { id: true, firstName: true, lastName: true, commentFlagged: true, commentSuspended: true },
+  });
+
+  return (
+    <div className="space-y-10">
+      <div>
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <h2 className="text-lg font-semibold text-white">Community Posts</h2>
+          <div className="flex gap-2 text-sm flex-wrap">
+            {["PENDING", "APPROVED", "REJECTED", "ALL"].map((s) => (
+              <a
+                key={s}
+                href={`/admin/community?status=${s}${category ? `&category=${category}` : ""}`}
+                className={`px-3 py-1 rounded-full border transition-colors ${
+                  status === s ? "bg-stone-700 border-stone-600 text-white" : "border-stone-800 text-stone-500 hover:text-stone-300"
+                }`}
+              >
+                {s.charAt(0) + s.slice(1).toLowerCase()}
+              </a>
+            ))}
+            <a
+              href={`/admin/community?status=${status}`}
+              className={`px-3 py-1 rounded-full border transition-colors ${
+                !category ? "bg-stone-700 border-stone-600 text-white" : "border-stone-800 text-stone-500 hover:text-stone-300"
+              }`}
+            >
+              All Categories
+            </a>
+            {(Object.keys(POST_CATEGORY_LABELS) as (keyof typeof POST_CATEGORY_LABELS)[]).map((c) => (
+              <a
+                key={c}
+                href={`/admin/community?status=${status}&category=${c}`}
+                className={`px-3 py-1 rounded-full border transition-colors ${
+                  category === c ? "bg-stone-700 border-stone-600 text-white" : "border-stone-800 text-stone-500 hover:text-stone-300"
+                }`}
+              >
+                {POST_CATEGORY_LABELS[c]}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {posts.length === 0 && <p className="text-stone-500 text-sm">No posts match this filter.</p>}
+
+        <div className="space-y-4">
+          {posts.map((p) => (
+            <div key={p.id} className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+                <div>
+                  <h3 className="font-semibold text-white">{p.title}</h3>
+                  <p className="text-sm text-stone-400">
+                    {p.creative.firstName} {p.creative.lastName} · {POST_CATEGORY_LABELS[p.category]}
+                  </p>
+                  <p className="text-xs text-stone-600 mt-0.5">
+                    Submitted {new Date(p.createdAt).toLocaleDateString()}
+                    {p.region && ` · ${p.region}`}
+                    {p.expiresAt && ` · through ${new Date(p.expiresAt).toLocaleDateString()}`}
+                  </p>
+                </div>
+                <span className={`text-xs px-2 py-0.5 rounded-full border shrink-0 ${STATUS_COLORS[p.status]}`}>{p.status}</span>
+              </div>
+
+              <p className="text-sm text-stone-400 leading-relaxed mb-3 whitespace-pre-wrap">{p.body}</p>
+              {p.link && (
+                <a href={p.link} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-500 hover:text-emerald-400">
+                  Attachment ↗
+                </a>
+              )}
+
+              {p.adminNotes && (
+                <p className="text-xs text-amber-400/80 bg-amber-950/30 border border-amber-700/30 rounded px-3 py-2 my-3">
+                  Notes: {p.adminNotes}
+                </p>
+              )}
+
+              <div className="flex gap-2 flex-wrap mt-3">
+                {p.status === "PENDING" && (
+                  <>
+                    <form action={async () => { "use server"; await approvePost(p.id); }}>
+                      <button className="text-sm bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg transition-colors">
+                        Approve
+                      </button>
+                    </form>
+                    <form action={async () => { "use server"; await rejectPost(p.id); }}>
+                      <button className="text-sm bg-stone-800 hover:bg-red-900/60 border border-stone-700 hover:border-red-700 text-stone-300 px-4 py-1.5 rounded-lg transition-colors">
+                        Reject
+                      </button>
+                    </form>
+                  </>
+                )}
+                <form action={async () => { "use server"; await removePost(p.id); }}>
+                  <button className="text-sm text-stone-500 hover:text-red-400 transition-colors px-2">
+                    Remove
+                  </button>
+                </form>
+              </div>
+
+              {p.status === "APPROVED" && (
+                <form
+                  action={async (formData: FormData) => {
+                    "use server";
+                    const message = formData.get("message") as string;
+                    if (message?.trim()) await sendBulkPostNotification(p.id, message.trim());
+                  }}
+                  className="flex gap-2 mt-3 pt-3 border-t border-stone-800"
+                >
+                  <input
+                    name="message"
+                    placeholder="Notify all members about this post…"
+                    className="flex-1 bg-stone-950 border border-stone-800 rounded-lg px-3 py-1.5 text-sm text-stone-300 placeholder-stone-600 focus:outline-none focus:border-stone-600"
+                  />
+                  <button className="text-xs bg-stone-800 hover:bg-stone-700 text-stone-300 px-3 py-1.5 rounded-lg transition-colors shrink-0">
+                    Send
+                  </button>
+                </form>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold text-white mb-6">Reported Comments</h2>
+        {reports.length === 0 && <p className="text-stone-500 text-sm">No pending reports.</p>}
+        <div className="space-y-4">
+          {reports.map((r) => (
+            <div key={r.id} className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <p className="text-xs text-stone-500 mb-2">
+                On &ldquo;{r.comment.post.title}&rdquo; · reported by {r.creative.firstName} {r.creative.lastName}
+              </p>
+              <p className="text-sm text-stone-300 mb-1">
+                {r.comment.creative.firstName} {r.comment.creative.lastName}:
+              </p>
+              <p className="text-sm text-stone-400 mb-3">{r.comment.body}</p>
+              <div className="flex gap-2">
+                <form action={async () => { "use server"; await removeReportedComment(r.id); }}>
+                  <button className="text-sm bg-stone-800 hover:bg-red-900/60 border border-stone-700 hover:border-red-700 text-stone-300 px-4 py-1.5 rounded-lg transition-colors">
+                    Remove Comment
+                  </button>
+                </form>
+                <form action={async () => { "use server"; await dismissCommentReport(r.id); }}>
+                  <button className="text-sm text-stone-500 hover:text-stone-300 transition-colors px-2">
+                    Dismiss
+                  </button>
+                </form>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {flaggedOrSuspended.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-white mb-6">Flagged / Suspended Members</h2>
+          <div className="space-y-3">
+            {flaggedOrSuspended.map((c) => (
+              <div key={c.id} className="bg-stone-900 border border-stone-800 rounded-xl p-4 flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-white text-sm">{c.firstName} {c.lastName}</span>
+                  {c.commentFlagged && (
+                    <span className="text-xs px-2 py-0.5 rounded-full border text-amber-400 bg-amber-950/40 border-amber-700/40">Flagged</span>
+                  )}
+                  {c.commentSuspended && (
+                    <span className="text-xs px-2 py-0.5 rounded-full border text-red-400 bg-red-950/40 border-red-700/40">Suspended</span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {c.commentFlagged && (
+                    <form action={async () => { "use server"; await clearMemberFlag(c.id); }}>
+                      <button className="text-xs text-stone-500 hover:text-stone-300 transition-colors">Clear flag</button>
+                    </form>
+                  )}
+                  {c.commentSuspended ? (
+                    <form action={async () => { "use server"; await unsuspendMemberComments(c.id); }}>
+                      <button className="text-xs bg-stone-800 hover:bg-stone-700 text-stone-300 px-3 py-1 rounded-lg transition-colors">
+                        Unsuspend
+                      </button>
+                    </form>
+                  ) : (
+                    <form action={async () => { "use server"; await suspendMemberComments(c.id); }}>
+                      <button className="text-xs bg-stone-800 hover:bg-red-900/60 border border-stone-700 hover:border-red-700 text-stone-300 px-3 py-1 rounded-lg transition-colors">
+                        Suspend
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
