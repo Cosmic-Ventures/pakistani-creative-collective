@@ -1,10 +1,10 @@
 /**
- * Capture laptop-width screenshots of key pages for the handoff PDF.
+ * Capture laptop-width screenshots of key pages for the handoff doc.
  * Requires the target (dev server or deployed site) to have seeded demo data.
  * Run: npx tsx scripts/screenshots.ts
  * Run against production: SCREENSHOT_BASE=https://pakistani-creative-collective.vercel.app npx tsx scripts/screenshots.ts
  */
-import puppeteer from "puppeteer-core";
+import puppeteer, { type Page } from "puppeteer-core";
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const BASE = process.env.SCREENSHOT_BASE ?? "http://localhost:3000";
@@ -14,18 +14,9 @@ const HEIGHT = 900;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function main() {
-  const browser = await puppeteer.launch({
-    executablePath: CHROME,
-    headless: true,
-    args: ["--no-sandbox", "--hide-scrollbars", "--force-device-scale-factor=2"],
-    defaultViewport: { width: WIDTH, height: HEIGHT, deviceScaleFactor: 2 },
-  });
-  const page = await browser.newPage();
-
-  // ── Log in as the paid demo account ──────────────────────────────
+async function login(page: Page, email: string) {
   await page.goto(`${BASE}/auth/signin`, { waitUntil: "networkidle2" });
-  await page.type('input[name="email"]', "paid@demo.test");
+  await page.type('input[name="email"]', email);
   await page.type('input[name="password"]', "password123");
   await Promise.all([
     page.evaluate(() => {
@@ -37,21 +28,45 @@ async function main() {
     page.waitForNavigation({ waitUntil: "networkidle2" }).catch(() => {}),
   ]);
   await sleep(1500);
+}
 
-  const shots: { name: string; path: string; fullPage?: boolean; wait?: number }[] = [
-    { name: "Home", path: "/" },
-    { name: "Directory", path: "/directory" },
-    { name: "Paid profile", path: "/directory/aneesa-khan", wait: 2500 },
-    { name: "Contact form", path: "/directory/aneesa-khan/request" },
-  ];
+async function shoot(page: Page, name: string, path: string, opts: { fullPage?: boolean; wait?: number } = {}) {
+  await page.goto(`${BASE}${path}`, { waitUntil: "networkidle2" });
+  await sleep(opts.wait ?? 1200);
+  const file = `${OUT}/${name}.png`;
+  await page.screenshot({ path: file as `${string}.png`, fullPage: opts.fullPage ?? false });
+  console.log(`✓ ${name} → ${file}`);
+}
 
-  for (const s of shots) {
-    await page.goto(`${BASE}${s.path}`, { waitUntil: "networkidle2" });
-    await sleep(s.wait ?? 1200);
-    const file = `${OUT}/${s.path === "/" ? "home" : s.path.split("/").filter(Boolean).join("-")}.png`;
-    await page.screenshot({ path: file as `${string}.png` });
-    console.log(`✓ ${s.name} → ${file}`);
-  }
+async function main() {
+  const browser = await puppeteer.launch({
+    executablePath: CHROME,
+    headless: true,
+    args: ["--no-sandbox", "--hide-scrollbars", "--force-device-scale-factor=2"],
+    defaultViewport: { width: WIDTH, height: HEIGHT, deviceScaleFactor: 2 },
+  });
+  const page = await browser.newPage();
+
+  // ── Unauthenticated / free views ─────────────────────────────────
+  await shoot(page, "home", "/", { fullPage: true });
+  await shoot(page, "directory-free", "/directory");
+  await shoot(page, "profile-free", "/directory/aneesa-khan", { fullPage: true, wait: 2000 });
+  await shoot(page, "enroll-form", "/enroll", { fullPage: true });
+  await shoot(page, "hire-talent", "/request");
+
+  // ── Paid member views ─────────────────────────────────────────────
+  await login(page, "paid@demo.test");
+  await shoot(page, "directory-paid", "/directory");
+  await shoot(page, "profile-paid", "/directory/aneesa-khan", { fullPage: true, wait: 2000 });
+  await shoot(page, "contact-form", "/directory/aneesa-khan/request");
+  await shoot(page, "community-dashboard", "/community", { fullPage: true, wait: 1800 });
+
+  // ── Admin views ────────────────────────────────────────────────────
+  const client = await page.createCDPSession();
+  await client.send("Network.clearBrowserCookies");
+  await login(page, "admin@demo.test");
+  await shoot(page, "admin-community", "/admin/community", { fullPage: true });
+  await shoot(page, "admin-analytics", "/admin/analytics", { fullPage: true, wait: 1800 });
 
   await browser.close();
 }
