@@ -143,8 +143,8 @@ export default async function AnalyticsPage() {
           {[
             { label: "Total Accounts", value: totalUsers },
             { label: "Paid Subscribers", value: paidUsers },
-            { label: "Early Access ($30)", value: earlyAccessUsers },
-            { label: "Standard ($50)", value: paidUsers - earlyAccessUsers },
+            { label: "Registered Pre-Launch", value: earlyAccessUsers },
+            { label: "Registered Post-Launch", value: paidUsers - earlyAccessUsers },
           ].map(({ label, value }) => (
             <StatCard key={label} label={label} value={value} />
           ))}

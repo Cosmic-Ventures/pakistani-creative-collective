@@ -3,15 +3,15 @@
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { getSession, createSession } from "./session";
-import { stripe, PRICE_EARLY, PRICE_STANDARD } from "./stripe";
+import { stripe, PRICE_MONTHLY, PRICE_ANNUAL } from "./stripe";
 
-export async function createCheckoutSession() {
+export async function createCheckoutSession(plan: "monthly" | "annual") {
   const session = await getSession();
   if (!session) return;
   const user = await db.user.findUnique({ where: { id: session.userId } });
   if (!user) return;
 
-  const priceId = user.earlyAccess ? PRICE_EARLY : PRICE_STANDARD;
+  const priceId = plan === "monthly" ? PRICE_MONTHLY : PRICE_ANNUAL;
 
   let customerId = user.stripeCustomerId ?? undefined;
   if (!customerId) {

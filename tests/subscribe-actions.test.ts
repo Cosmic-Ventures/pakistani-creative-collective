@@ -19,8 +19,8 @@ vi.mock("@/lib/session", () => ({
 }));
 vi.mock("@/lib/stripe", () => ({
   stripe: stripeMock,
-  PRICE_EARLY: "price_early",
-  PRICE_STANDARD: "price_standard",
+  PRICE_MONTHLY: "price_monthly",
+  PRICE_ANNUAL: "price_annual",
 }));
 
 import { createCheckoutSession, simulatePayment, manageSubscriptionPortal } from "@/lib/subscribe-actions";
@@ -53,19 +53,18 @@ describe("simulatePayment", () => {
 });
 
 describe("createCheckoutSession", () => {
-  it("creates a Stripe customer for first-time subscribers and starts checkout", async () => {
+  it("creates a Stripe customer for first-time subscribers and checks out with the monthly price", async () => {
     getSessionMock.mockResolvedValue({ userId: "user-1" });
     dbMock.user.findUnique.mockResolvedValue({
       id: "user-1",
       email: "a@example.com",
       name: "Ada",
-      earlyAccess: true,
       stripeCustomerId: null,
     });
     stripeMock.customers.create.mockResolvedValue({ id: "cus_123" });
     stripeMock.checkout.sessions.create.mockResolvedValue({ url: "https://checkout.stripe.com/session" });
 
-    await createCheckoutSession();
+    await createCheckoutSession("monthly");
 
     expect(stripeMock.customers.create).toHaveBeenCalledWith({ email: "a@example.com", name: "Ada" });
     expect(dbMock.user.update).toHaveBeenCalledWith({
@@ -75,28 +74,27 @@ describe("createCheckoutSession", () => {
     expect(stripeMock.checkout.sessions.create).toHaveBeenCalledWith(
       expect.objectContaining({
         customer: "cus_123",
-        line_items: [{ price: "price_early", quantity: 1 }],
+        line_items: [{ price: "price_monthly", quantity: 1 }],
       })
     );
     expect(redirectMock).toHaveBeenCalledWith("https://checkout.stripe.com/session");
   });
 
-  it("reuses an existing Stripe customer", async () => {
+  it("reuses an existing Stripe customer and checks out with the annual price", async () => {
     getSessionMock.mockResolvedValue({ userId: "user-1" });
     dbMock.user.findUnique.mockResolvedValue({
       id: "user-1",
       email: "a@example.com",
       name: "Ada",
-      earlyAccess: false,
       stripeCustomerId: "cus_existing",
     });
     stripeMock.checkout.sessions.create.mockResolvedValue({ url: "https://checkout.stripe.com/session" });
 
-    await createCheckoutSession();
+    await createCheckoutSession("annual");
 
     expect(stripeMock.customers.create).not.toHaveBeenCalled();
     expect(stripeMock.checkout.sessions.create).toHaveBeenCalledWith(
-      expect.objectContaining({ customer: "cus_existing", line_items: [{ price: "price_standard", quantity: 1 }] })
+      expect.objectContaining({ customer: "cus_existing", line_items: [{ price: "price_annual", quantity: 1 }] })
     );
   });
 });

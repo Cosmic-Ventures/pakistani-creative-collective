@@ -50,12 +50,6 @@ export default async function AccountPage() {
               <dd className="text-brand-brown/90">{new Date(user.subCurrentPeriodEnd).toLocaleDateString()}</dd>
             </div>
           )}
-          {user.earlyAccess && user.role === "UNPAID" && (
-            <div className="flex justify-between">
-              <dt className="text-brand-brown/50">Pricing</dt>
-              <dd className="text-brand-green text-xs">Early access rate ($30/yr) — first year only</dd>
-            </div>
-          )}
         </dl>
       </div>
 
@@ -72,7 +66,7 @@ export default async function AccountPage() {
             href="/subscribe"
             className="text-sm bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-5 py-2.5 rounded-full transition-colors"
           >
-            Subscribe — from ${user.earlyAccess ? 30 : 50}/year
+            Subscribe — from $7.86/month
           </a>
         )}
         <form action={logoutAction}>

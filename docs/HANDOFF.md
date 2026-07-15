@@ -50,7 +50,7 @@ The Pakistani Creative Collective platform is a Next.js app with a Postgres data
 - Submissions route to the admin panel; admin can forward to the creative or mark accepted/declined
 
 **Subscriptions**
-- $30/year early-access rate (pre-launch signups) vs. $50/year standard, enforced server-side
+- $7.86/month or $80/year — same access either way, member picks billing cadence at checkout
 - Stripe Checkout + Billing Portal wired up, but **currently running in a safe demo mode** (see below) since live Stripe keys aren't configured yet
 
 **Admin panel**
@@ -77,15 +77,15 @@ To go live:
 2. Give us access to manage its DNS — either share the registrar/DNS provider login, or we'll send you the exact records to add yourself. We'll use this to point the domain at the deployment and verify it for Resend.
 
 ### Stripe — handles subscription billing
-**Used for:** charging the $30/$50 annual subscription, the self-serve billing portal (update card, cancel), and keeping subscription status in sync via webhooks.
+**Used for:** charging the $7.86/month or $80/year subscription (same access either way, member's choice), the self-serve billing portal (update card, cancel), and keeping subscription status in sync via webhooks.
 
 To go live:
 1. Create a Stripe account (or use an existing one) and switch it to live mode.
-2. Create two recurring Prices: $30/year ("early access") and $50/year ("standard").
+2. Create two recurring Prices: $7.86/month and $80/year.
 3. Set these environment variables on the hosting platform:
    - `STRIPE_SECRET_KEY` — from the Stripe dashboard
-   - `STRIPE_PRICE_EARLY` / `STRIPE_PRICE_STANDARD` — the two Price IDs from step 2
-   - `STRIPE_WEBHOOK_SECRET` — generated when you add a webhook endpoint pointing at `https://<your-domain>/api/webhooks/stripe`, listening for `customer.subscription.created/updated/deleted`
+   - `STRIPE_PRICE_MONTHLY` / `STRIPE_PRICE_ANNUAL` — the two Price IDs from step 2
+   - `STRIPE_WEBHOOK_SECRET` — generated when you add a webhook endpoint pointing at `https://<your-domain>/api/webhooks/stripe`, listening for `customer.subscription.created/updated/deleted` (use the **Snapshot** payload style, not Thin — see `src/app/api/webhooks/stripe/route.ts`)
 4. Once those are set, the demo banner disappears automatically and real Stripe Checkout takes over — no code changes needed.
 
 ### Resend — handles transactional email

@@ -16,61 +16,42 @@ export default async function SubscribePage() {
   const user = await db.user.findUnique({ where: { id: session.userId } });
   if (!user) redirect("/auth/signin");
 
-  const amount = user.earlyAccess ? 30 : 50;
+  const features = [
+    "Full creative profiles including headshots",
+    "Search & filter by role, level, availability, language",
+    "Submit contact requests — routed through Aneesa Talks",
+    "Rate information (where creatives opt in)",
+    "All social and portfolio links",
+  ];
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <h1 className="font-heading font-bold text-2xl text-brand-green mb-2">Subscribe to PCC</h1>
-        <p className="text-brand-brown/70 text-sm mb-8">
-          Unlock full profiles, search & filter, and contact requests.
-        </p>
+      <div className="w-full max-w-3xl">
+        <div className="text-center mb-8">
+          <h1 className="font-heading font-bold text-2xl text-brand-green mb-2">Subscribe to PCC</h1>
+          <p className="text-brand-brown/70 text-sm">
+            Unlock full profiles, search & filter, and contact requests. Both plans include the
+            exact same access — pick whichever billing works for you.
+          </p>
+        </div>
 
-        <div className={`bg-white border rounded-2xl p-6 mb-6 ${user.earlyAccess ? "border-brand-mint" : "border-brand-green/10"}`}>
-          {user.earlyAccess && (
-            <span className="inline-block text-xs bg-brand-mint/30 border border-brand-mint text-brand-green px-2 py-0.5 rounded-full mb-3">
-              Early access rate
-            </span>
-          )}
-          <div className="flex items-end gap-2 mb-4">
-            <span className="text-4xl font-bold text-brand-green">${amount}</span>
-            <span className="text-brand-brown/60 text-sm mb-1">/year</span>
-            {user.earlyAccess && (
-              <span className="text-brand-brown/40 text-xs mb-1 line-through ml-1">$50</span>
-            )}
-          </div>
-          <ul className="space-y-2 text-sm text-brand-brown/80 mb-6">
-            {[
-              "Full creative profiles including headshots",
-              "Search & filter by role, level, availability, language",
-              "Submit contact requests — routed through Aneesa Talks",
-              "Rate information (where creatives opt in)",
-              "All social and portfolio links",
-            ].map((f) => (
-              <li key={f} className="flex items-start gap-2">
-                <span className="text-brand-green shrink-0">✓</span> {f}
-              </li>
-            ))}
-          </ul>
-          {user.earlyAccess && (
-            <p className="text-xs text-brand-brown/50 mb-4">
-              Early access rate applies to your first year only. Renewals are $50/year.
-            </p>
-          )}
-          {isStripeConfigured ? (
-            <form action={createCheckoutSession}>
-              <button
-                type="submit"
-                className="w-full bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold py-3 rounded-full transition-colors"
-              >
-                Subscribe for ${amount}/year →
-              </button>
-            </form>
-          ) : (
-            <div>
-              <div className="text-xs text-amber-700 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2 mb-3">
-                Stripe not configured yet — this is a demo flow. Payment will be simulated.
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+          <div className="bg-white border border-brand-green/10 rounded-2xl p-6">
+            <p className="text-sm text-brand-brown/60 mb-1">Monthly</p>
+            <div className="flex items-end gap-2 mb-4">
+              <span className="text-4xl font-bold text-brand-green">$7.86</span>
+              <span className="text-brand-brown/60 text-sm mb-1">/month</span>
+            </div>
+            {isStripeConfigured ? (
+              <form action={createCheckoutSession.bind(null, "monthly")}>
+                <button
+                  type="submit"
+                  className="w-full bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold py-3 rounded-full transition-colors"
+                >
+                  Subscribe monthly →
+                </button>
+              </form>
+            ) : (
               <form action={simulatePayment}>
                 <button
                   type="submit"
@@ -79,8 +60,55 @@ export default async function SubscribePage() {
                   Simulate payment (demo)
                 </button>
               </form>
+            )}
+          </div>
+
+          <div className="bg-white border border-brand-mint rounded-2xl p-6 relative">
+            <span className="absolute -top-3 right-6 text-xs bg-brand-mint text-brand-green font-semibold px-2.5 py-0.5 rounded-full">
+              Save ~15%
+            </span>
+            <p className="text-sm text-brand-brown/60 mb-1">Annual</p>
+            <div className="flex items-end gap-2 mb-4">
+              <span className="text-4xl font-bold text-brand-green">$80</span>
+              <span className="text-brand-brown/60 text-sm mb-1">/year</span>
             </div>
-          )}
+            {isStripeConfigured ? (
+              <form action={createCheckoutSession.bind(null, "annual")}>
+                <button
+                  type="submit"
+                  className="w-full bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold py-3 rounded-full transition-colors"
+                >
+                  Subscribe annually →
+                </button>
+              </form>
+            ) : (
+              <form action={simulatePayment}>
+                <button
+                  type="submit"
+                  className="w-full bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold py-3 rounded-full transition-colors"
+                >
+                  Simulate payment (demo)
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+
+        {!isStripeConfigured && (
+          <div className="text-xs text-amber-700 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2 mb-6 max-w-md mx-auto text-center">
+            Stripe not configured yet — this is a demo flow. Payment will be simulated.
+          </div>
+        )}
+
+        <div className="bg-brand-green/5 border border-brand-green/10 rounded-2xl p-6 max-w-md mx-auto mb-6">
+          <p className="text-sm font-semibold text-brand-green mb-3">Every plan includes</p>
+          <ul className="space-y-2 text-sm text-brand-brown/80">
+            {features.map((f) => (
+              <li key={f} className="flex items-start gap-2">
+                <span className="text-brand-green shrink-0">✓</span> {f}
+              </li>
+            ))}
+          </ul>
         </div>
 
         <p className="text-center text-xs text-brand-brown/40">
