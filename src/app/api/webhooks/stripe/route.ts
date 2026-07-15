@@ -20,6 +20,10 @@ export async function POST(req: NextRequest) {
       const sub = event.data.object as Stripe.Subscription;
       const customerId = sub.customer as string;
       const isActive = sub.status === "active" || sub.status === "trialing";
+      // current_period_end lives per-item (not on the subscription itself) as of
+      // Stripe's flexible-billing-periods API era — this app only ever creates
+      // single-item subscriptions (see subscribe-actions.ts), so item 0 is it.
+      const currentPeriodEnd = sub.items.data[0]?.current_period_end;
 
       await db.user.updateMany({
         where: { stripeCustomerId: customerId },
@@ -27,7 +31,7 @@ export async function POST(req: NextRequest) {
           role: isActive ? "PAID" : "UNPAID",
           stripeSubId: sub.id,
           subStatus: sub.status,
-          subCurrentPeriodEnd: new Date((sub as unknown as { current_period_end: number }).current_period_end * 1000),
+          subCurrentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000) : null,
         },
       });
       break;
