@@ -8,6 +8,12 @@ const inputCls =
   "w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm";
 const textareaCls = `${inputCls} resize-none`;
 
+// Stable DOM id for a radio option, so the label's htmlFor gives every option
+// an unambiguous accessible name (implicit label-wrapping alone proved flaky
+// in accessibility-tree extraction for some of the longer option strings).
+const optionId = (group: string, value: string) =>
+  `${group}-${value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+
 export default function ContactRequestForm({
   creativeId,
   creativeSlug,
@@ -98,9 +104,10 @@ export default function ContactRequestForm({
         </p>
         <div className="space-y-2">
           {EXPERIENCE_LEVELS.map((level) => (
-            <label key={level} className="flex items-start gap-2.5 text-sm text-brand-brown/80 cursor-pointer">
+            <label key={level} htmlFor={optionId("experienceLevel", level)} className="flex items-start gap-2.5 text-sm text-brand-brown/80 cursor-pointer">
               <input
                 type="radio"
+                id={optionId("experienceLevel", level)}
                 name="experienceLevel"
                 value={level}
                 required
@@ -121,9 +128,10 @@ export default function ContactRequestForm({
         <p className="text-xs text-brand-brown/50 mb-3">Select the option that best describes your request.</p>
         <div className="space-y-2 mb-4">
           {REQUEST_TYPES.map((type) => (
-            <label key={type} className="flex items-start gap-2.5 text-sm text-brand-brown/80 cursor-pointer">
+            <label key={type} htmlFor={optionId("requestType", type)} className="flex items-start gap-2.5 text-sm text-brand-brown/80 cursor-pointer">
               <input
                 type="radio"
+                id={optionId("requestType", type)}
                 name="requestType"
                 value={type}
                 required
@@ -165,9 +173,10 @@ export default function ContactRequestForm({
         <p className="text-xs text-brand-brown/50 mb-3">Select the option that best suits your request.</p>
         <div className="space-y-2">
           {TIMELINES.map((t) => (
-            <label key={t} className="flex items-start gap-2.5 text-sm text-brand-brown/80 cursor-pointer">
+            <label key={t} htmlFor={optionId("timeline", t)} className="flex items-start gap-2.5 text-sm text-brand-brown/80 cursor-pointer">
               <input
                 type="radio"
+                id={optionId("timeline", t)}
                 name="timeline"
                 value={t}
                 required

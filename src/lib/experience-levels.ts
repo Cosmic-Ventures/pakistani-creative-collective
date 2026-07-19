@@ -17,6 +17,17 @@ export const EXPERIENCE_LEVELS = [
   "Veteran Creative (12+ years / 20+ projects)",
 ] as const;
 
+/**
+ * Canonical stored form of an experience level: the tier name without the
+ * years/projects parenthetical (e.g. "Developing Professional"). Forms show
+ * the full EXPERIENCE_LEVELS labels for context, but everything persisted to
+ * Creative rows must go through this so directory filters and analytics
+ * aggregate on one value per tier.
+ */
+export function shortExperienceLevel(label: string): string {
+  return label.replace(/\s*\([^)]*\)\s*$/, "").trim();
+}
+
 export type ExperienceTier = {
   name: string;
   years: string;

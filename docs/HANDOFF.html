@@ -1,260 +1,235 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
 <meta charset="utf-8">
-<title>PCC Build Handoff</title>
+<title>PCC — Final Build Handoff</title>
 <style>
-  @page { size: A4; margin: 22mm 18mm; }
+  :root {
+    --green: #294D3D;
+    --brown: #2A1511;
+  }
   * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-    color: #2A1511;
+    font-family: "DM Sans", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--brown);
+    font-size: 11.5px;
     line-height: 1.55;
-    font-size: 11pt;
     margin: 0;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
   }
-  .cover {
-    background: #294D3D;
-    color: #FFFCF9;
-    padding: 26px 28px;
-    border-radius: 14px;
-    margin-bottom: 26px;
+  h1, h2, h3 {
+    color: var(--green);
+    font-weight: 800;
+    line-height: 1.25;
+    page-break-after: avoid;
   }
-  .cover .kicker { text-transform: uppercase; letter-spacing: .12em; font-size: 9pt; color: #91D2A6; margin: 0 0 6px; }
-  .cover h1 { font-size: 26pt; margin: 0; font-weight: 800; letter-spacing: -.02em; text-transform: uppercase; line-height: 1.02; }
-  .cover p { margin: 10px 0 0; color: rgba(255,252,249,.8); font-size: 10.5pt; }
-  h2 {
-    color: #294D3D; font-size: 15pt; font-weight: 800; text-transform: uppercase;
-    letter-spacing: -.01em; margin: 26px 0 8px; padding-bottom: 5px;
-    border-bottom: 2px solid rgba(41,77,61,.18);
-  }
-  h3 { color: #294D3D; font-size: 12pt; margin: 16px 0 4px; }
-  p { margin: 7px 0; }
-  ul, ol { margin: 6px 0 6px 0; padding-left: 20px; }
+  h1 { font-size: 24px; margin: 0 0 12px; }
+  h2 { font-size: 17px; margin: 26px 0 8px; border-bottom: 2px solid var(--green); padding-bottom: 4px; }
+  h3 { font-size: 13.5px; margin: 18px 0 6px; }
+  p { margin: 6px 0; }
+  ul, ol { margin: 6px 0; padding-left: 22px; }
   li { margin: 3px 0; }
-  code {
-    background: rgba(41,77,61,.08); color: #294D3D; padding: 1px 5px;
-    border-radius: 4px; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 9.5pt;
+  hr { border: none; border-top: 1px solid #d8d2cb; margin: 20px 0; }
+  code { background: #f2efe9; padding: 1px 4px; border-radius: 3px; font-size: 10.5px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  th, td { border: 1px solid #d8d2cb; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #eef3ef; color: var(--green); }
+  img {
+    display: block;
+    width: 100%;
+    height: 480px;
+    object-fit: cover;
+    object-position: top center;
+    border: 1px solid #d8d2cb;
+    border-radius: 6px;
+    margin: 8px 0 4px;
+    page-break-inside: avoid;
   }
-  strong { color: #2A1511; }
-  .vendor {
-    background: rgba(145,210,166,.16); border: 1px solid rgba(145,210,166,.55);
-    border-radius: 10px; padding: 4px 16px 12px; margin: 10px 0;
-  }
-  .used-for { background: rgba(41,77,61,.06); border-left: 3px solid #91D2A6; padding: 6px 12px; border-radius: 4px; margin: 8px 0; }
-  footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid rgba(41,77,61,.15); font-size: 8.5pt; color: rgba(42,21,17,.5); }
-
-  /* ── Screenshot gallery (laptop browser-frame chrome) ──────────── */
-  .shots { margin-top: 10px; }
-  .shot { margin: 0 0 22px; break-inside: avoid; }
-  .frame {
-    border-radius: 10px; overflow: hidden;
-    border: 1px solid rgba(41,77,61,.25);
-    box-shadow: 0 8px 24px rgba(42,21,17,.14);
-    background: #fff;
-  }
-  .bar {
-    background: #e9efe9; height: 26px; display: flex; align-items: center;
-    padding: 0 12px; gap: 7px; border-bottom: 1px solid rgba(41,77,61,.15);
-  }
-  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
-  .url {
-    margin-left: 10px; background: #fff; border-radius: 5px; height: 16px; flex: 1;
-    max-width: 360px; font-size: 7.5pt; color: rgba(42,21,17,.5);
-    display: flex; align-items: center; padding: 0 8px;
-  }
-  .frame img { display: block; width: 100%; }
-  .caption { font-size: 9pt; color: rgba(42,21,17,.6); margin: 7px 2px 0; }
-  .caption b { color: #294D3D; }
-  .page-break { break-before: page; }
-  .live-link { display: inline-block; margin-top: 14px; color: #91D2A6; font-size: 10.5pt; text-decoration: none; }
-  .cost {
-    background: rgba(145,210,166,.16); border: 1px solid rgba(145,210,166,.55);
-    border-radius: 10px; padding: 14px 18px; margin: 14px 0 22px;
-  }
+  a { color: var(--green); }
 </style>
 </head>
-<body>
-  <div class="cover">
-    <p class="kicker">Pakistani Creative Collective · Created by Aneesa Talks</p>
-    <h1>Build Handoff</h1>
-    <p>What we built, a look at the screens, and what's needed to take Stripe &amp; Resend live.</p>
-    <a class="live-link" href="https://pakistani-creative-collective.vercel.app">→ pakistani-creative-collective.vercel.app</a>
-  </div>
-
-  <div class="cost">
-    <strong>Cost &amp; billing.</strong> There is no charge to Cosmic Ventures for implementation. Ongoing hosting (Vercel) and the database (Supabase) currently run about <strong>$20/month</strong> combined, and that may increase if traffic, storage, or usage scales up.
-  </div>
-
-  <h2>Pages to review</h2>
-  <p><strong>Everything below is demo/fake data</strong> — the creatives, applications, and accounts are sample data for testing, not real members. Real member data doesn't go in until you're happy with the design and flows (see "Moving to real data" below).</p>
-  <p>Click through every page and send us feedback — the more detail the better. Page by page is most useful: what feels off about the layout, copy, navigation, anything missing or confusing. Once we have your notes we'll iterate and send back an updated version for another pass.</p>
-  <p>Demo logins (already seeded, no setup needed): <strong>paid@demo.test</strong> / <strong>free@demo.test</strong> / <strong>admin@demo.test</strong>, password <strong>password123</strong> for all three.</p>
-
-  <h3>Public — no login needed</h3>
-  <ul>
-    <li><a href="https://pakistani-creative-collective.vercel.app/">Home</a></li>
-    <li><a href="https://pakistani-creative-collective.vercel.app/directory">Directory</a> — browse all approved creatives</li>
-    <li><a href="https://pakistani-creative-collective.vercel.app/enroll">Apply to Join</a> — the public application form</li>
-  </ul>
-
-  <h3>Sign in as paid@demo.test to see the full paid experience</h3>
-  <ul>
-    <li><a href="https://pakistani-creative-collective.vercel.app/auth/signin">Sign in</a></li>
-    <li><a href="https://pakistani-creative-collective.vercel.app/directory/aneesa-khan">Aneesa Khan's profile</a> — the full paid view (headshot, education, languages, rate info, etc.); compare against the same page signed out or as free@demo.test to see the locked/public view</li>
-    <li><a href="https://pakistani-creative-collective.vercel.app/directory/aneesa-khan/request">Request an introduction</a> — link from any profile's "Request Intro" button</li>
-    <li><a href="https://pakistani-creative-collective.vercel.app/account">My Account</a> — subscription status, billing portal link</li>
-    <li><a href="https://pakistani-creative-collective.vercel.app/subscribe">Subscribe / upgrade</a> — shown to free accounts; currently in demo mode (see below)</li>
-  </ul>
-
-  <h3>Admin — sign in as admin@demo.test</h3>
-  <ul>
-    <li><a href="https://pakistani-creative-collective.vercel.app/admin">Admin dashboard</a></li>
-    <li><a href="https://pakistani-creative-collective.vercel.app/admin/applications">Applications queue</a></li>
-    <li><a href="https://pakistani-creative-collective.vercel.app/admin/contact-requests">Contact requests</a></li>
-    <li><a href="https://pakistani-creative-collective.vercel.app/admin/feature-requests">Feature requests</a></li>
-    <li><a href="https://pakistani-creative-collective.vercel.app/admin/analytics">Analytics</a></li>
-  </ul>
-
-  <h2>What we built</h2>
-  <p>The Pakistani Creative Collective platform is a Next.js app with a Postgres database (Supabase), styled to the brand spec (colors, fonts, logo, illustrations) with the full creative-profile and contact-request experience implemented.</p>
-
-  <h3>Public site</h3>
-  <ul>
-    <li>Home page, member directory (free preview vs. full paid view), and individual creative profiles.</li>
-    <li><strong>Free visitors</strong> see: name, role(s), experience level, location, bio, and one public link.</li>
-    <li><strong>Paid subscribers</strong> additionally see: headshot, education, languages, mediums, social/portfolio links, primary work sample, and a "Work For Hire" card (rate info, travel, collaboration preferences).</li>
-  </ul>
-
-  <h3>Creative application flow</h3>
-  <ul><li>Public "Apply to Join" form (free) → admin review queue → approve/reject → applicant is emailed and gets a live profile.</li></ul>
-
-  <h3>Contact requests</h3>
-  <ul>
-    <li>Paid subscribers request an introduction via a form matching the spec: requester info, experience level, request type, message, timeline, and consent.</li>
-    <li>Submissions route to the admin panel; admin can forward to the creative or mark accepted/declined.</li>
-  </ul>
-
-  <h3>Subscriptions</h3>
-  <ul>
-    <li>$30/year early-access rate (pre-launch signups) vs. $50/year standard, enforced server-side.</li>
-    <li>Stripe Checkout + Billing Portal are wired up, but <strong>currently run in a safe demo mode</strong> (below) since live keys aren't set.</li>
-  </ul>
-
-  <h3>Admin panel &amp; tests</h3>
-  <ul>
-    <li>Applications, contact requests, feature requests, and basic analytics (kept on a simple internal dark theme).</li>
-    <li>Vitest suite (<code>npm test</code>) covering signup/login, enrollment, contact requests, feature requests, admin moderation, and checkout — 30 tests, all passing.</li>
-  </ul>
-
-  <!-- ── Screens ──────────────────────────────────────────────── -->
-  <div class="page-break"></div>
-  <h2>The screens</h2>
-  <div class="shots">
-    <div class="shot">
-      <div class="frame">
-        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">pakistanicreativecollective.com</span></div>
-        <img src="screenshots/home.png" alt="Home page">
-      </div>
-      <p class="caption"><b>Home.</b> Hero on the brand's textured green with the logo lockup and primary calls to action.</p>
-    </div>
-
-    <div class="shot">
-      <div class="frame">
-        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">pakistanicreativecollective.com/directory</span></div>
-        <img src="screenshots/directory.png" alt="Member directory">
-      </div>
-      <p class="caption"><b>Directory.</b> Searchable, filterable grid of vetted members (role, level, availability).</p>
-    </div>
-
-    <div class="shot page-break">
-      <div class="frame">
-        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">pakistanicreativecollective.com/directory/aneesa-khan</span></div>
-        <img src="screenshots/directory-aneesa-khan.png" alt="Paid creative profile">
-      </div>
-      <p class="caption"><b>Creative profile (paid view).</b> Identity card, biography, education/availability/languages/connect, an embedded work sample, and the "Work For Hire" card — matching the brand mockups.</p>
-    </div>
-
-    <div class="shot">
-      <div class="frame">
-        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">pakistanicreativecollective.com/directory/aneesa-khan/request</span></div>
-        <img src="screenshots/directory-aneesa-khan-request.png" alt="Contact request form">
-      </div>
-      <p class="caption"><b>Contact request.</b> The full intake form (about you, experience level, request type, timeline, consent) routed to the admin queue.</p>
-    </div>
-  </div>
-
-  <div class="page-break"></div>
-  <h2>Demo mode (no real charges or emails yet)</h2>
-  <p>With <code>STRIPE_SECRET_KEY</code> and <code>RESEND_API_KEY</code> unset:</p>
-  <ul>
-    <li>The subscribe page shows a "demo flow" banner and a "Simulate payment" button instead of real checkout. Clicking it marks the account paid (no money moves) and shows a success page noting the payment was simulated.</li>
-    <li>Application / approval / rejection / contact-request emails silently no-op — the in-app success screens still show, but no email is sent.</li>
-  </ul>
-  <p>So the site is fully demoable end-to-end today without either vendor account.</p>
-
-  <h2>What's needed before going live</h2>
-
-  <div class="vendor">
-    <h3>Domain</h3>
-    <div class="used-for"><strong>Used for:</strong> the real address members and visitors will use, instead of the <code>vercel.app</code> placeholder — also required as the sending domain for Resend emails below.</div>
-    <ol>
-      <li>Purchase a domain (or tell us which existing one to use, e.g. a subdomain of <code>aneesatalks.com</code>).</li>
-      <li>Give us access to manage its DNS — either share the registrar/DNS provider login, or we'll send you the exact records to add yourself. We'll use this to point the domain at the deployment and verify it for Resend.</li>
-    </ol>
-  </div>
-
-  <div class="vendor">
-    <h3>Stripe — subscription billing</h3>
-    <div class="used-for"><strong>Used for:</strong> charging the $30/$50 annual subscription, the self-serve billing portal (update card, cancel), and keeping subscription status in sync via webhooks.</div>
-    <ol>
-      <li>Create a Stripe account and switch to live mode.</li>
-      <li>Create two recurring Prices: $30/year ("early access") and $50/year ("standard").</li>
-      <li>Set environment variables on the host:
-        <ul>
-          <li><code>STRIPE_SECRET_KEY</code> — from the Stripe dashboard</li>
-          <li><code>STRIPE_PRICE_EARLY</code> / <code>STRIPE_PRICE_STANDARD</code> — the two Price IDs</li>
-          <li><code>STRIPE_WEBHOOK_SECRET</code> — from a webhook endpoint pointed at <code>/api/webhooks/stripe</code>, listening for <code>customer.subscription.created/updated/deleted</code></li>
-        </ul>
-      </li>
-      <li>Once set, the demo banner disappears and real Checkout takes over — no code changes needed.</li>
-    </ol>
-  </div>
-
-  <div class="vendor">
-    <h3>Resend — transactional email</h3>
-    <div class="used-for"><strong>Used for:</strong> notifying the team of new applications and contact requests, and notifying applicants/creatives of approval, rejection, and feature selection.</div>
-    <ol>
-      <li>Create a Resend account.</li>
-      <li>Verify the sending domain (<code>aneesatalks.com</code>) by adding the DNS records Resend provides — required before it will deliver mail from <code>noreply@aneesatalks.com</code>.</li>
-      <li>Set <code>RESEND_API_KEY</code> on the host. Every email flow then activates automatically.</li>
-    </ol>
-  </div>
-
-  <div class="vendor">
-    <h3>Moving to real data</h3>
-    <div class="used-for">Once you're happy with the design and flows, we'll replace the demo data with the real one.</div>
-    <ol>
-      <li>Upload your existing member list from the Google Sheet into the directory.</li>
-      <li>Pre-create login accounts for those existing members so they don't have to re-apply.</li>
-      <li>Optionally, send an outreach email to those members letting them know their profile is live and how to log in — we can draft this with you.</li>
-    </ol>
-    <p style="margin:6px 0 0; font-size:10pt; color:rgba(42,21,17,.6);">This happens after your feedback round above, not before — no point migrating real data onto a design that's still changing.</p>
-  </div>
-
-  <h2>Other required environment variables</h2>
-  <ul>
-    <li><code>DATABASE_URL</code> — Supabase connection. <strong>Use the pooler connection</strong> (<code>...pooler.supabase.com:5432</code>), not the direct <code>db.&lt;ref&gt;.supabase.co</code> host (which is IPv6-only and won't resolve from many networks).</li>
-    <li><code>SESSION_SECRET</code> — random 32+ character string for signing login sessions.</li>
-    <li><code>NEXT_PUBLIC_APP_URL</code> — the deployed site URL (used in email links and Stripe redirects).</li>
-  </ul>
-
-  <h2>Note on the header font</h2>
-  <p>The spec calls for <strong>Garet</strong> (bold, all-caps, tight letter-spacing). Garet is a licensed font not available on Google Fonts, so <strong>Plus Jakarta Sans (extrabold)</strong> is substituted as the closest open-license match. If you license Garet, swapping it in is a small change in <code>src/app/layout.tsx</code>.</p>
-
-  <footer>Pakistani Creative Collective — build handoff. Generated for client review.</footer>
+<body><h1>Pakistani Creative Collective — Final Build Handoff</h1>
+<p><strong>Live site:</strong> <a href="https://pakistani-creative-collective.vercel.app">https://pakistani-creative-collective.vercel.app</a>
+<strong>Date:</strong> July 18, 2026</p>
+<p>This is the wrap-up of the July feedback round. Everything from the &quot;PCC Website Workflow&quot; notes doc has been implemented, the full site has been QA-tested end-to-end (including a real Stripe checkout against your Stripe account), and this document walks through the finished product page by page.</p>
+<p>Demo logins (seeded, no setup needed) — password <strong>password123</strong> for all three:</p>
+<table>
+<thead>
+<tr>
+<th>Account</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>free@demo.test</code></td>
+<td>The free/preview experience — locked profiles, upgrade prompts</td>
+</tr>
+<tr>
+<td><code>paid@demo.test</code></td>
+<td>The full member experience — full profiles, contact requests, Community Dashboard</td>
+</tr>
+<tr>
+<td><code>admin@demo.test</code></td>
+<td>The admin panel — applications, contact requests, moderation, analytics</td>
+</tr>
+</tbody></table>
+<p>All creatives, posts, and applications currently in the site are <strong>sample data</strong> for review. Real member data comes in after your sign-off (see &quot;Moving to real data&quot; at the end).</p>
+<hr>
+<h2>What was implemented from your feedback</h2>
+<p><strong>Branding</strong></p>
+<ul>
+<li>Header logo is the horizontal lockup with green text (white-text variant on dark backgrounds); the site icon is the no-text logo mark.</li>
+<li>All headings now use <strong>Playfair Display SC</strong> (replacing the earlier Garet substitute), with DM Sans for body text.</li>
+</ul>
+<p><strong>Home page</strong></p>
+<ul>
+<li>&quot;Five Experience Tiers&quot; breakdown with the full criteria for each level, pulled from your &quot;identify your level&quot; reference.</li>
+<li>&quot;Free vs. Member Access&quot; comparison table with the &quot;Why the Difference&quot; note, word for word from your doc.</li>
+<li>A featured-profile demo card underneath (currently Aneesa&#39;s profile, as suggested).</li>
+<li>The &quot;Looking to hire Pakistani creative talent?&quot; call-to-action now goes to the talent request form, not the directory.</li>
+</ul>
+<p><strong>Directory</strong></p>
+<ul>
+<li>Search bar plus role/location/level filters for free visitors; paid members additionally get mediums, availability, languages, and project-type filters.</li>
+</ul>
+<p><strong>Profiles</strong></p>
+<ul>
+<li>Bio capped at 200 words (the application form enforces this too).</li>
+<li>Public (free) profile view no longer shows the creative&#39;s link, and no longer shows the initials placeholder where a headshot would be — free views simply have no headshot slot.</li>
+<li>Profile pages print cleanly (backgrounds and buttons are stripped when printing).</li>
+</ul>
+<p><strong>Application form</strong></p>
+<ul>
+<li>Role and medium checklists now match the Jotform exactly, organized by the same categories.</li>
+<li>The &quot;public link&quot; section was removed; rate range offers currency options (USD, PKR, GBP, EUR, CAD, AUD, other); languages include Gujarati plus a fill-in-the-blank for others.</li>
+<li>&quot;How did you hear about PCC?&quot; now reveals the referral-name field right where it belongs when &quot;Word of Mouth/Referral&quot; is selected.</li>
+<li>The submission bug you hit (&quot;it cleared everything and then gave a message&quot;) is fixed — the form keeps everything you typed if validation fails.</li>
+</ul>
+<p><strong>Community Dashboard</strong> (the full spec from your doc)</p>
+<ul>
+<li>Paid members post under the four categories (Recent Work, Seeking Funding, Seeking Collaborators, Available for Work) with title, body (500-word cap), region, duration/deadline, and an optional link.</li>
+<li>Posts are held for your review before going live; approving/rejecting notifies the member (no reason required). Available-for-Work and Seeking-Collaborators posts auto-expire when their deadline passes.</li>
+<li>Reactions (Congratulations 🎉, Interested 👀, Support 🤝, Sharing This 🔁) and comments, with commenter name/role pulled from their profile. Comments go live immediately with report-and-remove moderation; members with repeated removals can be flagged or suspended from commenting.</li>
+<li>Admin controls: pending queue, edit-before-approve, remove any live post, set/override expiry dates, and a queue searchable by member, category, region, and date. Bulk &quot;high-priority post&quot; notifications to members are supported.</li>
+<li>Analytics: posts by category/month, approval rate, average review time, active posts, comment and report counts, report-to-removal rate, most-reacted and most-commented posts, and members with the most removed comments.</li>
+</ul>
+<p><strong>Subscriptions</strong></p>
+<ul>
+<li>One membership, two billing options, presented as a single card with a monthly/yearly toggle: <strong>$7.99/month</strong> or <strong>$80/year</strong> (matching the two products in your Stripe account).</li>
+<li>Stripe Checkout, the customer billing portal, and the subscription webhook are <strong>connected to your Stripe account and verified working end-to-end</strong> — a test subscription was purchased with Stripe&#39;s test card, the account was upgraded automatically, and the billing portal loads with the correct plan and invoice history.</li>
+<li>Membership changes now apply to a signed-in member&#39;s session immediately — no sign-out/sign-in needed after subscribing.</li>
+</ul>
+<p><strong>Email (Resend)</strong></p>
+<ul>
+<li>Your API key is configured. Every flow sends automatically: application received (to you + the applicant), approval/rejection, contact-request alerts, Community post decisions, comment-removal notices, and featured-creative notifications.</li>
+<li>Emails send from <code>noreply@aneesatalks.com</code> — if <code>aneesatalks.com</code> isn&#39;t verified in your Resend dashboard yet, that must be completed before messages deliver reliably.</li>
+</ul>
+<hr>
+<h2>Page-by-page tour</h2>
+<h3>Home</h3>
+<p>The public landing page: brand hero, the five experience tiers with criteria, the free-vs-member comparison, the featured creative, and the talent-request call-to-action.</p>
+<p><img src="screenshots/home.png" alt="Home page"></p>
+<h3>Member Directory — free preview</h3>
+<p>Free visitors see names, roles, levels, locations, and bios, with a preview-mode notice and an upgrade prompt. Search plus role/location/level filters.</p>
+<p><img src="screenshots/directory-free.png" alt="Directory, free preview"></p>
+<h3>Member Directory — paid view</h3>
+<p>Members get headshots plus the full filter set: mediums, availability, languages, project types.</p>
+<p><img src="screenshots/directory-paid.png" alt="Directory, paid view"></p>
+<h3>Creative profile — free preview</h3>
+<p>The locked view: name, pronouns, location, roles, level, and bio only — no link, no headshot slot, and a subscribe prompt.</p>
+<p><img src="screenshots/profile-free.png" alt="Profile, free preview"></p>
+<h3>Creative profile — full member view</h3>
+<p>The full card layout on the textured green background: identity card, biography, education, availability, languages, mediums, socials, work samples, and the Work-for-Hire card with rate info where the creative opted in.</p>
+<p><img src="screenshots/profile-paid.png" alt="Profile, full view"></p>
+<h3>Apply to Join</h3>
+<p>The full application form matching the Jotform: basic info, bio (200-word cap with live counter), role/medium checklists by category, experience and portfolio, work samples, rates, availability, languages, collaboration preferences, and consent.</p>
+<p><img src="screenshots/enroll-form.png" alt="Application form"></p>
+<h3>Hire Talent</h3>
+<p>The public talent-request form for productions looking to hire from the collective.</p>
+<p><img src="screenshots/hire-talent.png" alt="Hire talent"></p>
+<h3>Subscribe</h3>
+<p>The single-plan pricing card with the monthly/yearly toggle, running live Stripe Checkout.</p>
+<p><img src="screenshots/subscribe.png" alt="Subscribe"></p>
+<h3>Contact request</h3>
+<p>Paid members request introductions through this form — experience level, request type, message, timeline, and consent — routed to you for review, never directly to the creative.</p>
+<p><img src="screenshots/contact-form.png" alt="Contact request form"></p>
+<h3>Community Dashboard</h3>
+<p>The paid-members feed: categorized posts with reactions and comments, plus the composer for submitting new posts for review.</p>
+<p><img src="screenshots/community-dashboard.png" alt="Community Dashboard"></p>
+<h3>My Account</h3>
+<p>Subscription status, renewal date, and the Stripe billing portal link (update card, cancel, view invoices).</p>
+<p><img src="screenshots/account.png" alt="Account page"></p>
+<h3>Admin — Overview</h3>
+<p>At-a-glance counts: pending applications, approved creatives, paid subscribers, pending contact and feature requests. (The admin panel is intentionally a plain dark theme — it&#39;s your internal tool, not part of the public brand.)</p>
+<p><img src="screenshots/admin-overview.png" alt="Admin overview"></p>
+<h3>Admin — Applications</h3>
+<p>Review queue with approve/reject; approving publishes the profile and emails the applicant.</p>
+<p><img src="screenshots/admin-applications.png" alt="Admin applications"></p>
+<h3>Admin — Contact Requests</h3>
+<p>Every introduction request with full context; forward to the creative or mark accepted/declined.</p>
+<p><img src="screenshots/admin-contact-requests.png" alt="Admin contact requests"></p>
+<h3>Admin — Community moderation</h3>
+<p>The post queue (searchable by member, region, and date, filterable by status and category), reported comments, and member flag/suspend controls.</p>
+<p><img src="screenshots/admin-community.png" alt="Admin community"></p>
+<h3>Admin — Analytics</h3>
+<p>Creative, subscriber, contact-request, and Community metrics in one place.</p>
+<p><img src="screenshots/admin-analytics.png" alt="Admin analytics"></p>
+<hr>
+<h2>QA summary (July 18, 2026)</h2>
+<p>Every user flow was exercised end-to-end this round:</p>
+<ul>
+<li><strong>Application</strong> — submitted, approved, and rejected test applications; verified emails fired and approved profiles appear in the directory.</li>
+<li><strong>Stripe</strong> — a real test-mode checkout was completed against your Stripe account: correct product/pricing on Stripe&#39;s page, redirect back to the success page, webhook received and verified, account upgraded automatically, billing portal correct. (Two configuration issues were found and fixed along the way: an invalid API key and a mismatched webhook signing secret.)</li>
+<li><strong>Contact requests, Community posting/reactions/comments, admin moderation, analytics</strong> — all verified working.</li>
+<li><strong>Automated tests</strong> — 56 tests across 9 suites, all passing.</li>
+</ul>
+<hr>
+<h2>Going fully live — the remaining checklist</h2>
+<p>The site currently runs against Stripe&#39;s <strong>sandbox</strong> (test) mode — real cards are never charged. To accept real payments:</p>
+<ol>
+<li><strong>Domain</strong> — purchase/choose the real domain and point it at the deployment (we handle DNS with you). This also becomes the sending domain for email.</li>
+<li><strong>Stripe live mode</strong> — recreate the two prices ($7.99/month, $80/year) in live mode, add a live webhook endpoint for <code>customer.subscription.created/updated/deleted</code> pointing at <code>https://&lt;your-domain&gt;/api/webhooks/stripe</code>, and swap the four Stripe environment variables (<code>STRIPE_SECRET_KEY</code>, <code>STRIPE_PRICE_MONTHLY</code>, <code>STRIPE_PRICE_ANNUAL</code>, <code>STRIPE_WEBHOOK_SECRET</code>) to their live values.</li>
+<li><strong>Resend</strong> — verify <code>aneesatalks.com</code> in Resend (DNS records) so email delivers from <code>noreply@aneesatalks.com</code>.</li>
+<li><strong>Real data</strong> — once you sign off on the design and flows: import the member list from your sheet, pre-create accounts for existing members, and optionally send the &quot;your profile is live&quot; outreach email (we can draft it together).</li>
+</ol>
+<h3>Environment variables reference</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>DATABASE_URL</code></td>
+<td>Supabase Postgres — use the <strong>pooler</strong> connection string</td>
+</tr>
+<tr>
+<td><code>SESSION_SECRET</code></td>
+<td>Random 32+ char string signing login sessions</td>
+</tr>
+<tr>
+<td><code>NEXT_PUBLIC_APP_URL</code></td>
+<td>The site&#39;s public URL (used in emails and Stripe redirects)</td>
+</tr>
+<tr>
+<td><code>STRIPE_SECRET_KEY</code></td>
+<td>Stripe API key (currently sandbox)</td>
+</tr>
+<tr>
+<td><code>STRIPE_PRICE_MONTHLY</code> / <code>STRIPE_PRICE_ANNUAL</code></td>
+<td>The two Stripe Price IDs</td>
+</tr>
+<tr>
+<td><code>STRIPE_WEBHOOK_SECRET</code></td>
+<td>Signing secret of the Stripe webhook endpoint</td>
+</tr>
+<tr>
+<td><code>RESEND_API_KEY</code></td>
+<td>Resend transactional email</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Costs</h2>
+<p>No implementation charge to Cosmic Ventures. Hosting (Vercel) plus database (Supabase) currently run about <strong>$20/month</strong> combined and may increase with traffic and storage. Stripe charges its standard per-transaction fees; Resend&#39;s free tier covers current volumes.</p>
 </body>
 </html>

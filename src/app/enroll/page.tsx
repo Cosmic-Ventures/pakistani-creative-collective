@@ -14,7 +14,7 @@ export default function EnrollPage() {
         All applications are reviewed manually by Aneesa Talks. Being listed is free.
       </p>
       <p className="text-brand-brown/50 text-sm mb-10">
-        This form takes approximately 10–15 minutes. Have your portfolio URL, professional bio (300–450 words), and three references ready.
+        This form takes approximately 10–15 minutes. Have your portfolio URL, professional bio (200 words max), and three references ready.
       </p>
       <EnrollForm />
     </div>

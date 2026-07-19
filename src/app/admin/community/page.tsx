@@ -25,14 +25,31 @@ const STATUS_COLORS: Record<string, string> = {
 export default async function AdminCommunityPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; category?: string }>;
+  searchParams: Promise<{ status?: string; category?: string; q?: string; from?: string; to?: string }>;
 }) {
-  const { status = "PENDING", category = "" } = await searchParams;
+  const { status = "PENDING", category = "", q = "", from = "", to = "" } = await searchParams;
+
+  // Client spec: the queue is searchable by member, category, region, and date.
+  // `q` matches member name or region; from/to bound the submission date.
+  const fromDate = from ? new Date(from) : null;
+  const toDate = to ? new Date(`${to}T23:59:59`) : null;
 
   const posts = await db.post.findMany({
     where: {
       ...(status === "ALL" ? {} : { status: status as "PENDING" | "APPROVED" | "REJECTED" }),
       ...(category ? { category: category as keyof typeof POST_CATEGORY_LABELS } : {}),
+      ...(q
+        ? {
+            OR: [
+              { creative: { firstName: { contains: q, mode: "insensitive" as const } } },
+              { creative: { lastName: { contains: q, mode: "insensitive" as const } } },
+              { region: { contains: q, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+      ...(fromDate || toDate
+        ? { createdAt: { ...(fromDate ? { gte: fromDate } : {}), ...(toDate ? { lte: toDate } : {}) } }
+        : {}),
     },
     orderBy: { createdAt: "desc" },
     include: { creative: { select: { firstName: true, lastName: true, email: true, slug: true } } },
@@ -90,6 +107,37 @@ export default async function AdminCommunityPage({
             ))}
           </div>
         </div>
+
+        <form method="GET" action="/admin/community" className="flex flex-wrap items-end gap-3 mb-6 text-sm">
+          <input type="hidden" name="status" value={status} />
+          {category && <input type="hidden" name="category" value={category} />}
+          <div>
+            <label htmlFor="post-q" className="block text-xs text-stone-500 mb-1">Member or region</label>
+            <input
+              id="post-q"
+              name="q"
+              defaultValue={q}
+              placeholder="Search…"
+              className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-1.5 text-stone-200 placeholder-stone-600 focus:outline-none focus:border-stone-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="post-from" className="block text-xs text-stone-500 mb-1">From</label>
+            <input id="post-from" type="date" name="from" defaultValue={from} className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-1.5 text-stone-200 focus:outline-none focus:border-stone-500" />
+          </div>
+          <div>
+            <label htmlFor="post-to" className="block text-xs text-stone-500 mb-1">To</label>
+            <input id="post-to" type="date" name="to" defaultValue={to} className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-1.5 text-stone-200 focus:outline-none focus:border-stone-500" />
+          </div>
+          <button type="submit" className="px-4 py-1.5 rounded-full bg-stone-700 hover:bg-stone-600 text-white transition-colors">
+            Filter
+          </button>
+          {(q || from || to) && (
+            <a href={`/admin/community?status=${status}${category ? `&category=${category}` : ""}`} className="text-stone-500 hover:text-stone-300 py-1.5">
+              Clear
+            </a>
+          )}
+        </form>
 
         {posts.length === 0 && <p className="text-stone-500 text-sm">No posts match this filter.</p>}
 

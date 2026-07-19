@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "./db";
 import { sendEnrollmentNotification } from "./email";
+import { shortExperienceLevel } from "./experience-levels";
 
 function toSlug(first: string, last: string): string {
   const base = `${first}-${last}`
@@ -86,7 +87,9 @@ export async function enrollAction(
   const mediums = formData.getAll("mediums") as string[];
   const preferredProjectTypes = formData.getAll("preferredProjectTypes") as string[];
   const languagesCheck = formData.getAll("languagesCheck") as string[];
-  const collaborationPreferences = (formData.getAll("collaborationPreferences") as string[]).join(", ");
+  const collaborationPreferences = (formData.getAll("collaborationPreferences") as string[])
+    .map(shortExperienceLevel)
+    .join(", ");
   formData.set("collaborationPreferences", collaborationPreferences);
 
   const rolesOtherRaw = (formData.get("rolesOther") as string) ?? "";
@@ -132,7 +135,7 @@ export async function enrollAction(
       unionMemberships: d.unionMemberships,
       education: d.education,
       pccGoals: d.pccGoals,
-      experienceLevel: d.experienceLevel,
+      experienceLevel: shortExperienceLevel(d.experienceLevel),
       notableAchievements: d.notableAchievements,
       website: d.website,
       imdb: d.imdb,

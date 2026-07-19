@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type Stripe from "stripe";
 import { stripe, isStripeConfigured } from "@/lib/stripe";
 import { db } from "@/lib/db";
-import { createSession, getSession } from "@/lib/session";
+import { getSession } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Subscribed!" };
 
@@ -26,18 +27,22 @@ export default async function SubscribeSuccessPage({
       });
 
       if (checkoutSession.payment_status === "paid") {
-        const sub = checkoutSession.subscription as unknown as { id: string; current_period_end: number; status: string };
+        const sub = checkoutSession.subscription as unknown as Stripe.Subscription;
+        // current_period_end lives per-item, not on the subscription — same
+        // as the webhook handler (this app only creates single-item subs).
+        const currentPeriodEnd = sub.items.data[0]?.current_period_end;
         await db.user.update({
           where: { id: session.userId },
           data: {
             role: "PAID",
             stripeSubId: sub.id,
             subStatus: sub.status,
-            subCurrentPeriodEnd: new Date(sub.current_period_end * 1000),
+            subCurrentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000) : null,
           },
         });
-        // Re-issue session with updated role
-        await createSession({ ...session, role: "PAID" });
+        // No cookie re-issue needed (and none is possible during render):
+        // getSession() reads role from the DB, so the upgrade is visible
+        // to the nav and gated pages immediately.
       }
     } catch {
       // If verification fails, still show success (webhook will handle the rest)

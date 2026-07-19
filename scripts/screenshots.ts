@@ -33,6 +33,8 @@ async function login(page: Page, email: string) {
 async function shoot(page: Page, name: string, path: string, opts: { fullPage?: boolean; wait?: number } = {}) {
   await page.goto(`${BASE}${path}`, { waitUntil: "networkidle2" });
   await sleep(opts.wait ?? 1200);
+  // Strip the Next.js dev-tools indicator when shooting against `next dev`
+  await page.evaluate(() => document.querySelector("nextjs-portal")?.remove());
   const file = `${OUT}/${name}.png`;
   await page.screenshot({ path: file as `${string}.png`, fullPage: opts.fullPage ?? false });
   console.log(`✓ ${name} → ${file}`);
@@ -54,17 +56,26 @@ async function main() {
   await shoot(page, "enroll-form", "/enroll", { fullPage: true });
   await shoot(page, "hire-talent", "/request");
 
+  // ── Free (signed-in) views ────────────────────────────────────────
+  const client = await page.createCDPSession();
+  await login(page, "free@demo.test");
+  await shoot(page, "subscribe", "/subscribe", { fullPage: true });
+
   // ── Paid member views ─────────────────────────────────────────────
+  await client.send("Network.clearBrowserCookies");
   await login(page, "paid@demo.test");
   await shoot(page, "directory-paid", "/directory");
   await shoot(page, "profile-paid", "/directory/aneesa-khan", { fullPage: true, wait: 2000 });
   await shoot(page, "contact-form", "/directory/aneesa-khan/request");
   await shoot(page, "community-dashboard", "/community", { fullPage: true, wait: 1800 });
+  await shoot(page, "account", "/account");
 
   // ── Admin views ────────────────────────────────────────────────────
-  const client = await page.createCDPSession();
   await client.send("Network.clearBrowserCookies");
   await login(page, "admin@demo.test");
+  await shoot(page, "admin-overview", "/admin");
+  await shoot(page, "admin-applications", "/admin/applications", { fullPage: true });
+  await shoot(page, "admin-contact-requests", "/admin/contact-requests", { fullPage: true });
   await shoot(page, "admin-community", "/admin/community", { fullPage: true });
   await shoot(page, "admin-analytics", "/admin/analytics", { fullPage: true, wait: 1800 });
 
