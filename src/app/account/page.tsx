@@ -66,7 +66,7 @@ export default async function AccountPage() {
             href="/subscribe"
             className="text-sm bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-5 py-2.5 rounded-full transition-colors"
           >
-            Subscribe — from $7.86/month
+            Subscribe — from $7.99/month
           </a>
         )}
         <form action={logoutAction}>

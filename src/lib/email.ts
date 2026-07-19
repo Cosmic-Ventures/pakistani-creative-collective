@@ -73,7 +73,7 @@ export async function sendApprovalEmail(firstName: string, email: string, slug: 
       <p>Great news — your application to the Pakistani Creative Collective has been approved. Your profile is now live in the database.</p>
       <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/directory/${slug}">View your profile →</a></p>
       <p>To access the full directory and submit contact requests, you'll need to subscribe.</p>
-      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/subscribe">Subscribe from $30/year →</a></p>
+      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/subscribe">Subscribe from $7.99/month →</a></p>
       <p>— Aneesa Talks</p>
     `,
   });

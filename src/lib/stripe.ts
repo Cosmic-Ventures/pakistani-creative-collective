@@ -26,5 +26,5 @@ export const stripe = new Proxy({} as Stripe, {
 
 // Price IDs — set these after creating products in your Stripe dashboard.
 // Both plans grant identical PAID access; the only difference is billing cadence.
-export const PRICE_MONTHLY = process.env.STRIPE_PRICE_MONTHLY ?? ""; // $7.86/month
+export const PRICE_MONTHLY = process.env.STRIPE_PRICE_MONTHLY ?? ""; // $7.99/month
 export const PRICE_ANNUAL = process.env.STRIPE_PRICE_ANNUAL ?? "";   // $80/year
