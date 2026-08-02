@@ -23,6 +23,7 @@ export default async function SubscribePage() {
     "Submit contact requests — routed through Aneesa Talks",
     "Rate information (where creatives opt in)",
     "All social and portfolio links",
+    "Access to the private Community Dashboard",
   ];
 
   return (

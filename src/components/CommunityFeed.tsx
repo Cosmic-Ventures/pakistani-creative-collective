@@ -1,7 +1,9 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
+import Link from "next/link";
 import { toggleReaction, addComment, reportComment, type CommentResult } from "@/lib/community-actions";
+import { togglePostBookmark } from "@/lib/bookmark-actions";
 import { POST_CATEGORY_LABELS, REACTION_LABELS, REACTION_EMOJI, COMMENT_MAX_WORDS } from "@/lib/community-constants";
 import type { PostCategory, ReactionType } from "@prisma/client";
 
@@ -11,7 +13,7 @@ type CommentT = {
   id: string;
   body: string;
   createdAt: Date;
-  creative: { firstName: string; lastName: string; roles: string[] };
+  creative: { firstName: string; lastName: string; roles: string[]; slug: string };
 };
 
 type PostT = {
@@ -32,7 +34,9 @@ function formatDate(d: Date) {
   return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
-export default function CommunityFeed({ posts, myCreativeId }: { posts: PostT[]; myCreativeId: string | null }) {
+export default function CommunityFeed({
+  posts, myCreativeId, bookmarkedPostIds = [],
+}: { posts: PostT[]; myCreativeId: string | null; bookmarkedPostIds?: string[] }) {
   if (posts.length === 0) {
     return <p className="text-center text-brand-brown/50 py-16">No posts yet — be the first to share something.</p>;
   }
@@ -40,16 +44,27 @@ export default function CommunityFeed({ posts, myCreativeId }: { posts: PostT[];
   return (
     <div className="space-y-5">
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} myCreativeId={myCreativeId} />
+        <PostCard key={post.id} post={post} myCreativeId={myCreativeId} initiallyBookmarked={bookmarkedPostIds.includes(post.id)} />
       ))}
     </div>
   );
 }
 
-function PostCard({ post, myCreativeId }: { post: PostT; myCreativeId: string | null }) {
+function PostCard({
+  post, myCreativeId, initiallyBookmarked,
+}: { post: PostT; myCreativeId: string | null; initiallyBookmarked: boolean }) {
   const [isPending, startTransition] = useTransition();
   const [showComments, setShowComments] = useState(false);
+  const [bookmarked, setBookmarked] = useState(initiallyBookmarked);
+  const [bookmarkPending, startBookmarkTransition] = useTransition();
   const myReaction = myCreativeId ? post.reactions.find((r) => r.creativeId === myCreativeId)?.type : undefined;
+
+  function toggleBookmark() {
+    setBookmarked((b) => !b);
+    startBookmarkTransition(() => {
+      togglePostBookmark(post.id);
+    });
+  }
 
   const counts = REACTION_TYPES.reduce<Record<ReactionType, number>>((acc, t) => {
     acc[t] = post.reactions.filter((r) => r.type === t).length;
@@ -69,12 +84,30 @@ function PostCard({ post, myCreativeId }: { post: PostT; myCreativeId: string | 
         <span className="text-[11px] uppercase font-semibold bg-brand-mint/30 border border-brand-mint text-brand-green px-2.5 py-1 rounded-full">
           {POST_CATEGORY_LABELS[post.category]}
         </span>
-        <span className="text-xs text-brand-brown/40 shrink-0">{formatDate(post.createdAt)}</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-xs text-brand-brown/40">{formatDate(post.createdAt)}</span>
+          <button
+            onClick={toggleBookmark}
+            disabled={bookmarkPending}
+            aria-label={bookmarked ? "Remove bookmark" : "Bookmark this post"}
+            title={bookmarked ? "Remove bookmark" : "Bookmark this post"}
+            className={`text-sm transition-colors ${bookmarked ? "text-brand-green" : "text-brand-brown/25 hover:text-brand-brown/50"}`}
+          >
+            {bookmarked ? "★" : "☆"}
+          </button>
+        </div>
       </div>
 
       <h3 className="font-heading font-bold text-lg text-brand-brown mb-1">{post.title}</h3>
       <p className="text-xs text-brand-brown/50 mb-3">
-        {post.creative.firstName} {post.creative.lastName}
+        <Link
+          href={`/directory/${post.creative.slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:underline"
+        >
+          {post.creative.firstName} {post.creative.lastName}
+        </Link>
         {post.creative.roles.length > 0 && ` · ${post.creative.roles[0]}`}
       </p>
 
@@ -147,7 +180,14 @@ function CommentRow({ comment, canReport }: { comment: CommentT; canReport: bool
     <div className="flex items-start justify-between gap-2 text-sm">
       <div>
         <span className="text-brand-brown/50 text-xs">
-          {comment.creative.firstName} {comment.creative.lastName}
+          <Link
+            href={`/directory/${comment.creative.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
+          >
+            {comment.creative.firstName} {comment.creative.lastName}
+          </Link>
           {comment.creative.roles.length > 0 && ` · ${comment.creative.roles[0]}`}
         </span>
         <p className="text-brand-brown/80">{comment.body}</p>

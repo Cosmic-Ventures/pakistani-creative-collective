@@ -74,6 +74,7 @@ const EnrollSchema = z.object({
   collaborationPreferences: z.string().optional(),
   references: z.string().optional(),
   referralName: z.string().optional(),
+  consentPromo: z.string().optional(),
 });
 
 export type EnrollResult = { error: string } | { success: true };
@@ -99,13 +100,17 @@ export async function enrollAction(
 
   // Work samples
   const workSamples = [1, 2, 3]
-    .map((n) => ({
-      title: formData.get(`ws${n}Title`) as string,
-      medium: formData.get(`ws${n}Medium`) as string,
-      year: formData.get(`ws${n}Year`) as string,
-      role: formData.get(`ws${n}Role`) as string,
-      link: formData.get(`ws${n}Link`) as string,
-    }))
+    .map((n) => {
+      const roleSelect = formData.getAll(`ws${n}RoleSelect`) as string[];
+      const roleOther = (formData.get(`ws${n}RoleOther`) as string) ?? "";
+      return {
+        title: formData.get(`ws${n}Title`) as string,
+        medium: formData.get(`ws${n}Medium`) as string,
+        year: formData.get(`ws${n}Year`) as string,
+        role: [...roleSelect, roleOther.trim()].filter(Boolean).join(", "),
+        link: formData.get(`ws${n}Link`) as string,
+      };
+    })
     .filter((ws) => ws.title);
 
   const parsed = EnrollSchema.safeParse(Object.fromEntries(formData));
@@ -155,6 +160,7 @@ export async function enrollAction(
       collaborationPreferences: d.collaborationPreferences || undefined,
       references: d.references,
       referralName: d.referralName,
+      promoConsent: d.consentPromo === "on",
       roles: allRoles,
       mediums: allMediums,
       preferredProjectTypes,

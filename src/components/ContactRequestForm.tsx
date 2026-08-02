@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Image from "next/image";
 import { submitContactRequest, type ContactRequestResult } from "@/lib/contact-request-action";
 import { EXPERIENCE_LEVELS, REQUEST_TYPES, TIMELINES } from "@/lib/contact-request-constants";
 
@@ -51,9 +52,13 @@ export default function ContactRequestForm({
         <p className="text-brand-green/80 italic mb-8">
           You&apos;ll be notified for further communications.
         </p>
-        <p className="font-heading font-bold lowercase text-brand-green/90 tracking-tight">
-          aneesa talks
-        </p>
+        <Image
+          src="/brand/aneesa-talks-logo.png"
+          alt="Aneesa Talks"
+          width={1317}
+          height={208}
+          className="h-6 w-auto mx-auto"
+        />
       </div>
     );
   }

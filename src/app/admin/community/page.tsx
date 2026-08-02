@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { db } from "@/lib/db";
 import {
   approvePost,
   rejectPost,
+  editPost,
   removePost,
   dismissCommentReport,
   removeReportedComment,
@@ -59,14 +61,14 @@ export default async function AdminCommunityPage({
     where: { status: "PENDING" },
     orderBy: { createdAt: "desc" },
     include: {
-      comment: { include: { creative: { select: { firstName: true, lastName: true } }, post: { select: { title: true } } } },
-      creative: { select: { firstName: true, lastName: true } },
+      comment: { include: { creative: { select: { firstName: true, lastName: true, slug: true } }, post: { select: { title: true } } } },
+      creative: { select: { firstName: true, lastName: true, slug: true } },
     },
   });
 
   const flaggedOrSuspended = await db.creative.findMany({
     where: { OR: [{ commentFlagged: true }, { commentSuspended: true }] },
-    select: { id: true, firstName: true, lastName: true, commentFlagged: true, commentSuspended: true },
+    select: { id: true, firstName: true, lastName: true, slug: true, commentFlagged: true, commentSuspended: true },
   });
 
   return (
@@ -148,7 +150,10 @@ export default async function AdminCommunityPage({
                 <div>
                   <h3 className="font-semibold text-white">{p.title}</h3>
                   <p className="text-sm text-stone-400">
-                    {p.creative.firstName} {p.creative.lastName} · {POST_CATEGORY_LABELS[p.category]}
+                    <Link href={`/directory/${p.creative.slug}`} target="_blank" className="hover:text-white hover:underline">
+                      {p.creative.firstName} {p.creative.lastName}
+                    </Link>{" "}
+                    · {POST_CATEGORY_LABELS[p.category]}
                   </p>
                   <p className="text-xs text-stone-600 mt-0.5">
                     Submitted {new Date(p.createdAt).toLocaleDateString()}
@@ -170,6 +175,39 @@ export default async function AdminCommunityPage({
                 <p className="text-xs text-amber-400/80 bg-amber-950/30 border border-amber-700/30 rounded px-3 py-2 my-3">
                   Notes: {p.adminNotes}
                 </p>
+              )}
+
+              {p.status === "PENDING" && (
+                <details className="mb-3">
+                  <summary className="text-xs text-stone-500 cursor-pointer hover:text-stone-400">
+                    Edit before approving
+                  </summary>
+                  <form
+                    action={async (formData: FormData) => {
+                      "use server";
+                      await editPost(p.id, {
+                        title: formData.get("title") as string,
+                        body: formData.get("body") as string,
+                      });
+                    }}
+                    className="mt-3 space-y-2"
+                  >
+                    <input
+                      name="title"
+                      defaultValue={p.title}
+                      className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-1.5 text-sm text-stone-200 focus:outline-none focus:border-stone-600"
+                    />
+                    <textarea
+                      name="body"
+                      defaultValue={p.body}
+                      rows={4}
+                      className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-1.5 text-sm text-stone-200 focus:outline-none focus:border-stone-600"
+                    />
+                    <button className="text-xs bg-stone-800 hover:bg-stone-700 text-stone-300 px-3 py-1.5 rounded-lg transition-colors">
+                      Save edits
+                    </button>
+                  </form>
+                </details>
               )}
 
               <div className="flex gap-2 flex-wrap mt-3">
@@ -225,10 +263,15 @@ export default async function AdminCommunityPage({
           {reports.map((r) => (
             <div key={r.id} className="bg-stone-900 border border-stone-800 rounded-xl p-5">
               <p className="text-xs text-stone-500 mb-2">
-                On &ldquo;{r.comment.post.title}&rdquo; · reported by {r.creative.firstName} {r.creative.lastName}
+                On &ldquo;{r.comment.post.title}&rdquo; · reported by{" "}
+                <Link href={`/directory/${r.creative.slug}`} target="_blank" className="hover:text-stone-300 hover:underline">
+                  {r.creative.firstName} {r.creative.lastName}
+                </Link>
               </p>
               <p className="text-sm text-stone-300 mb-1">
-                {r.comment.creative.firstName} {r.comment.creative.lastName}:
+                <Link href={`/directory/${r.comment.creative.slug}`} target="_blank" className="hover:underline">
+                  {r.comment.creative.firstName} {r.comment.creative.lastName}
+                </Link>:
               </p>
               <p className="text-sm text-stone-400 mb-3">{r.comment.body}</p>
               <div className="flex gap-2">
@@ -255,7 +298,9 @@ export default async function AdminCommunityPage({
             {flaggedOrSuspended.map((c) => (
               <div key={c.id} className="bg-stone-900 border border-stone-800 rounded-xl p-4 flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-white text-sm">{c.firstName} {c.lastName}</span>
+                  <Link href={`/directory/${c.slug}`} target="_blank" className="text-white text-sm hover:underline">
+                    {c.firstName} {c.lastName}
+                  </Link>
                   {c.commentFlagged && (
                     <span className="text-xs px-2 py-0.5 rounded-full border text-amber-400 bg-amber-950/40 border-amber-700/40">Flagged</span>
                   )}

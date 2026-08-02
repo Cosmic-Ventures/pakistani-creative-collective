@@ -13,8 +13,18 @@ const STATUS_COLORS: Record<string, string> = {
   UNAVAILABLE: "text-stone-400 bg-stone-800 border-stone-700",
 };
 
-export default async function ContactRequestsPage() {
+const STATUSES = ["ALL", "PENDING", "FORWARDED", "ACCEPTED", "DECLINED", "UNAVAILABLE"] as const;
+
+export default async function ContactRequestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
+  const activeStatus = STATUSES.includes(status as (typeof STATUSES)[number]) ? status! : "ALL";
+
   const requests = await db.contactRequest.findMany({
+    where: activeStatus === "ALL" ? undefined : { status: activeStatus as never },
     orderBy: { createdAt: "desc" },
     include: {
       creative: { select: { firstName: true, lastName: true, slug: true } },
@@ -26,7 +36,23 @@ export default async function ContactRequestsPage() {
     <div>
       <h2 className="text-lg font-semibold text-white mb-6">Contact Requests</h2>
 
-      {requests.length === 0 && <p className="text-stone-500 text-sm">No contact requests yet.</p>}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {STATUSES.map((s) => (
+          <a
+            key={s}
+            href={s === "ALL" ? "/admin/contact-requests" : `/admin/contact-requests?status=${s}`}
+            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+              activeStatus === s
+                ? "bg-emerald-700 border-emerald-600 text-white"
+                : "bg-stone-900 border-stone-800 text-stone-400 hover:text-stone-200"
+            }`}
+          >
+            {s === "ALL" ? "All" : s.charAt(0) + s.slice(1).toLowerCase()}
+          </a>
+        ))}
+      </div>
+
+      {requests.length === 0 && <p className="text-stone-500 text-sm">No contact requests match this filter.</p>}
 
       <div className="space-y-4">
         {requests.map((r) => (
@@ -60,31 +86,40 @@ export default async function ContactRequestsPage() {
             )}
 
             <div className="flex gap-2 flex-wrap">
-              {r.status === "PENDING" && (
+              {r.status !== "FORWARDED" && (
                 <form action={async () => { "use server"; await forwardContactRequest(r.id); }}>
                   <button className="text-sm bg-blue-700 hover:bg-blue-600 text-white px-4 py-1.5 rounded-lg transition-colors">
                     Forward to Creative
                   </button>
                 </form>
               )}
-              {["PENDING", "FORWARDED"].includes(r.status) && (
-                <>
-                  <form action={async () => { "use server"; await updateContactRequestStatus(r.id, "ACCEPTED"); }}>
-                    <button className="text-sm bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg transition-colors">
-                      Mark Accepted
-                    </button>
-                  </form>
-                  <form action={async () => { "use server"; await updateContactRequestStatus(r.id, "DECLINED"); }}>
-                    <button className="text-sm bg-stone-800 hover:bg-red-900/60 border border-stone-700 text-stone-300 px-4 py-1.5 rounded-lg transition-colors">
-                      Mark Declined
-                    </button>
-                  </form>
-                  <form action={async () => { "use server"; await updateContactRequestStatus(r.id, "UNAVAILABLE"); }}>
-                    <button className="text-sm text-stone-500 hover:text-stone-300 transition-colors px-2">
-                      Unavailable
-                    </button>
-                  </form>
-                </>
+              {r.status !== "ACCEPTED" && (
+                <form action={async () => { "use server"; await updateContactRequestStatus(r.id, "ACCEPTED"); }}>
+                  <button className="text-sm bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg transition-colors">
+                    Mark Accepted
+                  </button>
+                </form>
+              )}
+              {r.status !== "DECLINED" && (
+                <form action={async () => { "use server"; await updateContactRequestStatus(r.id, "DECLINED"); }}>
+                  <button className="text-sm bg-stone-800 hover:bg-red-900/60 border border-stone-700 text-stone-300 px-4 py-1.5 rounded-lg transition-colors">
+                    Mark Declined
+                  </button>
+                </form>
+              )}
+              {r.status !== "UNAVAILABLE" && (
+                <form action={async () => { "use server"; await updateContactRequestStatus(r.id, "UNAVAILABLE"); }}>
+                  <button className="text-sm text-stone-500 hover:text-stone-300 transition-colors px-2">
+                    Unavailable
+                  </button>
+                </form>
+              )}
+              {r.status !== "PENDING" && (
+                <form action={async () => { "use server"; await updateContactRequestStatus(r.id, "PENDING"); }}>
+                  <button className="text-sm text-stone-500 hover:text-stone-300 transition-colors px-2">
+                    Reset to Pending
+                  </button>
+                </form>
               )}
             </div>
           </div>

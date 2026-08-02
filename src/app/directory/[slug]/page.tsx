@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { toggleProfileBookmark } from "@/lib/bookmark-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,14 @@ export default async function MemberPage({
   });
   if (!creative) notFound();
 
+  const isBookmarked = isPaid
+    ? Boolean(
+        await db.bookmark.findUnique({
+          where: { userId_creativeId: { userId: session!.userId, creativeId: creative.id } },
+        })
+      )
+    : false;
+
   const showFull = isPaid || isFeaturedNow(creative);
   // Only shown on the full (paid/featured) view — free profiles don't list a link at all.
   const headlineLink = showFull ? (creative.website ?? creative.publicLink) : null;
@@ -83,12 +92,27 @@ export default async function MemberPage({
       />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-        <Link
-          href="/directory"
-          className="inline-flex items-center gap-1 text-sm text-brand-cream/70 hover:text-brand-cream transition-colors mb-8 print:hidden"
-        >
-          ← Directory
-        </Link>
+        <div className="flex items-center justify-between mb-8 print:hidden">
+          <Link
+            href="/directory"
+            className="inline-flex items-center gap-1 text-sm text-brand-cream/70 hover:text-brand-cream transition-colors"
+          >
+            ← Directory
+          </Link>
+          {isPaid && (
+            <form action={async () => { "use server"; await toggleProfileBookmark(creative.id); }}>
+              <button
+                className={`text-sm font-semibold px-4 py-1.5 rounded-full border transition-colors ${
+                  isBookmarked
+                    ? "bg-brand-mint text-brand-green border-brand-mint"
+                    : "border-brand-cream/30 text-brand-cream/80 hover:text-brand-cream"
+                }`}
+              >
+                {isBookmarked ? "★ Bookmarked" : "☆ Bookmark"}
+              </button>
+            </form>
+          )}
+        </div>
 
         {/* ── Row 1 ─────────────────────────────────────────────── */}
         <div className={`grid gap-6 ${showFull ? "lg:grid-cols-3" : "lg:grid-cols-5"}`}>

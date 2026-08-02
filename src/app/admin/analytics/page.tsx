@@ -119,6 +119,13 @@ export default async function AnalyticsPage() {
     _count: true,
   });
 
+  const locationBreakdownRaw = await db.creative.groupBy({
+    by: ["location"],
+    where: { status: "APPROVED", location: { not: null } },
+    _count: true,
+  });
+  const locationBreakdown = [...locationBreakdownRaw].sort((a, b) => b._count - a._count);
+
   return (
     <div className="space-y-8">
       <h2 className="text-lg font-semibold text-white">Analytics</h2>
@@ -165,7 +172,7 @@ export default async function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div>
           <h3 className="text-sm font-medium text-stone-400 uppercase tracking-wide mb-3">Top Roles</h3>
           <div className="bg-stone-900 border border-stone-800 rounded-xl p-4 space-y-2">
@@ -189,6 +196,19 @@ export default async function AnalyticsPage() {
               </div>
             ))}
             {levelBreakdown.length === 0 && <p className="text-stone-600 text-sm">No data yet</p>}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-medium text-stone-400 uppercase tracking-wide mb-3">Geographic Regions</h3>
+          <div className="bg-stone-900 border border-stone-800 rounded-xl p-4 space-y-2">
+            {locationBreakdown.map((l) => (
+              <div key={l.location} className="flex items-center justify-between text-sm">
+                <span className="text-stone-300">{l.location}</span>
+                <span className="text-stone-500">{l._count}</span>
+              </div>
+            ))}
+            {locationBreakdown.length === 0 && <p className="text-stone-600 text-sm">No data yet</p>}
           </div>
         </div>
       </div>

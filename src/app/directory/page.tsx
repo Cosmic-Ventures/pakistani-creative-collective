@@ -29,10 +29,11 @@ export default async function DirectoryPage() {
       experienceLevel: true,
       featured: true,
       featuredUntil: true,
-      // paid fields — only include if user is paid
+      // mediums is filterable by everyone (free tier filters by medium + location only);
+      // the rest stay paid-gated.
+      mediums: true,
       ...(isPaid
         ? {
-            mediums: true,
             languages: true,
             availability: true,
             preferredProjectTypes: true,

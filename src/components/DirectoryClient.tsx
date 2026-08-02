@@ -16,8 +16,9 @@ type Member = {
   experienceLevel?: string | null;
   featured: boolean;
   featuredUntil?: Date | null;
-  // paid-only fields (undefined when not paid)
+  // filterable by everyone
   mediums?: string[];
+  // paid-only fields (undefined when not paid)
   languages?: string[];
   availability?: string | null;
   preferredProjectTypes?: string[];
@@ -121,14 +122,13 @@ export default function DirectoryClient({
   const [levelFilter, setLevelFilter] = useState("");
   const [availFilter, setAvailFilter] = useState("");
   const [mediumFilter, setMediumFilter] = useState("");
-  const [languageFilter, setLanguageFilter] = useState("");
-  const [projectTypeFilter, setProjectTypeFilter] = useState("");
 
   const roles = useMemo(() => {
+    if (!isPaid) return [];
     const set = new Set<string>();
     members.forEach((m) => m.roles?.forEach((r) => r && set.add(r)));
     return Array.from(set).sort();
-  }, [members]);
+  }, [members, isPaid]);
 
   const locations = useMemo(() => {
     const set = new Set<string>();
@@ -137,10 +137,11 @@ export default function DirectoryClient({
   }, [members]);
 
   const levels = useMemo(() => {
+    if (!isPaid) return [];
     const set = new Set<string>();
     members.forEach((m) => m.experienceLevel && set.add(m.experienceLevel));
     return Array.from(set).sort();
-  }, [members]);
+  }, [members, isPaid]);
 
   const avails = useMemo(() => {
     if (!isPaid) return [];
@@ -150,49 +151,32 @@ export default function DirectoryClient({
   }, [members, isPaid]);
 
   const mediums = useMemo(() => {
-    if (!isPaid) return [];
     const set = new Set<string>();
     members.forEach((m) => m.mediums?.forEach((med) => med && set.add(med)));
     return Array.from(set).sort();
-  }, [members, isPaid]);
-
-  const languages = useMemo(() => {
-    if (!isPaid) return [];
-    const set = new Set<string>();
-    members.forEach((m) => m.languages?.forEach((lang) => lang && set.add(lang)));
-    return Array.from(set).sort();
-  }, [members, isPaid]);
-
-  const projectTypes = useMemo(() => {
-    if (!isPaid) return [];
-    const set = new Set<string>();
-    members.forEach((m) => m.preferredProjectTypes?.forEach((t) => t && set.add(t)));
-    return Array.from(set).sort();
-  }, [members, isPaid]);
+  }, [members]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
     return members.filter((m) => {
       const name = `${m.firstName} ${m.lastName}`.toLowerCase();
       if (q && !name.includes(q) && !m.roles?.join(" ").toLowerCase().includes(q)) return false;
-      if (roleFilter && !m.roles?.includes(roleFilter)) return false;
+      if (mediumFilter && !m.mediums?.includes(mediumFilter)) return false;
       if (locationFilter && m.location !== locationFilter) return false;
-      if (levelFilter && m.experienceLevel !== levelFilter) return false;
+      if (isPaid && roleFilter && !m.roles?.includes(roleFilter)) return false;
+      if (isPaid && levelFilter && m.experienceLevel !== levelFilter) return false;
       if (isPaid && availFilter && m.availability !== availFilter) return false;
-      if (isPaid && mediumFilter && !m.mediums?.includes(mediumFilter)) return false;
-      if (isPaid && languageFilter && !m.languages?.includes(languageFilter)) return false;
-      if (isPaid && projectTypeFilter && !m.preferredProjectTypes?.includes(projectTypeFilter)) return false;
       return true;
     });
-  }, [members, query, roleFilter, locationFilter, levelFilter, availFilter, mediumFilter, languageFilter, projectTypeFilter, isPaid]);
+  }, [members, query, roleFilter, locationFilter, levelFilter, availFilter, mediumFilter, isPaid]);
 
   const selectCls = "bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown focus:outline-none focus:border-brand-green text-sm";
 
   return (
     <div>
-      {/* Role + location: available to everyone, per the Free Access spec.
-          Experience level, medium, availability, language, and project type
-          are member-only filters, per the Free vs. Member Access comparison. */}
+      {/* Medium + location: available to everyone. Profession (role), experience
+          level, and work-for-hire (availability) are member-only filters, per the
+          Free vs. Member Access comparison. */}
       <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-6">
         <input
           type="search"
@@ -201,36 +185,28 @@ export default function DirectoryClient({
           onChange={(e) => setQuery(e.target.value)}
           className="flex-1 min-w-[200px] bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm"
         />
-        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className={selectCls}>
-          <option value="">All Roles</option>
-          {roles.map((r) => <option key={r} value={r}>{r}</option>)}
+        <select value={mediumFilter} onChange={(e) => setMediumFilter(e.target.value)} className={selectCls}>
+          <option value="">All Mediums</option>
+          {mediums.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
         <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} className={selectCls}>
           <option value="">All Locations</option>
           {locations.map((l) => <option key={l} value={l}>{l}</option>)}
         </select>
-        <select value={levelFilter} onChange={(e) => setLevelFilter(e.target.value)} className={selectCls}>
-          <option value="">All Levels</option>
-          {levels.map((l) => <option key={l} value={l}>{l}</option>)}
-        </select>
 
         {isPaid && (
           <>
-            <select value={mediumFilter} onChange={(e) => setMediumFilter(e.target.value)} className={selectCls}>
-              <option value="">All Mediums</option>
-              {mediums.map((m) => <option key={m} value={m}>{m}</option>)}
+            <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className={selectCls}>
+              <option value="">All Professions</option>
+              {roles.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <select value={levelFilter} onChange={(e) => setLevelFilter(e.target.value)} className={selectCls}>
+              <option value="">All Experience Levels</option>
+              {levels.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
             <select value={availFilter} onChange={(e) => setAvailFilter(e.target.value)} className={selectCls}>
-              <option value="">All Availability</option>
+              <option value="">All Work for Hire Availability</option>
               {avails.map((a) => <option key={a} value={a}>{a}</option>)}
-            </select>
-            <select value={languageFilter} onChange={(e) => setLanguageFilter(e.target.value)} className={selectCls}>
-              <option value="">All Languages</option>
-              {languages.map((l) => <option key={l} value={l}>{l}</option>)}
-            </select>
-            <select value={projectTypeFilter} onChange={(e) => setProjectTypeFilter(e.target.value)} className={selectCls}>
-              <option value="">All Project Types</option>
-              {projectTypes.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </>
         )}

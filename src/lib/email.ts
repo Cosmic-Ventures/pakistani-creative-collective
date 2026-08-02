@@ -61,6 +61,33 @@ export async function sendContactRequestNotification(
   });
 }
 
+export async function sendContactRequestForwardEmail(
+  creativeFirstName: string,
+  creativeEmail: string,
+  requesterName: string,
+  requestType: string,
+  message: string,
+  timeline: string
+) {
+  if (!process.env.RESEND_API_KEY) return;
+
+  await getResend()?.emails.send({
+    from: FROM,
+    to: creativeEmail,
+    subject: "You have a new contact request on the PCC",
+    html: `
+      <p>Hi ${creativeFirstName},</p>
+      <p>Someone is interested in working with you through the Pakistani Creative Collective. This request has been reviewed by Aneesa Talks and forwarded to you — you're not obligated to respond.</p>
+      <p><strong>From:</strong> ${requesterName}</p>
+      <p><strong>Request type:</strong> ${requestType}</p>
+      <p><strong>Timeline:</strong> ${timeline}</p>
+      <p><strong>Message:</strong> ${message}</p>
+      <p>Reply to Aneesa Talks directly to let us know if you'd like to connect, and we'll help facilitate the introduction.</p>
+      <p>— Aneesa Talks</p>
+    `,
+  });
+}
+
 export async function sendApprovalEmail(firstName: string, email: string, slug: string) {
   if (!process.env.RESEND_API_KEY) return;
 
@@ -74,6 +101,24 @@ export async function sendApprovalEmail(firstName: string, email: string, slug: 
       <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/directory/${slug}">View your profile →</a></p>
       <p>To access the full directory and submit contact requests, you'll need to subscribe.</p>
       <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/subscribe">Subscribe from $7.99/month →</a></p>
+      <p>— Aneesa Talks</p>
+    `,
+  });
+}
+
+export async function sendRevisionRequestEmail(firstName: string, email: string, note: string) {
+  if (!process.env.RESEND_API_KEY) return;
+
+  await getResend()?.emails.send({
+    from: FROM,
+    to: email,
+    subject: "PCC — Your application needs a few changes",
+    html: `
+      <p>Hi ${firstName},</p>
+      <p>Thanks for applying to the Pakistani Creative Collective. Your application needs a few changes before we can approve it:</p>
+      <blockquote style="border-left:3px solid #294D3D;margin:12px 0;padding-left:12px;color:#2A1511;">${note}</blockquote>
+      <p>You're welcome to reapply with the revisions above using the same application link.</p>
+      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/enroll">Reapply to the PCC →</a></p>
       <p>— Aneesa Talks</p>
     `,
   });

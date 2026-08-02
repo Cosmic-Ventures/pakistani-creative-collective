@@ -28,6 +28,11 @@ export default async function Nav() {
                   Community
                 </Link>
               )}
+              {(session.role === "PAID" || session.role === "ADMIN") && (
+                <Link href="/account" className="text-brand-green/80 hover:text-brand-green transition-colors hidden sm:inline">
+                  Account Dashboard
+                </Link>
+              )}
               {session.role === "ADMIN" && (
                 <Link href="/admin" className="text-brand-brown hover:text-brand-brown/70 transition-colors hidden sm:inline">
                   Admin

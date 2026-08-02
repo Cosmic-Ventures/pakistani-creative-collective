@@ -5,7 +5,7 @@ const {
   sendApprovalEmailMock,
   sendRejectionEmailMock,
   sendFeatureNotificationMock,
-  sendContactRequestNotificationMock,
+  sendContactRequestForwardEmailMock,
 } = vi.hoisted(() => ({
   dbMock: {
     creative: { update: vi.fn() },
@@ -15,7 +15,7 @@ const {
   sendApprovalEmailMock: vi.fn(async () => {}),
   sendRejectionEmailMock: vi.fn(async () => {}),
   sendFeatureNotificationMock: vi.fn(async () => {}),
-  sendContactRequestNotificationMock: vi.fn(async () => {}),
+  sendContactRequestForwardEmailMock: vi.fn(async () => {}),
 }));
 vi.mock("@/lib/db", () => ({ db: dbMock }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
@@ -23,7 +23,7 @@ vi.mock("@/lib/email", () => ({
   sendApprovalEmail: sendApprovalEmailMock,
   sendRejectionEmail: sendRejectionEmailMock,
   sendFeatureNotification: sendFeatureNotificationMock,
-  sendContactRequestNotification: sendContactRequestNotificationMock,
+  sendContactRequestForwardEmail: sendContactRequestForwardEmailMock,
 }));
 
 import {
@@ -71,9 +71,9 @@ describe("rejectCreative", () => {
 });
 
 describe("forwardContactRequest", () => {
-  it("marks the request FORWARDED and notifies the creative", async () => {
+  it("marks the request FORWARDED and emails the creative directly", async () => {
     dbMock.contactRequest.update.mockResolvedValue({
-      creative: { firstName: "Sara", lastName: "Khan" },
+      creative: { firstName: "Sara", lastName: "Khan", email: "sara@example.com" },
       requesterName: "Jordan Lee",
       requestType: "Collaboration Opportunity",
       requestTypeOther: null,
@@ -88,19 +88,19 @@ describe("forwardContactRequest", () => {
       data: { status: "FORWARDED" },
       include: { creative: true, user: true },
     });
-    expect(sendContactRequestNotificationMock).toHaveBeenCalledWith(
-      "Sara Khan",
+    expect(sendContactRequestForwardEmailMock).toHaveBeenCalledWith(
+      "Sara",
+      "sara@example.com",
       "Jordan Lee",
       "Collaboration Opportunity",
       "Let's talk",
-      "Within the next month",
-      expect.stringContaining("/admin/contact-requests")
+      "Within the next month"
     );
   });
 
   it("labels an 'Other' request type with its free-text reason", async () => {
     dbMock.contactRequest.update.mockResolvedValue({
-      creative: { firstName: "Sara", lastName: "Khan" },
+      creative: { firstName: "Sara", lastName: "Khan", email: "sara@example.com" },
       requesterName: "Jordan Lee",
       requestType: "Other",
       requestTypeOther: "Podcast feature",
@@ -110,13 +110,13 @@ describe("forwardContactRequest", () => {
 
     await forwardContactRequest("request-1");
 
-    expect(sendContactRequestNotificationMock).toHaveBeenCalledWith(
-      "Sara Khan",
+    expect(sendContactRequestForwardEmailMock).toHaveBeenCalledWith(
+      "Sara",
+      "sara@example.com",
       "Jordan Lee",
       "Other — Podcast feature",
       "Let's talk",
-      "No set timeline",
-      expect.anything()
+      "No set timeline"
     );
   });
 });

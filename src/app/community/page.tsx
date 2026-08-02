@@ -15,6 +15,12 @@ export default async function CommunityPage() {
 
   const myCreative = await db.creative.findFirst({ where: { userId: session.userId } });
 
+  const myBookmarks = await db.bookmark.findMany({
+    where: { userId: session.userId, type: "POST" },
+    select: { postId: true },
+  });
+  const bookmarkedPostIds = myBookmarks.map((b) => b.postId).filter((id): id is string => !!id);
+
   const posts = await db.post.findMany({
     where: {
       status: "APPROVED",
@@ -27,7 +33,7 @@ export default async function CommunityPage() {
       comments: {
         where: { isRemoved: false },
         orderBy: { createdAt: "asc" },
-        include: { creative: { select: { firstName: true, lastName: true, roles: true } } },
+        include: { creative: { select: { firstName: true, lastName: true, roles: true, slug: true } } },
       },
     },
   });
@@ -48,7 +54,7 @@ export default async function CommunityPage() {
         </div>
       )}
 
-      <CommunityFeed posts={posts} myCreativeId={myCreative?.id ?? null} />
+      <CommunityFeed posts={posts} myCreativeId={myCreative?.id ?? null} bookmarkedPostIds={bookmarkedPostIds} />
     </div>
   );
 }

@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Application Submitted" };
 export default function EnrollSuccessPage() {
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4">
-      <div className="max-w-md text-center">
+      <div className="max-w-lg text-center">
         <div className="w-16 h-16 rounded-full bg-brand-mint/30 border border-brand-mint flex items-center justify-center text-3xl mx-auto mb-6">
           ✓
         </div>

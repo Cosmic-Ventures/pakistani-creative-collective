@@ -21,6 +21,12 @@ enum CreativeStatus {
   APPROVED
   REJECTED
   INACTIVE
+  FLAGGED
+}
+
+enum BookmarkType {
+  PROFILE
+  POST
 }
 
 enum ContactRequestStatus {
@@ -81,6 +87,7 @@ model User {
 
   contactRequests ContactRequest[]
   creative        Creative?
+  bookmarks       Bookmark[]
 }
 
 // ─── Creatives ────────────────────────────────────────────────────────────────
@@ -138,6 +145,7 @@ model Creative {
   pccGoals                 String?  @db.Text
   referralName             String?
   adminNotes               String?  @db.Text
+  promoConsent             Boolean  @default(false) // opted in to being used in public-launch social promo
 
   // ── Featured ───────────────────────────────────────────────────────────────
   featured      Boolean   @default(false)
@@ -156,6 +164,7 @@ model Creative {
   reactions       Reaction[]       @relation("ReactionAuthor")
   comments        Comment[]        @relation("CommentAuthor")
   commentReports  CommentReport[]  @relation("CommentReporter")
+  bookmarkedBy    Bookmark[]       @relation("BookmarkedCreative")
 }
 
 // ─── Contact Requests ────────────────────────────────────────────────────────
@@ -223,6 +232,7 @@ model Post {
 
   reactions Reaction[]
   comments  Comment[]
+  bookmarkedBy Bookmark[] @relation("BookmarkedPost")
 }
 
 model Reaction {
@@ -261,4 +271,23 @@ model CommentReport {
   createdAt  DateTime            @default(now())
 
   @@unique([commentId, creativeId]) // a member can only report a given comment once
+}
+
+// ─── Bookmarks (paid members only) ──────────────────────────────────────────
+
+model Bookmark {
+  id     String       @id @default(cuid())
+  userId String
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type   BookmarkType
+
+  creativeId String?
+  creative   Creative? @relation("BookmarkedCreative", fields: [creativeId], references: [id], onDelete: Cascade)
+  postId     String?
+  post       Post?     @relation("BookmarkedPost", fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, creativeId])
+  @@unique([userId, postId])
 }

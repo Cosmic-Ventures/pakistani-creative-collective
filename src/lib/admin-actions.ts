@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "./db";
-import { sendApprovalEmail, sendRejectionEmail, sendFeatureNotification, sendContactRequestNotification } from "./email";
+import { sendApprovalEmail, sendRejectionEmail, sendFeatureNotification, sendContactRequestForwardEmail, sendRevisionRequestEmail } from "./email";
+import type { Prisma } from "@prisma/client";
 
 export async function approveCreative(creativeId: string) {
   const creative = await db.creative.update({
@@ -23,7 +24,7 @@ export async function rejectCreative(creativeId: string, notes?: string) {
   revalidatePath("/admin/applications");
 }
 
-export async function setCreativeStatus(creativeId: string, status: "APPROVED" | "INACTIVE" | "REJECTED") {
+export async function setCreativeStatus(creativeId: string, status: "APPROVED" | "INACTIVE" | "REJECTED" | "PENDING") {
   await db.creative.update({ where: { id: creativeId }, data: { status } });
   revalidatePath("/admin/applications");
   revalidatePath("/directory");
@@ -34,19 +35,44 @@ export async function updateAdminNotes(creativeId: string, notes: string) {
   revalidatePath("/admin/applications");
 }
 
+// Third action alongside Accept/Reject: send the applicant their revision note
+// and an instruction to reapply, per the client's feedback-doc request.
+export async function flagCreativeForReview(creativeId: string, note: string) {
+  const creative = await db.creative.update({
+    where: { id: creativeId },
+    data: { status: "FLAGGED", adminNotes: note },
+  });
+  await sendRevisionRequestEmail(creative.firstName, creative.email, note).catch(console.error);
+  revalidatePath("/admin/applications");
+}
+
+// Grammar fixes or guideline-violation trims before approving — scoped to the
+// free-text fields most likely to need a touch-up, not the full application.
+export async function updateCreativeFields(
+  creativeId: string,
+  data: Pick<Prisma.CreativeUpdateInput, "firstName" | "lastName" | "bio" | "notableAchievements" | "pccGoals">
+) {
+  await db.creative.update({ where: { id: creativeId }, data });
+  revalidatePath("/admin/applications");
+}
+
 export async function forwardContactRequest(requestId: string) {
   const req = await db.contactRequest.update({
     where: { id: requestId },
     data: { status: "FORWARDED" },
     include: { creative: true, user: true },
   });
-  await sendContactRequestNotification(
-    `${req.creative.firstName} ${req.creative.lastName}`,
+  const requestType = req.requestType === "Other" ? `Other — ${req.requestTypeOther}` : req.requestType;
+  // The creative is the one who needs to act on this — email them directly,
+  // not just log another admin-facing notification (client reported never
+  // getting an email on the creative side after forwarding).
+  await sendContactRequestForwardEmail(
+    req.creative.firstName,
+    req.creative.email,
     req.requesterName,
-    req.requestType === "Other" ? `Other — ${req.requestTypeOther}` : req.requestType,
+    requestType,
     req.message,
-    req.timeline,
-    `${process.env.NEXT_PUBLIC_APP_URL}/admin/contact-requests`
+    req.timeline
   ).catch(console.error);
   revalidatePath("/admin/contact-requests");
 }

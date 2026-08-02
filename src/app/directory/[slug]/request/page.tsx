@@ -25,12 +25,12 @@ export default async function ContactRequestPage({
   if (!creative) notFound();
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
       <Link href={`/directory/${slug}`} className="inline-flex items-center gap-1 text-sm text-brand-brown/50 hover:text-brand-brown transition-colors mb-8">
         ← Back to profile
       </Link>
-      <h1 className="font-heading font-bold text-2xl text-brand-green mb-2">
-        Contact Request for {creative.firstName} {creative.lastName}
+      <h1 className="font-heading font-bold uppercase text-2xl text-brand-green mb-2">
+        Contact Request
       </h1>
       <p className="text-brand-brown/70 text-sm mb-8">
         This request will be reviewed by Aneesa Talks and forwarded to the creative. They decide whether to connect.
