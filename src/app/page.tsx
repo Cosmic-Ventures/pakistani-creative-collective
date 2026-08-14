@@ -3,8 +3,12 @@ import Image from "next/image";
 import Logo from "@/components/Logo";
 import { db } from "@/lib/db";
 import { EXPERIENCE_TIERS } from "@/lib/experience-levels";
+import { getDisplayPrices, type DisplayPrices } from "@/lib/stripe";
 
-const howItWorks = [
+// Built per-render rather than as a module constant: the "Get Connected"
+// paragraph quotes both prices, and those are read from Stripe so the copy can't
+// drift from what checkout actually charges.
+const buildHowItWorks = (prices: DisplayPrices) => [
   {
     title: "Apply to Join",
     body: [
@@ -16,7 +20,7 @@ const howItWorks = [
     title: "Get Connected",
     body: [
       "Pakistani creatives are doing incredible work around the world, but there has never been a place to find one another. The PCC brings that community together by strengthening our collective digital footprint.",
-      "Once your profile is approved, it becomes part of a directory where creatives across all mediums can discover Pakistani creatives for jobs, commissions, and collaborations. Anyone can browse basic profiles. Search filters, full profiles, community dashboard access, and connection requests are available through a paid subscription of $7.86 per month / $80 per year.",
+      `Once your profile is approved, it becomes part of a directory where creatives across all mediums can discover Pakistani creatives for jobs, commissions, and collaborations. Anyone can browse basic profiles. Search filters, full profiles, community dashboard access, and connection requests are available through a paid subscription of ${prices.monthly} per month / ${prices.annual} per year.`,
     ],
   },
   {
@@ -57,6 +61,9 @@ const MEMBER_ACCESS = [
 ];
 
 export default async function Home() {
+  const prices = await getDisplayPrices();
+  const howItWorks = buildHowItWorks(prices);
+
   const featured = await db.creative.findUnique({
     where: { slug: "aneesa-khan" },
     select: {

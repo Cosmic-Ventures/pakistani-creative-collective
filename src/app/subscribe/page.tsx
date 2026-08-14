@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
-import { isStripeConfigured } from "@/lib/stripe";
+import { isStripeConfigured, getDisplayPrices } from "@/lib/stripe";
 import { createCheckoutSession, simulatePayment } from "@/lib/subscribe-actions";
 import { PricingCard } from "@/components/PricingCard";
 
@@ -16,6 +16,8 @@ export default async function SubscribePage() {
 
   const user = await db.user.findUnique({ where: { id: session.userId } });
   if (!user) redirect("/auth/signin");
+
+  const prices = await getDisplayPrices();
 
   const features = [
     "Full creative profiles including headshots",
@@ -39,6 +41,7 @@ export default async function SubscribePage() {
 
         <PricingCard
           isStripeConfigured={isStripeConfigured}
+          prices={prices}
           monthlyAction={createCheckoutSession.bind(null, "monthly")}
           annualAction={createCheckoutSession.bind(null, "annual")}
           simulateAction={simulatePayment}

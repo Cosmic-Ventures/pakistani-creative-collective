@@ -51,7 +51,7 @@ All creatives, posts, and applications currently in the site are **sample data**
 - Analytics: posts by category/month, approval rate, average review time, active posts, comment and report counts, report-to-removal rate, most-reacted and most-commented posts, and members with the most removed comments.
 
 **Subscriptions**
-- One membership, two billing options, presented as a single card with a monthly/yearly toggle: **$7.86/month** or **$80/year** (matching the two products in your Stripe account).
+- One membership, two billing options, presented as a single card with a monthly/yearly toggle: **$7.99/month** or **$80/year**, both read live from the Prices in your Stripe account.
 - Stripe Checkout, the customer billing portal, and the subscription webhook are **connected to your Stripe account and verified working end-to-end** — a test subscription was purchased with Stripe's test card, the account was upgraded automatically, and the billing portal loads with the correct plan and invoice history.
 - Membership changes now apply to a signed-in member's session immediately — no sign-out/sign-in needed after subscribing.
 
@@ -158,16 +158,17 @@ Every user flow was exercised end-to-end this round:
 
 ## Going fully live — the remaining checklist
 
-> **Note on the monthly price.** The site displays **$7.86/month**, but the amount actually charged
-> comes from the Stripe Price referenced by `STRIPE_PRICE_MONTHLY` — it is not set in the code. The
-> existing sandbox price still reads $7.99, so create a new $7.86 monthly Price in Stripe and point
-> `STRIPE_PRICE_MONTHLY` at it (in both sandbox and live mode), otherwise the checkout total won't
-> match the page.
+> **Changing a price.** Every price shown on the site — the pricing card, the home page copy, the
+> upgrade prompts, the approval email, and the "save ~17%" badge — is read from Stripe at render
+> time and cached for an hour. **To change what members pay, change it in Stripe only; nothing needs
+> editing in the code.** Stripe Prices are immutable, so create a new Price and point
+> `STRIPE_PRICE_MONTHLY` (or `STRIPE_PRICE_ANNUAL`) at it. The site picks the new amount up within
+> the hour, and the page can never advertise a figure that differs from what checkout charges.
 
 The site currently runs against Stripe's **sandbox** (test) mode — real cards are never charged. To accept real payments:
 
 1. **Domain** — purchase/choose the real domain and point it at the deployment (we handle DNS with you). This also becomes the sending domain for email.
-2. **Stripe live mode** — recreate the two prices ($7.86/month, $80/year) in live mode, add a live webhook endpoint for `customer.subscription.created/updated/deleted` pointing at `https://<your-domain>/api/webhooks/stripe`, and swap the four Stripe environment variables (`STRIPE_SECRET_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_ANNUAL`, `STRIPE_WEBHOOK_SECRET`) to their live values.
+2. **Stripe live mode** — recreate the two prices ($7.99/month, $80/year) in live mode, add a live webhook endpoint for `customer.subscription.created/updated/deleted` pointing at `https://<your-domain>/api/webhooks/stripe`, and swap the four Stripe environment variables (`STRIPE_SECRET_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_ANNUAL`, `STRIPE_WEBHOOK_SECRET`) to their live values.
 3. **Resend** — verify `aneesatalks.com` in Resend (DNS records) so email delivers from `noreply@aneesatalks.com`.
 4. **Real data** — once you sign off on the design and flows: import the member list from your sheet, pre-create accounts for existing members, and optionally send the "your profile is live" outreach email (we can draft it together).
 

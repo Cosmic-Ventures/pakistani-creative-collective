@@ -1,16 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import type { DisplayPrices } from "@/lib/stripe";
 
 type Plan = "monthly" | "annual";
 
 export function PricingCard({
   isStripeConfigured,
+  prices,
   monthlyAction,
   annualAction,
   simulateAction,
 }: {
   isStripeConfigured: boolean;
+  // Read from Stripe by the server component that renders this — never
+  // hard-coded here, so the advertised amount is the amount checkout charges.
+  prices: DisplayPrices;
   monthlyAction: () => Promise<void>;
   annualAction: () => Promise<void>;
   simulateAction: () => Promise<void>;
@@ -42,16 +47,18 @@ export function PricingCard({
             }`}
           >
             Yearly
-            <span className="absolute -top-3 -right-2 text-[10px] bg-brand-mint text-brand-green font-semibold px-2 py-0.5 rounded-full">
-              Save ~15%
-            </span>
+            {prices.annualSavingPercent !== null && (
+              <span className="absolute -top-3 -right-2 text-[10px] bg-brand-mint text-brand-green font-semibold px-2 py-0.5 rounded-full">
+                Save ~{prices.annualSavingPercent}%
+              </span>
+            )}
           </button>
         </div>
       </div>
 
       <div className="text-center mb-6">
         <div className="flex items-end justify-center gap-2">
-          <span className="text-5xl font-bold text-brand-green">{plan === "monthly" ? "$7.86" : "$80"}</span>
+          <span className="text-5xl font-bold text-brand-green">{plan === "monthly" ? prices.monthly : prices.annual}</span>
           <span className="text-brand-brown/60 text-sm mb-1.5">{plan === "monthly" ? "/month" : "/year"}</span>
         </div>
         {plan === "annual" && <p className="text-xs text-brand-brown/50 mt-1">Billed once a year</p>}

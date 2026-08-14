@@ -101,7 +101,17 @@ describe("enrollAction", () => {
         }),
       })
     );
-    expect(sendEnrollmentNotificationMock).toHaveBeenCalledWith("Sara", "Khan", "sara@example.com");
+    expect(sendEnrollmentNotificationMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        firstName: "Sara",
+        lastName: "Khan",
+        email: "sara@example.com",
+        bio: LONG_BIO,
+        location: "Los Angeles, CA",
+        roles: ["Director", "Writer"],
+        experienceLevel: "Established",
+      })
+    );
     expect(discardEnrollmentDraftMock).toHaveBeenCalled();
     expect(redirectMock).toHaveBeenCalledWith("/enroll/success");
   });
@@ -139,6 +149,30 @@ describe("enrollAction", () => {
       })
     );
     expect(redirectMock).toHaveBeenCalledWith("/enroll/success");
+  });
+
+  // The portfolio URL is optional, so the review email falls back to whichever
+  // link the applicant did give rather than showing nothing.
+  it("falls back to another profile link when no website was given", async () => {
+    dbMock.creative.create.mockResolvedValue({});
+
+    await enrollAction(
+      null,
+      formData({
+        firstName: "Hina",
+        lastName: "Raza",
+        email: "hina@example.com",
+        headshotLink: "data:image/jpeg;base64,AAAA",
+        bio: LONG_BIO,
+        experienceLevel: "Developing Professional (2-4 years / 4-8 projects)",
+        website: "",
+        instagram: "@hinaraza",
+      })
+    );
+
+    expect(sendEnrollmentNotificationMock).toHaveBeenCalledWith(
+      expect.objectContaining({ portfolioLink: "@hinaraza" })
+    );
   });
 
   // Blank optional fields must be stored as absent, not "", or the profile

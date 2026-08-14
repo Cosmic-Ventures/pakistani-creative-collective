@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { logoutAction } from "@/lib/auth-actions";
 import { manageSubscriptionPortal } from "@/lib/subscribe-actions";
+import { getDisplayPrices } from "@/lib/stripe";
 import { toggleProfileBookmark, togglePostBookmark } from "@/lib/bookmark-actions";
 import { updateOwnProfile } from "@/lib/profile-actions";
 import { SelfManagedHeadshotUpload } from "@/components/HeadshotUpload";
@@ -35,6 +36,7 @@ export default async function AccountPage({
 
   const myCreative = await db.creative.findFirst({ where: { userId: session.userId } });
   const isPaid = user.role === "PAID" || user.role === "ADMIN";
+  const prices = await getDisplayPrices();
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
@@ -103,7 +105,7 @@ export default async function AccountPage({
                 href="/subscribe"
                 className="text-sm bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-5 py-2.5 rounded-full transition-colors"
               >
-                Subscribe — from $7.86/month
+                Subscribe — from {prices.monthly}/month
               </a>
             )}
             <form action={logoutAction}>

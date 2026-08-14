@@ -186,7 +186,18 @@ export async function enrollAction(
     },
   });
 
-  await sendEnrollmentNotification(d.firstName, d.lastName, d.email).catch(console.error);
+  await sendEnrollmentNotification({
+    firstName: d.firstName,
+    lastName: d.lastName,
+    email: d.email,
+    bio: d.bio,
+    // Whichever link the applicant gave — the portfolio URL is optional now, so
+    // fall back to the other profile links before showing nothing.
+    portfolioLink: opt(d.website) ?? opt(d.instagram) ?? opt(d.imdb) ?? opt(d.vimeo) ?? opt(d.linkedin),
+    location: opt(d.location),
+    roles: allRoles,
+    experienceLevel: shortExperienceLevel(d.experienceLevel),
+  }).catch(console.error);
 
   // The application is filed, so any saved draft is spent. Must happen before
   // redirect(), which throws to unwind the action.

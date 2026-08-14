@@ -5,6 +5,7 @@ import Image from "next/image";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { toggleProfileBookmark } from "@/lib/bookmark-actions";
+import { getDisplayPrices } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,7 @@ export default async function MemberPage({
       )
     : false;
 
+  const prices = await getDisplayPrices();
   const showFull = isPaid || isFeaturedNow(creative);
   // Only shown on the full (paid/featured) view — free profiles don't list a link at all.
   const headlineLink = showFull ? (creative.website ?? creative.publicLink) : null;
@@ -265,7 +267,7 @@ export default async function MemberPage({
               href="/subscribe"
               className="inline-block bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-6 py-2.5 rounded-full transition-colors text-sm"
             >
-              Subscribe — from $7.86/month
+              Subscribe — from {prices.monthly}/month
             </Link>
           </div>
         )}
