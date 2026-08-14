@@ -20,9 +20,13 @@ const ADMIN_EMAIL = process.env.PCC_NOTIFICATION_EMAIL ?? "pcc@aneesatalks.com";
 
 const BRAND_GREEN = "#294D3D";
 const BRAND_CREAM = "#FFFCF9";
-// Body copy is true black, not brand brown — the client has asked for brown text
-// to become black in every round since 7/23, and that applies to email too.
-const BODY_TEXT = "#000000";
+const BRAND_MINT = "#91D2A6";
+// Emails are dark-green-on-white throughout, per the client: the card, not just
+// the header band, sits on brand green with white copy.
+const BODY_TEXT = BRAND_CREAM;
+// Slightly deeper than the card so the card still reads as a card.
+const PAGE_BG = "#1E3A2E";
+const PANEL_BG = "rgba(255,255,255,0.08)";
 const BODY_FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
 const HEADING_FONT = "Georgia, 'Times New Roman', serif";
 
@@ -43,31 +47,31 @@ export function emailShell(bodyHtml: string, preheader = ""): string {
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Pakistani Creative Collective</title>
 </head>
-<body style="margin:0; padding:0; background-color:#F2EFE9;">
+<body style="margin:0; padding:0; background-color:${PAGE_BG};">
   <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">${preheader}</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F2EFE9;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${PAGE_BG};">
     <tr>
       <td align="center" style="padding:32px 16px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px; background-color:${BRAND_CREAM}; border-radius:16px; overflow:hidden; border:1px solid rgba(41,77,61,0.12);">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px; background-color:${BRAND_GREEN}; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);">
           <tr>
-            <td align="center" style="background-color:${BRAND_GREEN}; padding:28px 32px;">
+            <td align="center" style="padding:28px 32px 8px;">
               <a href="${appUrl()}" style="text-decoration:none;">
                 <img src="${appUrl()}/brand/logo-square-white.png"
                      width="72" height="72" alt="Pakistani Creative Collective"
-                     style="display:block; width:72px; height:72px; border:0; outline:none; text-decoration:none;" />
+                     style="display:block; width:72px; height:72px; border:0; outline:none; text-decoration:none; font-family:${HEADING_FONT}; font-size:14px; font-weight:700; color:${BRAND_CREAM};" />
               </a>
             </td>
           </tr>
           <tr>
-            <td style="padding:32px; font-family:${BODY_FONT}; font-size:15px; line-height:1.65; color:${BODY_TEXT};">
+            <td style="padding:8px 32px 32px; font-family:${BODY_FONT}; font-size:15px; line-height:1.65; color:${BODY_TEXT};">
               ${bodyHtml}
             </td>
           </tr>
           <tr>
-            <td style="padding:20px 32px; border-top:1px solid rgba(41,77,61,0.1);">
-              <p style="margin:0; font-family:${BODY_FONT}; font-size:12px; color:rgba(0,0,0,0.5);">
+            <td style="padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);">
+              <p style="margin:0; font-family:${BODY_FONT}; font-size:12px; color:rgba(255,252,249,0.6);">
                 Pakistani Creative Collective &middot; Curated by
-                <a href="https://aneesatalks.com" style="color:rgba(0,0,0,0.5);">Aneesa Talks</a>
+                <a href="https://aneesatalks.com" style="color:rgba(255,252,249,0.6);">Aneesa Talks</a>
               </p>
             </td>
           </tr>
@@ -88,15 +92,17 @@ export function paragraph(html: string): string {
 }
 
 export function signOff(): string {
-  return `<p style="margin:24px 0 0; color:rgba(0,0,0,0.7);">&mdash; Aneesa Talks</p>`;
+  return `<p style="margin:24px 0 0; color:rgba(255,252,249,0.75);">&mdash; Aneesa Talks</p>`;
 }
 
+// Mint fill / green text — the brand's pill idiom, and the only pairing that
+// stays legible now that the card behind it is brand green.
 export function ctaButton(href: string, label: string): string {
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 20px;">
       <tr>
-        <td style="background-color:${BRAND_GREEN}; border-radius:999px;">
-          <a href="${href}" style="display:inline-block; padding:12px 24px; font-family:${BODY_FONT}; font-size:14px; font-weight:600; color:${BRAND_CREAM}; text-decoration:none;">${label}</a>
+        <td style="background-color:${BRAND_MINT}; border-radius:999px;">
+          <a href="${href}" style="display:inline-block; padding:12px 24px; font-family:${BODY_FONT}; font-size:14px; font-weight:700; color:${BRAND_GREEN}; text-decoration:none;">${label}</a>
         </td>
       </tr>
     </table>`;
@@ -106,7 +112,7 @@ export function ctaButton(href: string, label: string): string {
 // and can't forget. `paragraph()` deliberately does NOT escape — it takes
 // composed HTML — so anything user-supplied going in there must be escaped first.
 export function detailRow(label: string, value: string): string {
-  return `<p style="margin:0 0 8px;"><strong style="color:${BRAND_GREEN};">${label}:</strong> ${escapeHtml(value)}</p>`;
+  return `<p style="margin:0 0 8px;"><strong style="color:${BRAND_MINT};">${label}:</strong> ${escapeHtml(value)}</p>`;
 }
 
 // Applicant-supplied text goes into these emails, so it has to be escaped
@@ -127,8 +133,8 @@ function escapeMultiline(value: string): string {
 // Long-form applicant text (a bio) set apart from the one-line detail rows.
 export function quotedBlock(label: string, value: string): string {
   return `
-    <p style="margin:16px 0 6px;"><strong style="color:${BRAND_GREEN};">${label}:</strong></p>
-    <div style="background-color:rgba(41,77,61,0.05); border-radius:12px; padding:14px 18px; margin:0 0 16px;">
+    <p style="margin:16px 0 6px;"><strong style="color:${BRAND_MINT};">${label}:</strong></p>
+    <div style="background-color:${PANEL_BG}; border-radius:12px; padding:14px 18px; margin:0 0 16px; color:${BRAND_CREAM};">
       ${escapeMultiline(value)}
     </div>`;
 }
@@ -136,7 +142,7 @@ export function quotedBlock(label: string, value: string): string {
 export function linkRow(label: string, href: string): string {
   const safe = escapeHtml(href);
   const url = /^https?:\/\//i.test(href) ? safe : `https://${safe}`;
-  return `<p style="margin:0 0 8px;"><strong style="color:${BRAND_GREEN};">${label}:</strong> <a href="${url}" style="color:${BRAND_GREEN};">${safe}</a></p>`;
+  return `<p style="margin:0 0 8px;"><strong style="color:${BRAND_MINT};">${label}:</strong> <a href="${url}" style="color:${BRAND_CREAM};">${safe}</a></p>`;
 }
 
 // Compact shell for internal admin notifications — same brand chrome, but the
@@ -144,7 +150,7 @@ export function linkRow(label: string, href: string): string {
 // member-facing.
 export function adminEmailShell(title: string, bodyHtml: string): string {
   return emailShell(`
-    <p style="margin:0 0 16px; font-family:${HEADING_FONT}; font-size:18px; font-weight:700; color:${BRAND_GREEN};">${title}</p>
+    <p style="margin:0 0 16px; font-family:${HEADING_FONT}; font-size:18px; font-weight:700; color:${BRAND_CREAM};">${title}</p>
     ${bodyHtml}
   `);
 }

@@ -47,12 +47,24 @@ describe("email builders", () => {
     expect(paragraph("we&rsquo;re <strong>on</strong>")).toContain("we&rsquo;re <strong>on</strong>");
   });
 
-  it("every email uses the same chrome: white square logo on brand green, black body text", () => {
+  it("every email uses the same chrome: white square logo, brand green card, white body text", () => {
     const html = emailShell(paragraph("hello"));
     expect(html).toContain("/brand/logo-square-white.png");
     expect(html).toContain("background-color:#294D3D");
-    expect(html).toContain("color:#000000");
+    expect(html).toContain("color:#FFFCF9");
     // The old text wordmark is gone.
     expect(html).not.toContain("PAKISTANI CREATIVE COLLECTIVE<");
+    // No black body text left over from the light-card design.
+    expect(html).not.toContain("color:#000000");
+  });
+
+  // Most mail clients block remote images by default, so the logo often won't
+  // load. Its alt text has to be styled to stay legible against the green card
+  // rather than falling back to unreadable default black.
+  it("styles the logo's alt text for when images are blocked", () => {
+    const html = emailShell(paragraph("hello"));
+    const img = html.match(/<img[^>]+>/)![0];
+    expect(img).toContain('alt="Pakistani Creative Collective"');
+    expect(img).toContain("color:#FFFCF9");
   });
 });
