@@ -24,10 +24,13 @@ const steps = [
 export default function RequestPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-      <h1 className="font-heading font-bold text-3xl sm:text-4xl text-brand-cream mb-4">
+      {/* Body background is cream, so the title/description must be dark — they
+          were brand-cream, which rendered invisibly and read to the client as
+          "the heading is missing, it's just blank at the top" (08/08 round). */}
+      <h1 className="font-heading font-bold text-3xl sm:text-4xl text-black mb-4">
         Looking to hire Pakistani creative talent?
       </h1>
-      <p className="text-brand-cream/70 text-lg leading-relaxed mb-12">
+      <p className="text-black/70 text-lg leading-relaxed mb-12">
         The Pakistani Creative Collective connects you with Pakistani creatives across film, music,
         fashion, design, media, and more. Every contact request is reviewed by Aneesa Talks before it
         reaches the creative, giving you a curated introduction instead of a cold outreach.
@@ -61,13 +64,13 @@ export default function RequestPage() {
         </Link>
       </div>
 
-      <p className="text-center text-brand-cream/60 text-sm mt-10">
+      <p className="text-center text-black/60 text-sm mt-10">
         Need a more hands-on match, or production support beyond the platform?{" "}
         <a
           href="https://aneesatalks.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-brand-cream underline hover:text-brand-cream/70"
+          className="text-black underline hover:text-black/70"
         >
           Hire Aneesa Talks directly →
         </a>

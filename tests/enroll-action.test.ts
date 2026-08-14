@@ -1,13 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { dbMock, redirectMock, sendEnrollmentNotificationMock } = vi.hoisted(() => ({
+const { dbMock, redirectMock, sendEnrollmentNotificationMock, discardEnrollmentDraftMock } = vi.hoisted(() => ({
   dbMock: { creative: { findMany: vi.fn(), create: vi.fn() } },
   redirectMock: vi.fn(),
   sendEnrollmentNotificationMock: vi.fn(async () => {}),
+  discardEnrollmentDraftMock: vi.fn(async () => {}),
 }));
 vi.mock("@/lib/db", () => ({ db: dbMock }));
 vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 vi.mock("@/lib/email", () => ({ sendEnrollmentNotification: sendEnrollmentNotificationMock }));
+vi.mock("@/lib/enroll-draft-actions", () => ({ discardEnrollmentDraft: discardEnrollmentDraftMock }));
 
 import { enrollAction } from "@/lib/enroll-action";
 
@@ -100,7 +102,106 @@ describe("enrollAction", () => {
       })
     );
     expect(sendEnrollmentNotificationMock).toHaveBeenCalledWith("Sara", "Khan", "sara@example.com");
+    expect(discardEnrollmentDraftMock).toHaveBeenCalled();
     expect(redirectMock).toHaveBeenCalledWith("/enroll/success");
+  });
+
+  // The client had to fill every field to get through the form. Only essentials
+  // gate submission now (08/08 round): no portfolio URL, no availability, no
+  // references and no work samples must still be a valid application.
+  it("accepts an application with only the essential fields", async () => {
+    dbMock.creative.create.mockResolvedValue({});
+
+    const result = await enrollAction(
+      null,
+      formData({
+        firstName: "Bilal",
+        lastName: "Ahmed",
+        email: "bilal@example.com",
+        headshotLink: "data:image/jpeg;base64,AAAA",
+        bio: LONG_BIO,
+        experienceLevel: "Emerging Creative (0-2 years / 1-3 projects)",
+        roles: ["Director"],
+        mediums: ["Short Film"],
+      })
+    );
+
+    expect(result).toBeUndefined();
+    expect(dbMock.creative.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          slug: "bilal-ahmed",
+          experienceLevel: "Emerging Creative",
+          availability: undefined,
+          website: undefined,
+          references: undefined,
+        }),
+      })
+    );
+    expect(redirectMock).toHaveBeenCalledWith("/enroll/success");
+  });
+
+  // Blank optional fields must be stored as absent, not "", or the profile
+  // page's `website ?? publicLink` fallback is shadowed by an empty string.
+  it("stores skipped optional fields as undefined rather than empty strings", async () => {
+    dbMock.creative.create.mockResolvedValue({});
+
+    await enrollAction(
+      null,
+      formData({
+        firstName: "Noor",
+        lastName: "Siddiqui",
+        email: "noor@example.com",
+        headshotLink: "data:image/jpeg;base64,AAAA",
+        bio: LONG_BIO,
+        experienceLevel: "Veteran Creative (12+ years / 20+ projects)",
+        website: "   ",
+        instagram: "",
+        phone: "",
+        location: "  Karachi  ",
+      })
+    );
+
+    const { data } = dbMock.creative.create.mock.calls[0][0];
+    expect(data.website).toBeUndefined();
+    expect(data.instagram).toBeUndefined();
+    expect(data.phone).toBeUndefined();
+    expect(data.location).toBe("Karachi");
+  });
+
+  // Work-sample roles come from a multi-select whose values contain spaces
+  // ("Camera Operator"); they must survive round-tripping as separate entries.
+  it("keeps multi-word work sample roles intact", async () => {
+    dbMock.creative.create.mockResolvedValue({});
+
+    await enrollAction(
+      null,
+      formData({
+        firstName: "Sara",
+        lastName: "Khan",
+        email: "sara@example.com",
+        headshotLink: "data:image/jpeg;base64,AAAA",
+        bio: LONG_BIO,
+        experienceLevel: "Established Creative (4-7 years / 10+ projects)",
+        ws1Title: "Night Bus",
+        ws1Medium: "Short Film",
+        ws1RoleSelect: ["Camera Operator", "Director of Photography (DP/Cinematographer)"],
+        ws1RoleOther: "Second Unit Lead",
+      })
+    );
+
+    expect(dbMock.creative.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          workSamples: [
+            expect.objectContaining({
+              title: "Night Bus",
+              role: "Camera Operator, Director of Photography (DP/Cinematographer), Second Unit Lead",
+            }),
+          ],
+        }),
+      })
+    );
   });
 
   it("appends a numeric suffix when the slug is already taken", async () => {

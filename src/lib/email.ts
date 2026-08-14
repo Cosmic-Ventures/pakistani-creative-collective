@@ -10,7 +10,12 @@ function getResend() {
 }
 
 const FROM = "PCC <noreply@aneesatalks.com>";
-const ADMIN_EMAIL = "aneesatalks@gmail.com";
+
+// Every operational notification (new application, contact request, community
+// post awaiting review) lands here. Client-specified 08/08 round: this is the
+// PCC-specific inbox, not the general Aneesa Talks one. Overridable by env so
+// the address can be changed without a redeploy.
+const ADMIN_EMAIL = process.env.PCC_NOTIFICATION_EMAIL ?? "pcc@aneesatalks.com";
 
 const BRAND_GREEN = "#294D3D";
 const BRAND_BROWN = "#2A1511";
@@ -204,7 +209,7 @@ export async function sendApprovalEmail(firstName: string, email: string, slug: 
        ${paragraph("Great news &mdash; your application to the Pakistani Creative Collective has been approved. Your profile is now live in the database.")}
        ${ctaButton(`${appUrl()}/directory/${slug}`, "View your profile →")}
        ${paragraph("To access the full directory and submit contact requests, you'll need to subscribe.")}
-       ${ctaButton(`${appUrl()}/subscribe`, "Subscribe from $7.99/month →")}
+       ${ctaButton(`${appUrl()}/subscribe`, "Subscribe from $7.86/month →")}
        ${signOff()}`,
       "Your profile is now live in the directory."
     ),

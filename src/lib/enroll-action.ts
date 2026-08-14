@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "./db";
 import { sendEnrollmentNotification } from "./email";
 import { shortExperienceLevel } from "./experience-levels";
+import { discardEnrollmentDraft } from "./enroll-draft-actions";
 
 function toSlug(first: string, last: string): string {
   const base = `${first}-${last}`
@@ -32,16 +33,23 @@ function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
+/**
+ * Server-side mirror of the form's own required-field rules. Only essentials are
+ * enforced (08/08 client round): portfolio URL, availability, references and all
+ * three work samples are optional, so an emerging creative with none of them can
+ * still apply. Messages are explicit rather than Zod's default "Invalid input" —
+ * this text is what the applicant sees if anything slips past the client check.
+ */
 const EnrollSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
   pronouns: z.string().optional(),
-  email: z.email(),
+  email: z.email("A valid email address is required"),
   phone: z.string().optional(),
   address: z.string().optional(),
   location: z.string().optional(),
   howHeard: z.string().optional(),
-  headshotLink: z.string().min(1, "Headshot link is required"),
+  headshotLink: z.string().min(1, "A professional headshot is required"),
   bio: z
     .string()
     .min(100, "Bio must be at least 100 characters")
@@ -53,7 +61,7 @@ const EnrollSchema = z.object({
   additionalNotes: z.string().optional(),
   rolesOther: z.string().optional(),
   mediumsOther: z.string().optional(),
-  experienceLevel: z.string().min(1, "Select an experience level"),
+  experienceLevel: z.string().min(1, "Select your experience level"),
   yearsExperience: z.string().optional(),
   completedProjects: z.string().optional(),
   notableAchievements: z.string().optional(),
@@ -66,7 +74,7 @@ const EnrollSchema = z.object({
   rateCurrency: z.string().optional(),
   rateRangeAmount: z.string().optional(),
   ratePublic: z.string().optional(),
-  availability: z.string().min(1, "Select your availability"),
+  availability: z.string().optional(),
   travel: z.string().optional(),
   languages: z.string().optional(),
   specialSkills: z.string().optional(),
@@ -124,42 +132,52 @@ export async function enrollAction(
 
   const rateRange = [d.rateCurrency, d.rateRangeAmount].filter(Boolean).join(" ") || undefined;
 
+  // A skipped optional field arrives as "" from the form. Store it as absent
+  // rather than an empty string, so nullish-coalescing fallbacks downstream
+  // still fire — e.g. the profile page's `website ?? publicLink`, which an
+  // empty-string website would shadow. Matters more now that most fields are
+  // optional and applicants are expected to leave some blank.
+  const opt = (v?: string) => {
+    const trimmed = v?.trim();
+    return trimmed ? trimmed : undefined;
+  };
+
   await db.creative.create({
     data: {
       slug,
       firstName: d.firstName,
       lastName: d.lastName,
-      pronouns: d.pronouns,
+      pronouns: opt(d.pronouns),
       email: d.email,
-      phone: d.phone,
-      address: d.address,
-      location: d.location,
+      phone: opt(d.phone),
+      address: opt(d.address),
+      location: opt(d.location),
       bio: d.bio,
       headshot: d.headshotLink,
-      previousCollaborators: d.previousCollaborators,
-      unionMemberships: d.unionMemberships,
-      education: d.education,
-      pccGoals: d.pccGoals,
+      previousCollaborators: opt(d.previousCollaborators),
+      unionMemberships: opt(d.unionMemberships),
+      education: opt(d.education),
+      pccGoals: opt(d.pccGoals),
       experienceLevel: shortExperienceLevel(d.experienceLevel),
-      notableAchievements: d.notableAchievements,
-      website: d.website,
-      imdb: d.imdb,
-      instagram: d.instagram,
-      linkedin: d.linkedin,
-      vimeo: d.vimeo,
-      rateStructure: d.rateStructure,
+      notableAchievements: opt(d.notableAchievements),
+      website: opt(d.website),
+      imdb: opt(d.imdb),
+      instagram: opt(d.instagram),
+      linkedin: opt(d.linkedin),
+      vimeo: opt(d.vimeo),
+      rateStructure: opt(d.rateStructure),
       rateRange,
       ratePublic: d.ratePublic === "yes",
-      availability: d.availability,
-      travel: d.travel,
+      availability: opt(d.availability),
+      travel: opt(d.travel),
       languages: [
         ...languagesCheck,
         ...(d.languages ? d.languages.split(",").map((l) => l.trim()).filter(Boolean) : []),
       ],
-      equipment: d.equipment,
-      collaborationPreferences: d.collaborationPreferences || undefined,
-      references: d.references,
-      referralName: d.referralName,
+      equipment: opt(d.equipment),
+      collaborationPreferences: opt(d.collaborationPreferences),
+      references: opt(d.references),
+      referralName: opt(d.referralName),
       promoConsent: d.consentPromo === "on",
       roles: allRoles,
       mediums: allMediums,
@@ -169,6 +187,10 @@ export async function enrollAction(
   });
 
   await sendEnrollmentNotification(d.firstName, d.lastName, d.email).catch(console.error);
+
+  // The application is filed, so any saved draft is spent. Must happen before
+  // redirect(), which throws to unwind the action.
+  await discardEnrollmentDraft().catch(console.error);
 
   redirect("/enroll/success");
 }

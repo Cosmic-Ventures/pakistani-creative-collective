@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { MEDIUMS } from "@/lib/enroll-constants";
 
 type Member = {
   id: string;
@@ -150,8 +151,13 @@ export default function DirectoryClient({
     return Array.from(set).sort();
   }, [members, isPaid]);
 
+  // Medium options come from the canonical enrollment list rather than only from
+  // what members happen to have selected, so Fashion/Art/Music (08/08 round) and
+  // every other medium are always offered. Values present on records but no
+  // longer in the canonical list (e.g. the legacy "Fashion/Costume") are unioned
+  // in so existing profiles stay reachable.
   const mediums = useMemo(() => {
-    const set = new Set<string>();
+    const set = new Set<string>(MEDIUMS);
     members.forEach((m) => m.mediums?.forEach((med) => med && set.add(med)));
     return Array.from(set).sort();
   }, [members]);

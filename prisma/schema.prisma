@@ -88,6 +88,25 @@ model User {
   contactRequests ContactRequest[]
   creative        Creative?
   bookmarks       Bookmark[]
+  enrollmentDraft EnrollmentDraft?
+}
+
+/// A partially-completed enrollment application, saved by a signed-in user so
+/// they can come back and finish it later (08/08 client round) — available to
+/// free and paid accounts alike. One draft per user, removed once the
+/// application is actually submitted.
+///
+/// `data` is the serialized form state and is deliberately schemaless: the
+/// enrollment form's field set changes between feedback rounds, and a
+/// half-finished application has no business satisfying Creative's constraints
+/// (required bio length, experience level, and so on).
+model EnrollmentDraft {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ─── Creatives ────────────────────────────────────────────────────────────────

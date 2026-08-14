@@ -17,9 +17,14 @@ export async function updateOwnProfile(formData: FormData) {
   const creative = await db.creative.findFirst({ where: { userId: session.userId } });
   if (!creative) throw new Error("No linked profile to edit.");
 
+  // Headshot field submits the existing value untouched unless a new file was
+  // picked, so an empty string here means "no photo on file", not "clear it".
+  const headshot = (formData.get("headshot") as string) || null;
+
   await db.creative.update({
     where: { id: creative.id },
     data: {
+      headshot,
       pronouns: (formData.get("pronouns") as string) || null,
       location: (formData.get("location") as string) || null,
       bio: formData.get("bio") as string,

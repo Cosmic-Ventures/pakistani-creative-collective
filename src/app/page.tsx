@@ -16,7 +16,7 @@ const howItWorks = [
     title: "Get Connected",
     body: [
       "Pakistani creatives are doing incredible work around the world, but there has never been a place to find one another. The PCC brings that community together by strengthening our collective digital footprint.",
-      "Once your profile is approved, it becomes part of a directory where creatives across all mediums can discover Pakistani creatives for jobs, commissions, and collaborations. Anyone can browse basic profiles. Search filters, full profiles, community dashboard access, and connection requests are available through a paid subscription of $7.99 per month / $80 per year.",
+      "Once your profile is approved, it becomes part of a directory where creatives across all mediums can discover Pakistani creatives for jobs, commissions, and collaborations. Anyone can browse basic profiles. Search filters, full profiles, community dashboard access, and connection requests are available through a paid subscription of $7.86 per month / $80 per year.",
     ],
   },
   {
@@ -36,16 +36,7 @@ const howItWorks = [
   },
 ];
 
-const heroIllustrations = [
-  { name: "dancer", width: 1080, height: 1080 },
-  { name: "videoguy", width: 468, height: 934 },
-  { name: "director", width: 1080, height: 1080 },
-  { name: "tapestry-worker", width: 810, height: 860 },
-  { name: "cameraman", width: 1080, height: 1080 },
-  { name: "performer", width: 472, height: 859 },
-  { name: "guitarist", width: 1080, height: 1080 },
-  { name: "singer", width: 1080, height: 1080 },
-];
+const SPOTLIGHT_HEADSHOT = "/brand/aneesa-khan-headshot.jpg";
 
 const FREE_ACCESS = [
   "Creative's name",
@@ -77,31 +68,33 @@ export default async function Home() {
       roles: true,
       experienceLevel: true,
       bio: true,
-      headshot: true,
     },
   });
 
   return (
     <div className="bg-brand-green">
       <section className="relative overflow-hidden bg-brand-green text-brand-cream">
+        {/* Client-supplied header artwork (PCC Header.png, 08/08 round). It already
+            carries the line-art figures on its right side, so the separate vector
+            overlay grid that used to sit on top of hero-bg.png is gone — keeping
+            both double-printed the illustrations. */}
         <Image
-          src="/brand/hero-bg.png"
+          src="/brand/pcc-header.png"
           alt=""
           fill
           priority
-          className="object-cover opacity-80 pointer-events-none select-none"
+          className="object-cover pointer-events-none select-none"
         />
-        <div className="hidden lg:grid absolute inset-y-0 right-0 w-3/5 grid-cols-4 grid-rows-2 items-center justify-items-center py-10 pointer-events-none select-none">
-          {heroIllustrations.map(({ name, width, height }) => (
-            <Image key={name} src={`/brand/vector-${name}.png`} alt="" width={width} height={height} className="h-28 w-auto opacity-20" />
-          ))}
-        </div>
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32">
+        {/* Left-to-right scrim: the artwork keeps its figures on the right, so
+            the copy sits over the clear left side and this keeps it legible
+            against the lighter swirls there. */}
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-green via-brand-green/85 to-brand-green/10 pointer-events-none" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32 lg:max-w-6xl">
           <Logo variant="square" className="h-20 sm:h-24 w-auto mb-8 opacity-95" />
-          <h1 className="font-heading font-bold text-4xl sm:text-6xl leading-[1.05] max-w-3xl">
+          <h1 className="font-heading font-bold text-4xl sm:text-6xl leading-[1.05] max-w-2xl">
             Built for Pakistani creatives to be discovered.
           </h1>
-          <p className="mt-6 text-lg text-brand-cream/80 max-w-2xl leading-relaxed">
+          <p className="mt-6 text-lg text-brand-cream/80 max-w-lg leading-relaxed">
             A curated database of Pakistani talent in film, music, and media —
             searchable, vetted, and built for sustainable global collaboration.
           </p>
@@ -143,8 +136,10 @@ export default async function Home() {
 
       <section className="border-y border-brand-green/10 bg-brand-mint/15">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
-          <h2 className="font-heading font-bold text-2xl text-black mb-2">Five Experience Tiers</h2>
-          <p className="text-black/70 mb-10 text-sm max-w-2xl">
+          {/* White, not black: this band sits on the green page background, where
+              black is unreadable (client called it out twice — 08/03 and 08/08). */}
+          <h2 className="font-heading font-bold text-2xl text-brand-cream mb-2">Five Experience Tiers</h2>
+          <p className="text-brand-cream/80 mb-10 text-sm max-w-2xl">
             Members are categorized based on professional experience, project count, and achievements —
             here&apos;s how to identify your level.
           </p>
@@ -225,16 +220,17 @@ export default async function Home() {
             </p>
             <div className="bg-brand-green border border-brand-cream/15 rounded-3xl p-6 sm:p-8 grid gap-5 lg:grid-cols-3">
               <div className="bg-brand-cream rounded-2xl p-6 lg:col-span-1">
-                {featured.headshot ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={featured.headshot}
-                    alt={`${featured.firstName} ${featured.lastName}`}
-                    className="w-20 h-20 rounded-2xl object-cover mb-4"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-2xl bg-brand-mint/40 mb-4" />
-                )}
+                {/* Client-supplied spotlight portrait (08/08 round). Bundled as a
+                    static asset rather than read from featured.headshot so the
+                    spotlight shows the approved photo regardless of what's stored
+                    on the directory record. */}
+                <Image
+                  src={SPOTLIGHT_HEADSHOT}
+                  alt={`${featured.firstName} ${featured.lastName}`}
+                  width={800}
+                  height={1200}
+                  className="w-20 h-20 rounded-2xl object-cover object-top mb-4"
+                />
                 <h3 className="font-heading font-bold text-2xl text-black leading-none">
                   {featured.firstName} {featured.lastName}
                 </h3>

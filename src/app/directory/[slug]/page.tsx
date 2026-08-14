@@ -115,7 +115,11 @@ export default async function MemberPage({
         </div>
 
         {/* ── Row 1 ─────────────────────────────────────────────── */}
-        <div className={`grid gap-6 ${showFull ? "lg:grid-cols-3" : "lg:grid-cols-5"}`}>
+        {/* items-start: grid items default to stretching to the row's height, which
+            left the shorter card (the name/tags block on free profiles, the bio
+            block on paid ones) padded out with empty space below its content —
+            the "dead or blank space in the shape blocks" from the 08/08 round. */}
+        <div className={`grid gap-6 items-start ${showFull ? "lg:grid-cols-3" : "lg:grid-cols-5"}`}>
           {/* Identity card — white */}
           <IdentityCard
             fullName={fullName}
@@ -181,7 +185,7 @@ export default async function MemberPage({
 
         {/* ── Row 2 (paid) ──────────────────────────────────────── */}
         {showFull && (
-          <div className="grid gap-6 lg:grid-cols-2 mt-6">
+          <div className="grid gap-6 items-start lg:grid-cols-2 mt-6">
             <BiographyCard bio={bio} />
 
             {(creative.rateStructure ||
@@ -261,7 +265,7 @@ export default async function MemberPage({
               href="/subscribe"
               className="inline-block bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-6 py-2.5 rounded-full transition-colors text-sm"
             >
-              Subscribe — from $7.99/month
+              Subscribe — from $7.86/month
             </Link>
           </div>
         )}

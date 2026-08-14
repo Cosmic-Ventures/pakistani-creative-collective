@@ -51,7 +51,7 @@ export function PricingCard({
 
       <div className="text-center mb-6">
         <div className="flex items-end justify-center gap-2">
-          <span className="text-5xl font-bold text-brand-green">{plan === "monthly" ? "$7.99" : "$80"}</span>
+          <span className="text-5xl font-bold text-brand-green">{plan === "monthly" ? "$7.86" : "$80"}</span>
           <span className="text-brand-brown/60 text-sm mb-1.5">{plan === "monthly" ? "/month" : "/year"}</span>
         </div>
         {plan === "annual" && <p className="text-xs text-brand-brown/50 mt-1">Billed once a year</p>}

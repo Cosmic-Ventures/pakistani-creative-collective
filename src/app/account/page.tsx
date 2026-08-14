@@ -7,6 +7,7 @@ import { logoutAction } from "@/lib/auth-actions";
 import { manageSubscriptionPortal } from "@/lib/subscribe-actions";
 import { toggleProfileBookmark, togglePostBookmark } from "@/lib/bookmark-actions";
 import { updateOwnProfile } from "@/lib/profile-actions";
+import { SelfManagedHeadshotUpload } from "@/components/HeadshotUpload";
 
 export const metadata: Metadata = { title: "My Account" };
 export const dynamic = "force-dynamic";
@@ -102,7 +103,7 @@ export default async function AccountPage({
                 href="/subscribe"
                 className="text-sm bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-5 py-2.5 rounded-full transition-colors"
               >
-                Subscribe — from $7.99/month
+                Subscribe — from $7.86/month
               </a>
             )}
             <form action={logoutAction}>
@@ -163,6 +164,15 @@ export default async function AccountPage({
             </p>
           ) : (
             <form action={updateOwnProfile} className="bg-white rounded-2xl p-6 space-y-4">
+              {/* Approved members can swap their photo later (08/08 round) —
+                  previously the headshot was fixed at application time. */}
+              <div>
+                <label className="block text-sm text-brand-brown/70 mb-1.5">Profile Headshot</label>
+                <SelfManagedHeadshotUpload name="headshot" initialValue={myCreative.headshot ?? ""} />
+                <p className="text-xs text-brand-brown/40 mt-1">
+                  Image file, up to 8MB. Leave as-is to keep your current photo.
+                </p>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <ProfileField label="Pronouns" name="pronouns" defaultValue={myCreative.pronouns ?? ""} />
                 <ProfileField label="Public Location" name="location" defaultValue={myCreative.location ?? ""} />

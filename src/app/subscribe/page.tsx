@@ -51,7 +51,7 @@ export default async function SubscribePage() {
         )}
 
         <div className="bg-brand-green/5 border border-brand-green/10 rounded-2xl p-6 max-w-md mx-auto mb-6">
-          <p className="text-sm font-semibold text-brand-green mb-3">What's included</p>
+          <p className="text-sm font-semibold text-brand-green mb-3">What&apos;s included</p>
           <ul className="space-y-2 text-sm text-brand-brown/80">
             {features.map((f) => (
               <li key={f} className="flex items-start gap-2">
