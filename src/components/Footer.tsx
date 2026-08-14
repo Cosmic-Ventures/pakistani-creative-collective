@@ -26,6 +26,12 @@ export default function Footer() {
           <Link href="/request" className="hover:text-brand-green transition-colors">
             Hire Talent
           </Link>
+          <Link href="/privacy" className="hover:text-brand-green transition-colors">
+            Privacy
+          </Link>
+          <Link href="/terms" className="hover:text-brand-green transition-colors">
+            Terms
+          </Link>
         </nav>
       </div>
     </footer>

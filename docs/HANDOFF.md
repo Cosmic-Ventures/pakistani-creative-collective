@@ -200,9 +200,12 @@ site down once during development: `/` and `/directory` returned 500s with
 `FATAL: max clients reached in session mode`. Before real traffic, move to the **transaction-mode**
 pooler (port 6543) or raise the pool size. This is the single most likely thing to break on launch day.
 
-**5. Privacy policy and terms.** Neither page exists. The platform stores home addresses, phone
-numbers, professional references and education history, and the workflow spec commits to GDPR-style
-handling. Needed before collecting data from the public.
+**5. Have the policy pages reviewed by a lawyer.** `/privacy` and `/terms` now exist and are linked
+from the footer. They're written around what the platform actually collects, who processes it
+(Supabase, Vercel, Stripe, Resend) and the three visibility tiers of a profile — but they are a
+generic starting point, **not legal advice, and no lawyer has seen them**. Get counsel to review
+before launch, particularly the governing-law, liability and refund clauses, and fill in the
+jurisdiction that Aneesa Talks LLC is established in.
 
 ### Recommended before opening registration widely
 
