@@ -5,7 +5,9 @@
 
 This is the wrap-up of the July feedback round. Everything from the "PCC Website Workflow" notes doc has been implemented, the full site has been QA-tested end-to-end (including a real Stripe checkout against your Stripe account), and this document walks through the finished product page by page.
 
-Demo logins (seeded, no setup needed) — password **password123** for all three:
+Demo logins (seeded, no setup needed) — password **password123** for all three. **These must be
+deleted before the site goes public** (see the launch checklist) — one of them is an admin account
+and the password is written here in plain text:
 
 | Account | Purpose |
 |---|---|
@@ -165,12 +167,66 @@ Every user flow was exercised end-to-end this round:
 > `STRIPE_PRICE_MONTHLY` (or `STRIPE_PRICE_ANNUAL`) at it. The site picks the new amount up within
 > the hour, and the page can never advertise a figure that differs from what checkout charges.
 
-The site currently runs against Stripe's **sandbox** (test) mode — real cards are never charged. To accept real payments:
+**Done already:** the custom domain `pcc.aneesatalks.com` is live and is what the site, emails and
+Stripe redirects all use; `aneesatalks.com` is verified in Resend, so mail is delivering.
 
-1. **Domain** — purchase/choose the real domain and point it at the deployment (we handle DNS with you). This also becomes the sending domain for email.
-2. **Stripe live mode** — recreate the two prices ($7.99/month, $80/year) in live mode, add a live webhook endpoint for `customer.subscription.created/updated/deleted` pointing at `https://<your-domain>/api/webhooks/stripe`, and swap the four Stripe environment variables (`STRIPE_SECRET_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_ANNUAL`, `STRIPE_WEBHOOK_SECRET`) to their live values.
-3. **Resend** — verify `aneesatalks.com` in Resend (DNS records) so email delivers from `noreply@aneesatalks.com`.
-4. **Real data** — once you sign off on the design and flows: import the member list from your sheet, pre-create accounts for existing members, and optionally send the "your profile is live" outreach email (we can draft it together).
+### Blocking — must happen before the public launch
+
+**1. Stripe: sandbox → live.** The site runs on Stripe **test** keys today; no real card is ever
+charged. Switching over is more than swapping a key:
+
+- Create the two Prices again in **live** mode. Prices don't cross modes, and they're immutable —
+  live mode starts empty.
+- Add a live webhook for `customer.subscription.created/updated/deleted` pointing at
+  `https://pcc.aneesatalks.com/api/webhooks/stripe`. It gets its **own** signing secret.
+- Swap all four variables: `STRIPE_SECRET_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_ANNUAL`,
+  `STRIPE_WEBHOOK_SECRET`.
+- **The easy one to miss:** customer and subscription IDs already stored against member accounts are
+  *test-mode* objects and mean nothing in live mode — 2 accounts currently carry them. Left in place,
+  "Manage Subscription" breaks for those people. Clear `stripeCustomerId`/`stripeSubId` on every
+  account at cutover, and re-grant paid access by hand to anyone who genuinely subscribed. Test-mode
+  subscriptions do not transfer.
+
+**2. Remove the demo accounts.** `free@demo.test`, `paid@demo.test` and `admin@demo.test` all still
+exist with the password `password123` — and that password is written down in this document. The admin
+one opens the whole admin panel. Delete them (or rotate the passwords) before the site is public.
+
+**3. Clear the sample data.** 5 sample creatives, 6 community posts and 2 contact requests are demo
+content for review, not real members.
+
+**4. Database connection limit.** The Supabase pooler is in **session mode with a 15-client cap**,
+which doesn't suit serverless — each concurrent function holds a connection. This already took the
+site down once during development: `/` and `/directory` returned 500s with
+`FATAL: max clients reached in session mode`. Before real traffic, move to the **transaction-mode**
+pooler (port 6543) or raise the pool size. This is the single most likely thing to break on launch day.
+
+**5. Privacy policy and terms.** Neither page exists. The platform stores home addresses, phone
+numbers, professional references and education history, and the workflow spec commits to GDPR-style
+handling. Needed before collecting data from the public.
+
+### Recommended before opening registration widely
+
+- **Email verification on signup** — requested in the 7/23 round and still not built. Without it,
+  anyone can register any address, and the enrollment form is a link-anyone-can-open form.
+- **Rate limiting / bot protection** on the public enrollment and contact-request forms. There's none
+  today, and the enrollment link is designed to be forwarded around.
+- **Error monitoring.** Nothing reports failures — the 500s above were only noticed because someone
+  happened to load the page. A free Sentry tier would cover this.
+- **Move headshots out of the database.** They're stored inline as base64 (~123KB per creative). Fine
+  for 5 members, wasteful at 200: every directory query that selects the photo drags it along.
+  Worth moving to Supabase Storage *before* the bulk import rather than migrating afterwards.
+- **Confirm `pcc@aneesatalks.com` actually exists.** Every application, contact request and community
+  post notification now routes there; nothing verifies the mailbox is real.
+- **Check `SESSION_SECRET` in production** is a real random value — an early setup left a placeholder
+  string in one environment.
+- **Confirm Supabase backups** are on, now that the data is real.
+
+### Real data
+
+Once the flows are signed off: import the member list from the sheet
+(`npx tsx scripts/import-members.ts --csv <export.csv>` — dry run by default, writes nothing without
+`--apply`), pre-create accounts for existing members, and optionally send the "your profile is live"
+outreach email (we can draft it together).
 
 ### Environment variables reference
 
