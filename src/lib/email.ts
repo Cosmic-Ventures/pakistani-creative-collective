@@ -46,30 +46,61 @@ export function emailShell(bodyHtml: string, preheader = ""): string {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Pakistani Creative Collective</title>
+<!--
+  Without a declared colour scheme, mail clients in dark mode apply their own
+  inversion: our dark green card came out pale sage with dark text in the
+  client's inbox, the exact opposite of what's authored here. Declaring both
+  schemes tells the client we've handled dark mode ourselves and to leave the
+  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
+-->
+<meta name="color-scheme" content="light dark" />
+<meta name="supported-color-schemes" content="light dark" />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Re-assert the palette for clients that do run their own dark-mode pass,
+     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
+     Outlook.com injects when it rewrites colours. */
+  @media (prefers-color-scheme: dark) {
+    .pcc-page { background-color: ${PAGE_BG} !important; }
+    .pcc-card { background-color: ${BRAND_GREEN} !important; }
+    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: ${BRAND_CREAM} !important; }
+    .pcc-accent { color: ${BRAND_MINT} !important; }
+    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
+    .pcc-btn { background-color: ${BRAND_MINT} !important; }
+    .pcc-btn a { color: ${BRAND_GREEN} !important; }
+    .pcc-panel { background-color: ${PANEL_BG} !important; }
+  }
+  [data-ogsc] .pcc-page { background-color: ${PAGE_BG} !important; }
+  [data-ogsc] .pcc-card { background-color: ${BRAND_GREEN} !important; }
+  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: ${BRAND_CREAM} !important; }
+  [data-ogsc] .pcc-accent { color: ${BRAND_MINT} !important; }
+  [data-ogsc] .pcc-btn { background-color: ${BRAND_MINT} !important; }
+  [data-ogsc] .pcc-btn a { color: ${BRAND_GREEN} !important; }
+</style>
 </head>
-<body style="margin:0; padding:0; background-color:${PAGE_BG};">
+<body class="pcc-page" style="margin:0; padding:0; background-color:${PAGE_BG};">
   <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">${preheader}</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${PAGE_BG};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pcc-page" style="background-color:${PAGE_BG};">
     <tr>
       <td align="center" style="padding:32px 16px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px; background-color:${BRAND_GREEN}; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pcc-card" style="max-width:560px; background-color:${BRAND_GREEN}; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);">
           <tr>
-            <td align="center" style="padding:28px 32px 8px;">
+            <td align="center" class="pcc-card" style="background-color:${BRAND_GREEN}; padding:32px 32px 12px;">
               <a href="${appUrl()}" style="text-decoration:none;">
                 <img src="${appUrl()}/brand/logo-square-white.png"
-                     width="72" height="72" alt="Pakistani Creative Collective"
-                     style="display:block; width:72px; height:72px; border:0; outline:none; text-decoration:none; font-family:${HEADING_FONT}; font-size:14px; font-weight:700; color:${BRAND_CREAM};" />
+                     width="132" height="132" alt="Pakistani Creative Collective"
+                     style="display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:${HEADING_FONT}; font-size:16px; font-weight:700; color:${BRAND_CREAM};" />
               </a>
             </td>
           </tr>
           <tr>
-            <td style="padding:8px 32px 32px; font-family:${BODY_FONT}; font-size:15px; line-height:1.65; color:${BODY_TEXT};">
+            <td class="pcc-card pcc-body" style="background-color:${BRAND_GREEN}; padding:8px 32px 32px; font-family:${BODY_FONT}; font-size:15px; line-height:1.65; color:${BODY_TEXT};">
               ${bodyHtml}
             </td>
           </tr>
           <tr>
-            <td style="padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);">
-              <p style="margin:0; font-family:${BODY_FONT}; font-size:12px; color:rgba(255,252,249,0.6);">
+            <td class="pcc-card" style="background-color:${BRAND_GREEN}; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);">
+              <p class="pcc-muted" style="margin:0; font-family:${BODY_FONT}; font-size:12px; color:rgba(255,252,249,0.6);">
                 Pakistani Creative Collective &middot; Curated by
                 <a href="https://aneesatalks.com" style="color:rgba(255,252,249,0.6);">Aneesa Talks</a>
               </p>
@@ -101,7 +132,7 @@ export function ctaButton(href: string, label: string): string {
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 20px;">
       <tr>
-        <td style="background-color:${BRAND_MINT}; border-radius:999px;">
+        <td class="pcc-btn" style="background-color:${BRAND_MINT}; border-radius:999px;">
           <a href="${href}" style="display:inline-block; padding:12px 24px; font-family:${BODY_FONT}; font-size:14px; font-weight:700; color:${BRAND_GREEN}; text-decoration:none;">${label}</a>
         </td>
       </tr>
@@ -112,7 +143,7 @@ export function ctaButton(href: string, label: string): string {
 // and can't forget. `paragraph()` deliberately does NOT escape — it takes
 // composed HTML — so anything user-supplied going in there must be escaped first.
 export function detailRow(label: string, value: string): string {
-  return `<p style="margin:0 0 8px;"><strong style="color:${BRAND_MINT};">${label}:</strong> ${escapeHtml(value)}</p>`;
+  return `<p style="margin:0 0 8px;"><strong class="pcc-accent" style="color:${BRAND_MINT};">${label}:</strong> ${escapeHtml(value)}</p>`;
 }
 
 // Applicant-supplied text goes into these emails, so it has to be escaped
@@ -133,8 +164,8 @@ function escapeMultiline(value: string): string {
 // Long-form applicant text (a bio) set apart from the one-line detail rows.
 export function quotedBlock(label: string, value: string): string {
   return `
-    <p style="margin:16px 0 6px;"><strong style="color:${BRAND_MINT};">${label}:</strong></p>
-    <div style="background-color:${PANEL_BG}; border-radius:12px; padding:14px 18px; margin:0 0 16px; color:${BRAND_CREAM};">
+    <p style="margin:16px 0 6px;"><strong class="pcc-accent" style="color:${BRAND_MINT};">${label}:</strong></p>
+    <div class="pcc-panel" style="background-color:${PANEL_BG}; border-radius:12px; padding:14px 18px; margin:0 0 16px; color:${BRAND_CREAM};">
       ${escapeMultiline(value)}
     </div>`;
 }
@@ -142,7 +173,7 @@ export function quotedBlock(label: string, value: string): string {
 export function linkRow(label: string, href: string): string {
   const safe = escapeHtml(href);
   const url = /^https?:\/\//i.test(href) ? safe : `https://${safe}`;
-  return `<p style="margin:0 0 8px;"><strong style="color:${BRAND_MINT};">${label}:</strong> <a href="${url}" style="color:${BRAND_CREAM};">${safe}</a></p>`;
+  return `<p style="margin:0 0 8px;"><strong class="pcc-accent" style="color:${BRAND_MINT};">${label}:</strong> <a href="${url}" style="color:${BRAND_CREAM};">${safe}</a></p>`;
 }
 
 // Compact shell for internal admin notifications — same brand chrome, but the

@@ -67,4 +67,24 @@ describe("email builders", () => {
     expect(img).toContain('alt="Pakistani Creative Collective"');
     expect(img).toContain("color:#FFFCF9");
   });
+
+  // Without a declared colour scheme, clients in dark mode invert the palette —
+  // the dark green card arrived as pale sage with dark text in the client's
+  // inbox. These declarations are what stop that, so they must not be dropped.
+  it("declares a colour scheme so dark-mode clients don't invert the palette", () => {
+    const html = emailShell(paragraph("hello"));
+    expect(html).toContain('name="color-scheme" content="light dark"');
+    expect(html).toContain('name="supported-color-schemes" content="light dark"');
+    expect(html).toContain("@media (prefers-color-scheme: dark)");
+    // Outlook.com rewrites colours behind this attribute rather than the media query.
+    expect(html).toContain("[data-ogsc]");
+  });
+
+  it("re-asserts the card and body colours in the dark-mode block", () => {
+    const html = emailShell(paragraph("hello"));
+    const dark = html.slice(html.indexOf("@media (prefers-color-scheme: dark)"));
+    expect(dark).toContain("background-color: #294D3D !important");
+    expect(dark).toContain("color: #FFFCF9 !important");
+    expect(dark).toContain("background-color: #91D2A6 !important");
+  });
 });
