@@ -97,6 +97,12 @@ model User {
   stripeSubId        String?   @unique
   subStatus          String?                      // active | past_due | canceled | …
   subCurrentPeriodEnd DateTime?
+  // Brute-force throttling. Reset on a successful sign-in; while lockedUntil is
+  // in the future, sign-in is refused regardless of whether the password is
+  // right, so an attacker can't grind an unlimited number of guesses.
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 

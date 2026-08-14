@@ -211,8 +211,15 @@ jurisdiction that Aneesa Talks LLC is established in.
 
 - **Email verification on signup** — requested in the 7/23 round and still not built. Without it,
   anyone can register any address, and the enrollment form is a link-anyone-can-open form.
-- **Rate limiting / bot protection** on the public enrollment and contact-request forms. There's none
-  today, and the enrollment link is designed to be forwarded around.
+- **Password reset.** There's no self-serve recovery, so a forgotten password currently means a
+  manual database change. Worth building before there are real members.
+- **Bot protection on the public forms.** Sign-in is now rate limited (10 failed attempts locks an
+  account for 15 minutes), but the enrollment and contact-request forms have no CAPTCHA or
+  submission throttle, and the enrollment link is designed to be forwarded around.
+- **Session revocation.** Sessions are stateless 30-day JWTs; signing out clears the cookie but
+  cannot invalidate a token that has already leaked. Roles are re-read from the database on every
+  request, so a demotion takes effect immediately — but a stolen cookie stays usable until it
+  expires. A token-version column would close this if it matters to you.
 - **Error monitoring.** Nothing reports failures — the 500s above were only noticed because someone
   happened to load the page. A free Sentry tier would cover this.
 - **Move headshots out of the database.** They're stored inline as base64 (~123KB per creative). Fine

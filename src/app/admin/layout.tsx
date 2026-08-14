@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { getSession } from "@/lib/session";
 
 const NAV = [
   { href: "/admin", label: "Overview", exact: true },
@@ -10,7 +12,13 @@ const NAV = [
   { href: "/admin/analytics", label: "Analytics" },
 ];
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  // The edge proxy only confirms someone is signed in; this is where the role is
+  // actually checked, against the database rather than the JWT's stale claim.
+  const session = await getSession();
+  if (!session) redirect("/auth/signin?next=%2Fadmin");
+  if (session.role !== "ADMIN") redirect("/directory");
+
   return (
     <div className="bg-stone-950 text-stone-100 min-h-[calc(100vh-4rem)]">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">

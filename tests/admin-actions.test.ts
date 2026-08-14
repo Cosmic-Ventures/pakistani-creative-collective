@@ -6,7 +6,9 @@ const {
   sendRejectionEmailMock,
   sendFeatureNotificationMock,
   sendContactRequestForwardEmailMock,
+  requireAdminMock,
 } = vi.hoisted(() => ({
+  requireAdminMock: vi.fn(async () => ({ userId: "admin-1", role: "ADMIN" })),
   dbMock: {
     creative: { update: vi.fn() },
     contactRequest: { update: vi.fn() },
@@ -18,6 +20,8 @@ const {
   sendContactRequestForwardEmailMock: vi.fn(async () => {}),
 }));
 vi.mock("@/lib/db", () => ({ db: dbMock }));
+// Every admin action is gated on requireAdmin; the suite runs as an admin.
+vi.mock("@/lib/session", () => ({ requireAdmin: requireAdminMock }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/email", () => ({
   sendApprovalEmail: sendApprovalEmailMock,
@@ -148,5 +152,24 @@ describe("rejectFeatureRequest", () => {
       where: { id: "request-1" },
       data: { status: "REJECTED", adminNotes: "Not this month" },
     });
+  });
+});
+
+// The guard itself: these are ordinary POST endpoints, so being rendered on a
+// protected route is not protection. If requireAdmin refuses, nothing must be
+// written and no member email must go out.
+describe("admin actions require an admin", () => {
+  it("refuses and touches nothing when the caller isn't an admin", async () => {
+    requireAdminMock.mockRejectedValueOnce(new Error("Not authorized."));
+
+    await expect(approveCreative("creative-1")).rejects.toThrow("Not authorized.");
+    expect(dbMock.creative.update).not.toHaveBeenCalled();
+    expect(sendApprovalEmailMock).not.toHaveBeenCalled();
+  });
+
+  it("checks authorization before doing any work", async () => {
+    requireAdminMock.mockRejectedValueOnce(new Error("Not authorized."));
+    await expect(rejectCreative("creative-1", "nope")).rejects.toThrow("Not authorized.");
+    expect(dbMock.creative.update).not.toHaveBeenCalled();
   });
 });

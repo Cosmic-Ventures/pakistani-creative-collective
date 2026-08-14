@@ -2,10 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "./db";
+import { requireAdmin } from "./session";
 import { sendApprovalEmail, sendRejectionEmail, sendFeatureNotification, sendContactRequestForwardEmail, sendRevisionRequestEmail } from "./email";
 import type { Prisma } from "@prisma/client";
 
 export async function approveCreative(creativeId: string) {
+  await requireAdmin();
   const creative = await db.creative.update({
     where: { id: creativeId },
     data: { status: "APPROVED" },
@@ -16,6 +18,7 @@ export async function approveCreative(creativeId: string) {
 }
 
 export async function rejectCreative(creativeId: string, notes?: string) {
+  await requireAdmin();
   const creative = await db.creative.update({
     where: { id: creativeId },
     data: { status: "REJECTED", adminNotes: notes },
@@ -25,12 +28,14 @@ export async function rejectCreative(creativeId: string, notes?: string) {
 }
 
 export async function setCreativeStatus(creativeId: string, status: "APPROVED" | "INACTIVE" | "REJECTED" | "PENDING") {
+  await requireAdmin();
   await db.creative.update({ where: { id: creativeId }, data: { status } });
   revalidatePath("/admin/applications");
   revalidatePath("/directory");
 }
 
 export async function updateAdminNotes(creativeId: string, notes: string) {
+  await requireAdmin();
   await db.creative.update({ where: { id: creativeId }, data: { adminNotes: notes } });
   revalidatePath("/admin/applications");
 }
@@ -38,6 +43,7 @@ export async function updateAdminNotes(creativeId: string, notes: string) {
 // Third action alongside Accept/Reject: send the applicant their revision note
 // and an instruction to reapply, per the client's feedback-doc request.
 export async function flagCreativeForReview(creativeId: string, note: string) {
+  await requireAdmin();
   const creative = await db.creative.update({
     where: { id: creativeId },
     data: { status: "FLAGGED", adminNotes: note },
@@ -52,11 +58,13 @@ export async function updateCreativeFields(
   creativeId: string,
   data: Pick<Prisma.CreativeUpdateInput, "firstName" | "lastName" | "bio" | "notableAchievements" | "pccGoals">
 ) {
+  await requireAdmin();
   await db.creative.update({ where: { id: creativeId }, data });
   revalidatePath("/admin/applications");
 }
 
 export async function forwardContactRequest(requestId: string) {
+  await requireAdmin();
   const req = await db.contactRequest.update({
     where: { id: requestId },
     data: { status: "FORWARDED" },
@@ -82,6 +90,7 @@ export async function updateContactRequestStatus(
   status: "PENDING" | "FORWARDED" | "ACCEPTED" | "DECLINED" | "UNAVAILABLE",
   notes?: string
 ) {
+  await requireAdmin();
   await db.contactRequest.update({
     where: { id: requestId },
     data: { status, adminNotes: notes },
@@ -90,6 +99,7 @@ export async function updateContactRequestStatus(
 }
 
 export async function approveFeatureRequest(requestId: string, featuredUntil: Date) {
+  await requireAdmin();
   const req = await db.featureRequest.update({
     where: { id: requestId },
     data: { status: "APPROVED" },
@@ -105,6 +115,7 @@ export async function approveFeatureRequest(requestId: string, featuredUntil: Da
 }
 
 export async function rejectFeatureRequest(requestId: string, notes?: string) {
+  await requireAdmin();
   await db.featureRequest.update({
     where: { id: requestId },
     data: { status: "REJECTED", adminNotes: notes },

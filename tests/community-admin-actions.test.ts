@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { dbMock, sendPostDecisionEmailMock, sendCommentRemovedEmailMock, sendBulkCommunityNotificationMock } = vi.hoisted(() => ({
+const {
+  dbMock,
+  sendPostDecisionEmailMock,
+  sendCommentRemovedEmailMock,
+  sendBulkCommunityNotificationMock,
+  requireAdminMock,
+} = vi.hoisted(() => ({
+  requireAdminMock: vi.fn(async () => ({ userId: "admin-1", role: "ADMIN" })),
   dbMock: {
     post: { update: vi.fn(), delete: vi.fn(), findUnique: vi.fn() },
     comment: { update: vi.fn(), count: vi.fn() },
@@ -12,6 +19,8 @@ const { dbMock, sendPostDecisionEmailMock, sendCommentRemovedEmailMock, sendBulk
   sendBulkCommunityNotificationMock: vi.fn(async () => {}),
 }));
 vi.mock("@/lib/db", () => ({ db: dbMock }));
+// Every admin action is gated on requireAdmin; the suite runs as an admin.
+vi.mock("@/lib/session", () => ({ requireAdmin: requireAdminMock }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/email", () => ({
   sendPostDecisionEmail: sendPostDecisionEmailMock,
