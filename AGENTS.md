@@ -57,6 +57,8 @@ Recurring layout idioms from the mockups:
 
 12. **Never declare a component inside another component.** A nested `function StepPanel(...)` inside `EnrollForm` is a brand-new component *type* on every render, so React unmounts and remounts its entire subtree each time any parent state changes — silently wiping the local state of everything inside (open dropdowns, their "Other" checkboxes, scroll position). The symptom is bizarre: ticking three checkboxes leaves only one ticked. Use a plain helper that returns a className/JSX, or hoist the component to module scope.
 
+13. **Mail clients invert email colours in dark mode unless you declare a colour scheme.** The transactional emails are authored dark-green-card/white-text, but arrived in the client's inbox as pale sage with dark text — she reported it as "this light green", and two rounds of feedback were spent describing a design the code never produced. Fix is in `emailShell`: `<meta name="color-scheme">` + `supported-color-schemes`, a `@media (prefers-color-scheme: dark)` block re-asserting the palette, and Outlook.com's `[data-ogsc]` attribute selectors, with `.pcc-card`/`.pcc-body`/`.pcc-accent`/`.pcc-btn`/`.pcc-panel` classes on the elements so those overrides have something to bind to. Verify with `npx tsx scripts/email-preview.ts` and view it under both colour schemes — never judge an email design from the light-mode render alone. Related: remote images are blocked by default in most clients, so the logo's `alt` text is styled (white, bold) to stay legible when it doesn't load.
+
 ## Dev workflow
 
 **Use pnpm, not npm, for everything in this repo** (install/build/dev/test) — see the deployment section below for why. `pnpm-lock.yaml` is the lockfile of record; there is no `package-lock.json`.
