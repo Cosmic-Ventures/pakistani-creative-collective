@@ -3,9 +3,24 @@ generator client {
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
+// Two connection strings, because the app and the migration tooling need
+// different pooling modes:
+//
+//   DATABASE_URL — the *transaction* pooler (port 6543, `?pgbouncer=true`).
+//     Serverless functions each hold a connection while they run, and the
+//     session pooler caps that at 15 clients, which is what took production
+//     down with `FATAL: max clients reached in session mode`. Transaction mode
+//     hands a connection back after each statement, so it survives real
+//     concurrency. `pgbouncer=true` disables prepared statements, which a
+//     transaction pooler cannot support.
+//
+//   DIRECT_URL — the *session* pooler (port 5432). Prisma Migrate needs a
+//     single sticky session and cannot run through a transaction pooler.
+//     Not the `db.<ref>.supabase.co` host, which is IPv6-only (see AGENTS.md).
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
