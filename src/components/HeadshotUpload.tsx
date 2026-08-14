@@ -73,8 +73,16 @@ export function HeadshotUpload({
       try {
         dataUrl = await compressImage(file);
       } catch {
-        // Browsers without createImageBitmap: fall back to the raw file.
+        // Browsers without createImageBitmap: fall back to the raw file. That
+        // skips compression, so the base64 payload can exceed the 4.5MB body
+        // limit Vercel enforces on serverless requests — say so plainly rather
+        // than letting the submit fail later with an opaque error, which is the
+        // exact failure this whole upload path exists to prevent.
         dataUrl = await readAsDataUrl(file);
+        if (dataUrl.length > 3_000_000) {
+          setError("This image is too large for your browser to resize — please choose one under 2MB.");
+          return;
+        }
       }
       setFileName(file.name);
       onChange(dataUrl);
