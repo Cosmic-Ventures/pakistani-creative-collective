@@ -31,7 +31,7 @@ const BODY_FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Ari
 const HEADING_FONT = "Georgia, 'Times New Roman', serif";
 
 function appUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "https://pakistani-creative-collective.vercel.app";
+  return process.env.NEXT_PUBLIC_APP_URL ?? "https://pcc.aneesatalks.com";
 }
 
 // Every email is sent through this — inline styles throughout because most

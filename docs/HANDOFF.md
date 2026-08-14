@@ -1,6 +1,6 @@
 # Pakistani Creative Collective — Final Build Handoff
 
-**Live site:** https://pakistani-creative-collective.vercel.app
+**Live site:** https://pcc.aneesatalks.com
 **Date:** July 18, 2026
 
 This is the wrap-up of the July feedback round. Everything from the "PCC Website Workflow" notes doc has been implemented, the full site has been QA-tested end-to-end (including a real Stripe checkout against your Stripe account), and this document walks through the finished product page by page.

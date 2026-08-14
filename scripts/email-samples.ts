@@ -22,7 +22,7 @@ import {
 
 export type EmailSample = { name: string; subject: string; html: string };
 
-const APP = process.env.NEXT_PUBLIC_APP_URL ?? "https://pakistani-creative-collective.vercel.app";
+const APP = process.env.NEXT_PUBLIC_APP_URL ?? "https://pcc.aneesatalks.com";
 
 const SAMPLE_BIO =
   "Sara Khan is a Lahore-based cinematographer whose work spans independent features, " +

@@ -14,7 +14,7 @@ import "dotenv/config";
 import { Resend } from "resend";
 
 const FROM = "PCC <noreply@aneesatalks.com>";
-const PRODUCTION_URL = "https://pakistani-creative-collective.vercel.app";
+const PRODUCTION_URL = "https://pcc.aneesatalks.com";
 
 async function main() {
   const recipients = process.argv.slice(2);

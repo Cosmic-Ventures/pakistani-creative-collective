@@ -2,7 +2,7 @@
  * Capture laptop-width screenshots of key pages for the handoff doc.
  * Requires the target (dev server or deployed site) to have seeded demo data.
  * Run: npx tsx scripts/screenshots.ts
- * Run against production: SCREENSHOT_BASE=https://pakistani-creative-collective.vercel.app npx tsx scripts/screenshots.ts
+ * Run against production: SCREENSHOT_BASE=https://pcc.aneesatalks.com npx tsx scripts/screenshots.ts
  */
 import puppeteer, { type Page } from "puppeteer-core";
 

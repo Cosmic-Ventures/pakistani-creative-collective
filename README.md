@@ -2,7 +2,7 @@
 
 A curated directory platform for Pakistani creatives in film, music, and media — created by [Aneesa Talks](https://aneesatalks.com). Free public profiles, a paid tier with full profile access and contact requests, an application/review pipeline, and an admin panel.
 
-**Live:** https://pakistani-creative-collective.vercel.app
+**Live:** https://pcc.aneesatalks.com
 
 ## Stack
 
