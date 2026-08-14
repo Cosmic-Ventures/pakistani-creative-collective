@@ -5,6 +5,7 @@ import Logo from "@/components/Logo";
 
 export default async function Nav() {
   const session = await getSession();
+  const isMember = session?.role === "PAID" || session?.role === "ADMIN";
 
   return (
     <header className="border-b border-brand-cream/15 bg-brand-green/95 backdrop-blur-sm sticky top-0 z-50 print:hidden">
@@ -20,6 +21,15 @@ export default async function Nav() {
           <Link href="/request" className="text-brand-cream/80 hover:text-brand-cream transition-colors hidden sm:inline">
             Hire Talent
           </Link>
+          {/* Subscribe sits alongside the other tabs (client-requested), but is
+              hidden from members who already have access — /subscribe bounces
+              PAID and ADMIN users straight back to the directory, so showing it
+              to them would be a link to nowhere. */}
+          {!isMember && (
+            <Link href="/subscribe" className="text-brand-cream/80 hover:text-brand-cream transition-colors">
+              Subscribe
+            </Link>
+          )}
 
           {session ? (
             <>
@@ -38,14 +48,6 @@ export default async function Nav() {
                   Admin
                 </Link>
               )}
-              {session.role === "UNPAID" && (
-                <Link
-                  href="/subscribe"
-                  className="text-brand-mint hover:text-brand-mint/70 transition-colors font-semibold"
-                >
-                  Upgrade
-                </Link>
-              )}
               <form action={logoutAction}>
                 <button className="text-brand-cream/50 hover:text-brand-cream transition-colors">
                   Sign out
@@ -59,7 +61,7 @@ export default async function Nav() {
               </Link>
               <Link
                 href="/auth/signup"
-                className="bg-brand-mint hover:bg-brand-mint/90 text-brand-green px-4 py-1.5 rounded-full transition-colors font-semibold"
+                className="bg-brand-cream hover:bg-white text-brand-green px-4 py-1.5 rounded-full transition-colors font-semibold"
               >
                 Join
               </Link>

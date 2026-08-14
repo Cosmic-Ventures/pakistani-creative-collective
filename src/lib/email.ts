@@ -66,7 +66,7 @@ export function emailShell(bodyHtml: string, preheader = ""): string {
     .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: ${BRAND_CREAM} !important; }
     .pcc-accent { color: ${BRAND_MINT} !important; }
     .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
-    .pcc-btn { background-color: ${BRAND_MINT} !important; }
+    .pcc-btn { background-color: ${BRAND_CREAM} !important; }
     .pcc-btn a { color: ${BRAND_GREEN} !important; }
     .pcc-panel { background-color: ${PANEL_BG} !important; }
   }
@@ -74,7 +74,7 @@ export function emailShell(bodyHtml: string, preheader = ""): string {
   [data-ogsc] .pcc-card { background-color: ${BRAND_GREEN} !important; }
   [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: ${BRAND_CREAM} !important; }
   [data-ogsc] .pcc-accent { color: ${BRAND_MINT} !important; }
-  [data-ogsc] .pcc-btn { background-color: ${BRAND_MINT} !important; }
+  [data-ogsc] .pcc-btn { background-color: ${BRAND_CREAM} !important; }
   [data-ogsc] .pcc-btn a { color: ${BRAND_GREEN} !important; }
 </style>
 </head>
@@ -126,13 +126,14 @@ export function signOff(): string {
   return `<p style="margin:24px 0 0; color:rgba(255,252,249,0.75);">&mdash; Aneesa Talks</p>`;
 }
 
-// Mint fill / green text — the brand's pill idiom, and the only pairing that
-// stays legible now that the card behind it is brand green.
+// Cream fill / green text. Mint was too close in value to the green card behind
+// it and the button faded into the background; white reads as a button at a
+// glance. Labels and accents stay mint — they're text, not targets.
 export function ctaButton(href: string, label: string): string {
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 20px;">
       <tr>
-        <td class="pcc-btn" style="background-color:${BRAND_MINT}; border-radius:999px;">
+        <td class="pcc-btn" style="background-color:${BRAND_CREAM}; border-radius:999px;">
           <a href="${href}" style="display:inline-block; padding:12px 24px; font-family:${BODY_FONT}; font-size:14px; font-weight:700; color:${BRAND_GREEN}; text-decoration:none;">${label}</a>
         </td>
       </tr>

@@ -22,8 +22,11 @@ const steps = [
 ];
 
 export default function RequestPage() {
+  // max-w-6xl to line up with the header, footer, directory and home — this page
+  // was the odd one out at 4xl, which read as a narrower column than every other
+  // tab.
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
       {/* Body background is cream, so the title/description must be dark — they
           were brand-cream, which rendered invisibly and read to the client as
           "the heading is missing, it's just blank at the top" (08/08 round). */}
@@ -58,7 +61,7 @@ export default function RequestPage() {
         </div>
         <Link
           href="/directory"
-          className="shrink-0 bg-brand-mint hover:bg-brand-mint/90 text-brand-green font-semibold px-6 py-3 rounded-full transition-colors"
+          className="shrink-0 bg-brand-cream hover:bg-white text-brand-green font-semibold px-6 py-3 rounded-full transition-colors"
         >
           Browse the Directory
         </Link>

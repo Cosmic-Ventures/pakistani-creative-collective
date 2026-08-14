@@ -85,6 +85,6 @@ describe("email builders", () => {
     const dark = html.slice(html.indexOf("@media (prefers-color-scheme: dark)"));
     expect(dark).toContain("background-color: #294D3D !important");
     expect(dark).toContain("color: #FFFCF9 !important");
-    expect(dark).toContain("background-color: #91D2A6 !important");
+    expect(dark).toContain("background-color: #FFFCF9 !important");
   });
 });

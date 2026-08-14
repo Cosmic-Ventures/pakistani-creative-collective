@@ -108,7 +108,7 @@ export default async function Home() {
           <div className="mt-10 flex flex-wrap gap-4">
             <Link
               href="/directory"
-              className="bg-brand-mint hover:bg-brand-mint/90 text-brand-green font-semibold px-6 py-3 rounded-full transition-colors"
+              className="bg-brand-cream hover:bg-white text-brand-green font-semibold px-6 py-3 rounded-full transition-colors"
             >
               Browse the Directory
             </Link>
