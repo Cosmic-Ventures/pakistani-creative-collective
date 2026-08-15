@@ -5,7 +5,13 @@ import { loginAction } from "@/lib/auth-actions";
 
 export const metadata: Metadata = { title: "Sign In" };
 
-export default function SigninPage() {
+export default async function SigninPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
@@ -13,10 +19,13 @@ export default function SigninPage() {
         <p className="text-brand-brown/70 text-sm mb-8">
           Welcome back to the Pakistani Creative Collective.
         </p>
-        <AuthForm mode="signin" action={loginAction} />
+        <AuthForm mode="signin" action={loginAction} next={next} />
         <p className="text-center text-sm text-brand-brown/50 mt-6">
           No account?{" "}
-          <Link href="/auth/signup" className="text-brand-green hover:text-brand-green/70">
+          <Link
+            href={next ? `/auth/signup?next=${encodeURIComponent(next)}` : "/auth/signup"}
+            className="text-brand-green hover:text-brand-green/70"
+          >
             Create one free
           </Link>
         </p>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import EnrollForm from "@/components/EnrollForm";
 import { getSession } from "@/lib/session";
 import { loadEnrollmentDraft } from "@/lib/enroll-draft-actions";
@@ -13,7 +14,13 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function EnrollPage() {
+  // proxy.ts already bounces anonymous requests to /auth/signin?next=/enroll
+  // at the edge, but that check only verifies the JWT's signature — it can't
+  // confirm the account still exists. This is the real check, same pattern as
+  // account/page.tsx.
   const session = await getSession();
+  if (!session) redirect("/auth/signin?next=/enroll");
+
   const draft = await loadEnrollmentDraft();
 
   return (
@@ -24,15 +31,12 @@ export default async function EnrollPage() {
       </p>
       <p className="text-black/50 text-sm mb-10">
         This form takes approximately 10–15 minutes. Only a few fields are required — you can leave
-        the rest blank and still apply.
-        {session
-          ? " Use “Save progress” at any point to finish it later."
-          : " Sign in first if you'd like to save your progress and come back to it."}
+        the rest blank and still apply. Use “Save progress” at any point to finish it later.
       </p>
       <EnrollForm
         initialDraft={draft?.data ?? null}
         draftSavedAt={draft?.savedAt ?? null}
-        canSaveProgress={Boolean(session)}
+        canSaveProgress
       />
     </div>
   );

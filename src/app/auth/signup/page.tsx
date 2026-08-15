@@ -5,7 +5,13 @@ import { signupAction } from "@/lib/auth-actions";
 
 export const metadata: Metadata = { title: "Create Account" };
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
@@ -13,10 +19,13 @@ export default function SignupPage() {
         <p className="text-brand-brown/70 text-sm mb-8">
           Free to sign up. A paid subscription unlocks the full directory.
         </p>
-        <AuthForm mode="signup" action={signupAction} />
+        <AuthForm mode="signup" action={signupAction} next={next} />
         <p className="text-center text-sm text-brand-brown/50 mt-6">
           Already have an account?{" "}
-          <Link href="/auth/signin" className="text-brand-green hover:text-brand-green/70">
+          <Link
+            href={next ? `/auth/signin?next=${encodeURIComponent(next)}` : "/auth/signin"}
+            className="text-brand-green hover:text-brand-green/70"
+          >
             Sign in
           </Link>
         </p>

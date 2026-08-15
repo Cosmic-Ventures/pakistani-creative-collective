@@ -6,6 +6,7 @@ import { db } from "./db";
 import { sendEnrollmentNotification } from "./email";
 import { shortExperienceLevel } from "./experience-levels";
 import { discardEnrollmentDraft } from "./enroll-draft-actions";
+import { getSession } from "./session";
 
 function toSlug(first: string, last: string): string {
   const base = `${first}-${last}`
@@ -91,6 +92,13 @@ export async function enrollAction(
   _prev: EnrollResult | null,
   formData: FormData
 ): Promise<EnrollResult> {
+  // The page itself already redirects anonymous visitors to sign in
+  // (app/enroll/page.tsx, backed by proxy.ts at the edge), but this action is
+  // a POST endpoint reachable on its own — this is the check that actually
+  // holds.
+  const session = await getSession();
+  if (!session) return { error: "Sign in to submit your application." };
+
   // Multi-value fields
   const roles = formData.getAll("roles") as string[];
   const mediums = formData.getAll("mediums") as string[];

@@ -28,7 +28,7 @@ function sessionKey(): Uint8Array {
 
 // Routes that require *a* signed-in user. Which role they need is decided
 // server-side, against the database, by the page or action itself.
-const SIGNED_IN_ROUTES = ["/admin", "/account"];
+const SIGNED_IN_ROUTES = ["/admin", "/account", "/enroll", "/join"];
 const AUTH_ROUTES = ["/auth/signin", "/auth/signup"];
 
 export async function proxy(req: NextRequest) {

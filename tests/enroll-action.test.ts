@@ -1,19 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { dbMock, redirectMock, sendEnrollmentNotificationMock, discardEnrollmentDraftMock } = vi.hoisted(() => ({
+const { dbMock, redirectMock, sendEnrollmentNotificationMock, discardEnrollmentDraftMock, getSessionMock } = vi.hoisted(() => ({
   dbMock: { creative: { findMany: vi.fn(), create: vi.fn() } },
   redirectMock: vi.fn(),
   sendEnrollmentNotificationMock: vi.fn(async () => {}),
   discardEnrollmentDraftMock: vi.fn(async () => {}),
+  getSessionMock: vi.fn(),
 }));
 vi.mock("@/lib/db", () => ({ db: dbMock }));
 vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 vi.mock("@/lib/email", () => ({ sendEnrollmentNotification: sendEnrollmentNotificationMock }));
 vi.mock("@/lib/enroll-draft-actions", () => ({ discardEnrollmentDraft: discardEnrollmentDraftMock }));
+vi.mock("@/lib/session", () => ({ getSession: getSessionMock }));
 
 import { enrollAction } from "@/lib/enroll-action";
 
 const LONG_BIO = "A".repeat(120);
+
+const SIGNED_IN_SESSION = { userId: "user-1", email: "sara@example.com", role: "UNPAID" as const };
 
 function formData(fields: Record<string, string | string[]>) {
   const fd = new FormData();
@@ -27,9 +31,29 @@ function formData(fields: Record<string, string | string[]>) {
 beforeEach(() => {
   vi.clearAllMocks();
   dbMock.creative.findMany.mockResolvedValue([]);
+  getSessionMock.mockResolvedValue(SIGNED_IN_SESSION);
 });
 
 describe("enrollAction", () => {
+  it("rejects submission from a signed-out visitor", async () => {
+    getSessionMock.mockResolvedValue(null);
+
+    const result = await enrollAction(
+      null,
+      formData({
+        firstName: "Sara",
+        lastName: "Khan",
+        email: "sara@example.com",
+        headshotLink: "https://example.com/headshot.jpg",
+        bio: LONG_BIO,
+        experienceLevel: "Established (5–8 years)",
+      })
+    );
+
+    expect(result).toEqual({ error: expect.stringContaining("Sign in") });
+    expect(dbMock.creative.create).not.toHaveBeenCalled();
+  });
+
   it("rejects a bio that's too short", async () => {
     const result = await enrollAction(
       null,

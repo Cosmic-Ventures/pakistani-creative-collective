@@ -6,13 +6,15 @@ import type { ActionResult } from "@/lib/auth-actions";
 type Props = {
   mode: "signin" | "signup";
   action: (prev: ActionResult | null, formData: FormData) => Promise<ActionResult>;
+  next?: string;
 };
 
-export default function AuthForm({ mode, action }: Props) {
+export default function AuthForm({ mode, action, next }: Props) {
   const [state, formAction, pending] = useActionState(action, null);
 
   return (
     <form action={formAction} className="space-y-4">
+      {next && <input type="hidden" name="next" value={next} />}
       {state && "error" in state && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
           {state.error}
