@@ -7,8 +7,7 @@ import { logoutAction } from "@/lib/auth-actions";
 import { manageSubscriptionPortal } from "@/lib/subscribe-actions";
 import { getDisplayPrices } from "@/lib/stripe";
 import { toggleProfileBookmark, togglePostBookmark } from "@/lib/bookmark-actions";
-import { updateOwnProfile } from "@/lib/profile-actions";
-import { SelfManagedHeadshotUpload } from "@/components/HeadshotUpload";
+import { ProfileEditForm } from "@/components/ProfileEditForm";
 
 export const metadata: Metadata = { title: "My Account" };
 export const dynamic = "force-dynamic";
@@ -165,69 +164,10 @@ export default async function AccountPage({
               editing is available once it&apos;s approved.
             </p>
           ) : (
-            <form action={updateOwnProfile} className="bg-white rounded-2xl p-6 space-y-4">
-              {/* Approved members can swap their photo later (08/08 round) —
-                  previously the headshot was fixed at application time. */}
-              <div>
-                <label className="block text-sm text-brand-brown/70 mb-1.5">Profile Headshot</label>
-                <SelfManagedHeadshotUpload name="headshot" initialValue={myCreative.headshot ?? ""} />
-                <p className="text-xs text-brand-brown/40 mt-1">
-                  Image file, up to 8MB. Leave as-is to keep your current photo.
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <ProfileField label="Pronouns" name="pronouns" defaultValue={myCreative.pronouns ?? ""} />
-                <ProfileField label="Public Location" name="location" defaultValue={myCreative.location ?? ""} />
-              </div>
-              <ProfileTextArea label="Bio" name="bio" required rows={6} defaultValue={myCreative.bio} />
-              <ProfileTextArea label="Notable Achievements" name="notableAchievements" rows={2} defaultValue={myCreative.notableAchievements ?? ""} />
-              <ProfileTextArea label="Previous Collaborators" name="previousCollaborators" rows={2} defaultValue={myCreative.previousCollaborators ?? ""} />
-              <ProfileField label="Current Availability" name="availability" defaultValue={myCreative.availability ?? ""} hint="e.g. a date range, or 'Available now'" />
-              <div className="grid grid-cols-2 gap-4">
-                <ProfileField label="Website / Portfolio" name="website" defaultValue={myCreative.website ?? ""} />
-                <ProfileField label="IMDb" name="imdb" defaultValue={myCreative.imdb ?? ""} />
-                <ProfileField label="Instagram" name="instagram" defaultValue={myCreative.instagram ?? ""} />
-                <ProfileField label="LinkedIn" name="linkedin" defaultValue={myCreative.linkedin ?? ""} />
-              </div>
-              <ProfileField label="Vimeo / YouTube" name="vimeo" defaultValue={myCreative.vimeo ?? ""} />
-              <button className="bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-6 py-3 rounded-full transition-colors text-sm">
-                Save changes
-              </button>
-            </form>
+            <ProfileEditForm creative={myCreative} />
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-function ProfileField({ label, name, defaultValue, hint }: { label: string; name: string; defaultValue: string; hint?: string }) {
-  return (
-    <div>
-      <label className="block text-sm text-brand-brown/70 mb-1.5">{label}</label>
-      <input
-        name={name}
-        defaultValue={defaultValue}
-        className="w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown focus:outline-none focus:border-brand-green text-sm"
-      />
-      {hint && <p className="text-xs text-brand-brown/40 mt-1">{hint}</p>}
-    </div>
-  );
-}
-
-function ProfileTextArea({
-  label, name, defaultValue, rows = 3, required,
-}: { label: string; name: string; defaultValue: string; rows?: number; required?: boolean }) {
-  return (
-    <div>
-      <label className="block text-sm text-brand-brown/70 mb-1.5">{label}{required && <span className="text-red-400 ml-0.5">*</span>}</label>
-      <textarea
-        name={name}
-        required={required}
-        rows={rows}
-        defaultValue={defaultValue}
-        className="w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown focus:outline-none focus:border-brand-green text-sm resize-none"
-      />
     </div>
   );
 }

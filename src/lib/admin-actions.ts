@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "./db";
 import { requireAdmin } from "./session";
 import { sendApprovalEmail, sendRejectionEmail, sendFeatureNotification, sendContactRequestForwardEmail, sendRevisionRequestEmail } from "./email";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, UserRole } from "@prisma/client";
 
 export async function approveCreative(creativeId: string) {
   await requireAdmin();
@@ -121,4 +121,29 @@ export async function rejectFeatureRequest(requestId: string, notes?: string) {
     data: { status: "REJECTED", adminNotes: notes },
   });
   revalidatePath("/admin/feature-requests");
+}
+
+export type SetUserRoleResult = { error: string } | { success: true };
+
+export async function setUserRole(userId: string, role: UserRole): Promise<SetUserRoleResult> {
+  const session = await requireAdmin();
+  // Guards against an admin locking themselves out of /admin by demoting the
+  // only account that can undo it.
+  if (userId === session.userId && role !== "ADMIN") {
+    return { error: "You can't remove your own admin access." };
+  }
+  await db.user.update({ where: { id: userId }, data: { role } });
+  revalidatePath("/admin/users");
+  return { success: true };
+}
+
+// Admin-side re-crop: the client asked to be able to re-crop any creative's
+// photo after the fact, not just what the applicant originally uploaded.
+export async function updateCreativeHeadshot(creativeId: string, dataUrl: string) {
+  await requireAdmin();
+  await db.creative.update({ where: { id: creativeId }, data: { headshot: dataUrl } });
+  revalidatePath("/admin/applications");
+  revalidatePath(`/admin/applications/${creativeId}`);
+  const c = await db.creative.findUnique({ where: { id: creativeId }, select: { slug: true } });
+  if (c) revalidatePath(`/directory/${c.slug}`);
 }

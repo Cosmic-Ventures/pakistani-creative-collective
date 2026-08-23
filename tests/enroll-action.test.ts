@@ -262,6 +262,42 @@ describe("enrollAction", () => {
     );
   });
 
+  // These five fields are captured by the form and validated by the schema but
+  // were never wired into db.creative.create — silently dropped on every
+  // application until this test was added to pin the fix in place.
+  it("persists howHeard, specialSkills, additionalNotes, yearsExperience, and completedProjects", async () => {
+    dbMock.creative.create.mockResolvedValue({});
+
+    await enrollAction(
+      null,
+      formData({
+        firstName: "Sara",
+        lastName: "Khan",
+        email: "sara@example.com",
+        headshotLink: "data:image/jpeg;base64,AAAA",
+        bio: LONG_BIO,
+        experienceLevel: "Established (5–8 years)",
+        howHeard: "Instagram",
+        specialSkills: "Steadicam operation",
+        additionalNotes: "Available weekends only",
+        yearsExperience: "6",
+        completedProjects: "14",
+      })
+    );
+
+    expect(dbMock.creative.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          howHeard: "Instagram",
+          specialSkills: "Steadicam operation",
+          additionalNotes: "Available weekends only",
+          yearsExperience: "6",
+          completedProjects: "14",
+        }),
+      })
+    );
+  });
+
   it("appends a numeric suffix when the slug is already taken", async () => {
     dbMock.creative.findMany.mockResolvedValue([{ slug: "sara-khan" }, { slug: "sara-khan-2" }]);
     dbMock.creative.create.mockResolvedValue({});

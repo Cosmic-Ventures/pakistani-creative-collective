@@ -27,7 +27,7 @@ export default async function ApplicationsPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
         <h2 className="text-lg font-semibold text-white">Applications</h2>
         <div className="flex gap-2 text-sm">
           {["PENDING", "APPROVED", "REJECTED", "FLAGGED", "INACTIVE", "ALL"].map((s) => (
@@ -44,6 +44,17 @@ export default async function ApplicationsPage({
             </a>
           ))}
         </div>
+      </div>
+      <div className="mb-6">
+        <a
+          href={`/api/admin/applications-export?status=${status}`}
+          className="text-xs text-emerald-500 hover:text-emerald-400 underline underline-offset-2 transition-colors"
+        >
+          Export {status === "ALL" ? "all" : status.toLowerCase()} applications as CSV ↓
+        </a>
+        <span className="text-xs text-stone-600 ml-2">
+          — a full backup of every field on record, outside of this review UI.
+        </span>
       </div>
 
       {creatives.length === 0 && (
@@ -65,9 +76,17 @@ export default async function ApplicationsPage({
                   {c.referralName && ` · Referred by ${c.referralName}`}
                 </p>
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLORS[c.status]}`}>
-                {c.status}
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLORS[c.status]}`}>
+                  {c.status}
+                </span>
+                <a
+                  href={`/admin/applications/${c.id}`}
+                  className="text-xs text-stone-500 hover:text-stone-300 underline underline-offset-2 transition-colors"
+                >
+                  View full details →
+                </a>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-stone-500 mb-4">

@@ -10,12 +10,20 @@ export async function getOwnCreative() {
   return db.creative.findFirst({ where: { userId: session.userId } });
 }
 
-export async function updateOwnProfile(formData: FormData) {
+export type UpdateProfileResult = { error: string } | { success: true };
+
+export async function updateOwnProfile(
+  _prev: UpdateProfileResult | null,
+  formData: FormData
+): Promise<UpdateProfileResult> {
   const session = await getSession();
-  if (!session) throw new Error("Not signed in.");
+  if (!session) return { error: "You've been signed out — sign in again to save changes." };
 
   const creative = await db.creative.findFirst({ where: { userId: session.userId } });
-  if (!creative) throw new Error("No linked profile to edit.");
+  if (!creative) return { error: "No linked profile to edit." };
+
+  const bio = (formData.get("bio") as string) ?? "";
+  if (bio.trim().length === 0) return { error: "Bio can't be empty." };
 
   // Headshot field submits the existing value untouched unless a new file was
   // picked, so an empty string here means "no photo on file", not "clear it".
@@ -27,7 +35,7 @@ export async function updateOwnProfile(formData: FormData) {
       headshot,
       pronouns: (formData.get("pronouns") as string) || null,
       location: (formData.get("location") as string) || null,
-      bio: formData.get("bio") as string,
+      bio,
       notableAchievements: (formData.get("notableAchievements") as string) || null,
       previousCollaborators: (formData.get("previousCollaborators") as string) || null,
       availability: (formData.get("availability") as string) || null,
@@ -41,4 +49,5 @@ export async function updateOwnProfile(formData: FormData) {
 
   revalidatePath("/account");
   revalidatePath(`/directory/${creative.slug}`);
+  return { success: true };
 }

@@ -6,6 +6,7 @@ import { getSession } from "@/lib/session";
 const NAV = [
   { href: "/admin", label: "Overview", exact: true },
   { href: "/admin/applications", label: "Applications" },
+  { href: "/admin/users", label: "Users" },
   { href: "/admin/contact-requests", label: "Contact Requests" },
   { href: "/admin/feature-requests", label: "Feature Requests" },
   { href: "/admin/community", label: "Community" },

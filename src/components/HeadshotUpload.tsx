@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MAX_HEADSHOT_BYTES } from "@/lib/enroll-constants";
+import { HeadshotCropper } from "@/components/HeadshotCropper";
 
 /**
  * Downscales and re-encodes the chosen image before it ever leaves the browser.
@@ -55,6 +56,7 @@ export function HeadshotUpload({
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
@@ -85,7 +87,10 @@ export function HeadshotUpload({
         }
       }
       setFileName(file.name);
-      onChange(dataUrl);
+      // Cropping happens before the image is ever accepted as the value, so a
+      // fresh upload always goes through the same crop step as a re-crop of an
+      // existing photo — one code path, not two.
+      setCropSrc(dataUrl);
     } catch {
       setError("That image couldn't be read — please try a different file.");
     } finally {
@@ -107,10 +112,30 @@ export function HeadshotUpload({
       {working && <p className={`text-xs ${muted} mt-1.5`}>Processing image…</p>}
       {fileName && !error && !working && <p className={`text-xs ${muted} mt-1.5`}>Selected: {fileName}</p>}
       {value && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={value} alt="Headshot preview" className="w-16 h-16 rounded-xl object-cover mt-2" />
+        <div className="flex items-center gap-3 mt-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={value} alt="Headshot preview" className="w-16 h-16 rounded-xl object-cover" />
+          <button
+            type="button"
+            onClick={() => setCropSrc(value)}
+            className={`text-xs font-semibold underline underline-offset-2 ${dark ? "text-brand-mint hover:text-brand-mint/80" : "text-brand-green hover:text-brand-green/70"}`}
+          >
+            Adjust crop
+          </button>
+        </div>
       )}
       {error && <p className="text-xs text-red-500 mt-1.5">{error}</p>}
+
+      {cropSrc && (
+        <HeadshotCropper
+          src={cropSrc}
+          onCancel={() => setCropSrc(null)}
+          onCropped={(cropped) => {
+            onChange(cropped);
+            setCropSrc(null);
+          }}
+        />
+      )}
     </>
   );
 }

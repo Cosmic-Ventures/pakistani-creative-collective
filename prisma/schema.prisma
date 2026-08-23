@@ -173,6 +173,9 @@ model Creative {
   vimeo                 String?
   travel                String?  // e.g. "Will travel/open to international work"
   education             String?  @db.Text
+  specialSkills         String?  @db.Text
+  yearsExperience       String?
+  completedProjects     String?
 
   // ── Admin only ─────────────────────────────────────────────────────────────
   email                    String
@@ -183,6 +186,8 @@ model Creative {
   equipment                String?  @db.Text
   collaborationPreferences String?
   pccGoals                 String?  @db.Text
+  additionalNotes          String?  @db.Text
+  howHeard                 String?
   referralName             String?
   adminNotes               String?  @db.Text
   promoConsent             Boolean  @default(false) // opted in to being used in public-launch social promo
