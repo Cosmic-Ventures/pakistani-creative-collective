@@ -4,19 +4,31 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { logoutAction } from "@/lib/auth-actions";
-import { manageSubscriptionPortal } from "@/lib/subscribe-actions";
-import { getDisplayPrices } from "@/lib/stripe";
+import { manageSubscriptionPortal, createCheckoutSession, simulatePayment } from "@/lib/subscribe-actions";
+import { getDisplayPrices, isStripeConfigured } from "@/lib/stripe";
 import { toggleProfileBookmark, togglePostBookmark } from "@/lib/bookmark-actions";
 import { ProfileEditForm } from "@/components/ProfileEditForm";
+import { PricingCard } from "@/components/PricingCard";
 
 export const metadata: Metadata = { title: "My Account" };
 export const dynamic = "force-dynamic";
 
-const TABS = [
+const ALL_TABS = [
   { id: "account", label: "Account" },
+  { id: "subscribe", label: "Subscribe" },
   { id: "bookmarks", label: "Bookmarks" },
   { id: "profile", label: "My Profile" },
 ] as const;
+
+// Kept in sync with src/app/subscribe/page.tsx's own list — same plan, same copy.
+const SUBSCRIBE_FEATURES = [
+  "Full creative profiles including headshots",
+  "Search & filter by role, level, availability, language",
+  "Submit contact requests — routed through Aneesa Talks",
+  "Rate information (where creatives opt in)",
+  "All social and portfolio links",
+  "Access to the private Community Dashboard",
+];
 
 export default async function AccountPage({
   searchParams,
@@ -29,19 +41,23 @@ export default async function AccountPage({
   const user = await db.user.findUnique({ where: { id: session.userId } });
   if (!user) redirect("/auth/signin");
 
-  const { tab: rawTab, type: rawType } = await searchParams;
-  const tab = TABS.some((t) => t.id === rawTab) ? rawTab! : "account";
-  const bookmarkType = rawType === "posts" ? "posts" : "profiles";
-
   const myCreative = await db.creative.findFirst({ where: { userId: session.userId } });
   const isPaid = user.role === "PAID" || user.role === "ADMIN";
   const prices = await getDisplayPrices();
+
+  // The Subscribe tab only makes sense for someone who isn't already paid —
+  // a paid member manages their plan from the Account tab's "Manage
+  // Subscription" portal link instead.
+  const TABS = isPaid ? ALL_TABS.filter((t) => t.id !== "subscribe") : ALL_TABS;
+  const { tab: rawTab, type: rawType } = await searchParams;
+  const tab = TABS.some((t) => t.id === rawTab) ? rawTab! : "account";
+  const bookmarkType = rawType === "posts" ? "posts" : "profiles";
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
       <h1 className="font-heading font-bold text-2xl text-brand-green mb-8">My Account</h1>
 
-      <div className="bg-white rounded-2xl p-2 inline-flex gap-1 mb-6">
+      <div className="bg-white rounded-2xl p-2 inline-flex gap-1 mb-6 flex-wrap">
         {TABS.map((t) => (
           <Link
             key={t.id}
@@ -100,12 +116,12 @@ export default async function AccountPage({
               </form>
             )}
             {user.role === "UNPAID" && (
-              <a
-                href="/subscribe"
+              <Link
+                href="/account?tab=subscribe"
                 className="text-sm bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-5 py-2.5 rounded-full transition-colors"
               >
                 Subscribe — from {prices.monthly}/month
-              </a>
+              </Link>
             )}
             <form action={logoutAction}>
               <button className="text-sm text-brand-brown/50 hover:text-brand-brown transition-colors px-2 py-2.5">
@@ -116,12 +132,48 @@ export default async function AccountPage({
         </>
       )}
 
+      {tab === "subscribe" && !isPaid && (
+        <div>
+          <p className="text-brand-brown/70 text-sm mb-6">
+            Unlock full profiles, search &amp; filter, and contact requests. Pick monthly or yearly
+            billing — access is identical either way.
+          </p>
+
+          <PricingCard
+            isStripeConfigured={isStripeConfigured}
+            prices={prices}
+            monthlyAction={createCheckoutSession.bind(null, "monthly")}
+            annualAction={createCheckoutSession.bind(null, "annual")}
+            simulateAction={simulatePayment}
+          />
+
+          {!isStripeConfigured && (
+            <div className="text-xs text-amber-700 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2 mb-6 max-w-md text-center">
+              Stripe not configured yet — this is a demo flow. Payment will be simulated.
+            </div>
+          )}
+
+          <div className="bg-brand-green/5 border border-brand-green/10 rounded-2xl p-6 max-w-md">
+            <p className="text-sm font-semibold text-brand-green mb-3">What&apos;s included</p>
+            <ul className="space-y-2 text-sm text-brand-brown/80">
+              {SUBSCRIBE_FEATURES.map((f) => (
+                <li key={f} className="flex items-start gap-2">
+                  <span className="text-brand-green shrink-0">✓</span> {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <p className="text-xs text-brand-brown/40 mt-4">Payments processed securely by Stripe. Cancel anytime.</p>
+        </div>
+      )}
+
       {tab === "bookmarks" && (
         <div>
           {!isPaid ? (
             <p className="text-brand-brown/70 text-sm">
               Bookmarking profiles and posts is available to paid members.{" "}
-              <a href="/subscribe" className="text-brand-green font-semibold hover:underline">Subscribe →</a>
+              <Link href="/account?tab=subscribe" className="text-brand-green font-semibold hover:underline">Subscribe →</Link>
             </p>
           ) : (
             <>
