@@ -24,6 +24,17 @@
 }
 
 /*
+ * Tailwind v4 dropped v3's preflight reset that gave <button> a pointer
+ * cursor, so it falls back to the browser default ("default", not
+ * "pointer") on hover. Restore it globally instead of adding
+ * cursor-pointer to every button/role="button" individually.
+ */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+/*
  * Printer-friendly override for full profile pages (.print-area, e.g. the
  * paid/featured view at /directory/[slug]). The live page relies on cream
  * text over a brand-green background, which is illegible on white paper —
