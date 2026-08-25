@@ -82,6 +82,9 @@ export default async function MemberPage({
   const fullName = `${creative.firstName} ${creative.lastName}`;
   const subtitle = [creative.pronouns].filter(Boolean).join(" ");
   const bio = showFull ? creative.bio : truncateWords(creative.bio, 200);
+  const hasSocialLinks = Boolean(
+    headlineLink || creative.instagram || creative.linkedin || creative.imdb || creative.vimeo
+  );
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)] bg-brand-green print-area">
@@ -136,17 +139,21 @@ export default async function MemberPage({
           />
 
           {showFull ? (
-            <>
-              {/* Details column — on green */}
-              <div className="text-brand-cream space-y-5">
-                {creative.education && <Detail label="Education" value={creative.education} />}
-                {creative.availability && <Detail label="Availability" value={creative.availability} />}
-                {creative.languages.length > 0 && (
-                  <Detail label="Languages" value={creative.languages.join(", ")} />
-                )}
-                {creative.mediums.length > 0 && (
-                  <Detail label="Medium(s)" value={creative.mediums.join(", ")} />
-                )}
+            /* Details + primary work sample — stacked one after another on
+               green, not split into two side-by-side columns. A second empty
+               column (no primary sample) used to reserve a whole blank grid
+               track, and "Connect" rendered even with zero links — both read
+               as dead space; both are gone now that this is a single flow. */
+            <div className="text-brand-cream space-y-5 lg:col-span-2">
+              {creative.education && <Detail label="Education" value={creative.education} />}
+              {creative.availability && <Detail label="Availability" value={creative.availability} />}
+              {creative.languages.length > 0 && (
+                <Detail label="Languages" value={creative.languages.join(", ")} />
+              )}
+              {creative.mediums.length > 0 && (
+                <Detail label="Medium(s)" value={creative.mediums.join(", ")} />
+              )}
+              {hasSocialLinks && (
                 <div>
                   <p className="font-heading font-bold text-sm tracking-wide mb-2">Connect</p>
                   <div className="flex flex-wrap gap-2">
@@ -161,24 +168,20 @@ export default async function MemberPage({
                     {creative.vimeo && <SocialIcon href={normalizeUrl(creative.vimeo)} kind="play" />}
                   </div>
                 </div>
-              </div>
-
-              {/* Primary work sample column — on green */}
-              <div className="text-brand-cream space-y-5">
-                {primarySample && (
-                  <>
-                    <Detail
-                      label="Primary Work Sample"
-                      value={[primarySample.title, primarySample.medium, primarySample.year]
-                        .filter(Boolean)
-                        .join(", ")}
-                    />
-                    {primarySample.role && <Detail label="Role(s)" value={primarySample.role} />}
-                    {primarySample.link && <ProjectEmbed link={primarySample.link} />}
-                  </>
-                )}
-              </div>
-            </>
+              )}
+              {primarySample && (
+                <>
+                  <Detail
+                    label="Primary Work Sample"
+                    value={[primarySample.title, primarySample.medium, primarySample.year]
+                      .filter(Boolean)
+                      .join(", ")}
+                  />
+                  {primarySample.role && <Detail label="Role(s)" value={primarySample.role} />}
+                  {primarySample.link && <ProjectEmbed link={primarySample.link} />}
+                </>
+              )}
+            </div>
           ) : (
             /* Biography card — mint (public view) */
             <BiographyCard bio={bio} className="lg:col-span-3" />
@@ -195,15 +198,15 @@ export default async function MemberPage({
               creative.travel ||
               headlineLink ||
               creative.preferredProjectTypes.length > 0) && (
-              <div className="bg-brand-cream rounded-3xl p-7 sm:p-8">
+              <div className="bg-brand-green border border-brand-cream/10 rounded-3xl p-7 sm:p-8">
                 <div className="flex items-center justify-center gap-3 mb-6">
-                  <span className="h-px flex-1 bg-brand-green/30" />
-                  <span className="text-brand-green text-xs">☾</span>
-                  <h2 className="font-heading font-bold text-brand-green text-lg tracking-tight">
+                  <span className="h-px flex-1 bg-brand-cream/30" />
+                  <span className="text-brand-cream text-xs">☾</span>
+                  <h2 className="font-heading font-bold text-brand-cream text-lg tracking-tight">
                     Work For Hire
                   </h2>
-                  <span className="text-brand-green text-xs">☾</span>
-                  <span className="h-px flex-1 bg-brand-green/30" />
+                  <span className="text-brand-cream text-xs">☾</span>
+                  <span className="h-px flex-1 bg-brand-cream/30" />
                 </div>
                 <dl className="space-y-4">
                   {creative.ratePublic && (creative.rateRange || creative.rateStructure) && (
@@ -216,13 +219,13 @@ export default async function MemberPage({
                   )}
                   {headlineLink && (
                     <div>
-                      <dt className="font-semibold text-brand-brown mb-0.5">Work Portfolio</dt>
+                      <dt className="font-semibold text-brand-cream mb-0.5">Work Portfolio</dt>
                       <dd>
                         <a
                           href={normalizeUrl(headlineLink)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-brand-green underline decoration-brand-green/30 underline-offset-2 hover:decoration-brand-green"
+                          className="inline-flex items-center gap-1.5 text-brand-cream underline decoration-brand-cream/40 underline-offset-2 hover:decoration-brand-cream"
                         >
                           <GlobeGlyph /> {headlineLink.replace(/^https?:\/\//, "")}
                         </a>
@@ -234,12 +237,12 @@ export default async function MemberPage({
                   )}
                   {creative.roles.length > 0 && (
                     <div>
-                      <dt className="font-semibold text-brand-brown mb-2">Role(s)</dt>
+                      <dt className="font-semibold text-brand-cream mb-2">Role(s)</dt>
                       <dd className="flex flex-wrap gap-2">
                         {creative.roles.map((r) => (
                           <span
                             key={r}
-                            className="text-xs uppercase font-semibold border border-brand-green/40 text-brand-green px-3 py-1 rounded-full"
+                            className="text-xs uppercase font-semibold border border-brand-cream/40 text-brand-cream px-3 py-1 rounded-full"
                           >
                             {r}
                           </span>
@@ -290,25 +293,25 @@ export default async function MemberPage({
 
         {/* More work samples (paid) */}
         {showFull && otherSamples.length > 0 && (
-          <div className="mt-6 bg-brand-cream rounded-3xl p-7 max-w-xl">
-            <p className="font-heading font-bold text-brand-green text-sm mb-3">
+          <div className="mt-6 bg-brand-green border border-brand-cream/10 rounded-3xl p-7 max-w-xl">
+            <p className="font-heading font-bold text-brand-cream text-sm mb-3">
               More Work Samples
             </p>
             <div className="space-y-2">
               {otherSamples.map((ws, i) => (
                 <div key={i} className="flex items-start justify-between gap-2 text-sm">
                   <div>
-                    <span className="text-brand-brown">{ws.title}</span>
-                    {ws.role && <span className="text-brand-brown/50"> · {ws.role}</span>}
-                    {ws.medium && <span className="text-brand-brown/50"> · {ws.medium}</span>}
-                    {ws.year && <span className="text-brand-brown/50"> · {ws.year}</span>}
+                    <span className="text-brand-cream">{ws.title}</span>
+                    {ws.role && <span className="text-brand-cream/60"> · {ws.role}</span>}
+                    {ws.medium && <span className="text-brand-cream/60"> · {ws.medium}</span>}
+                    {ws.year && <span className="text-brand-cream/60"> · {ws.year}</span>}
                   </div>
                   {ws.link && (
                     <a
                       href={ws.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-brand-green hover:text-brand-green/70 shrink-0"
+                      className="text-brand-cream hover:text-brand-cream/70 shrink-0"
                     >
                       ↗
                     </a>
@@ -350,7 +353,7 @@ function IdentityCard({
     .slice(0, 2)
     .join("");
   return (
-    <div className={`bg-brand-cream rounded-3xl p-7 sm:p-8 ${className}`}>
+    <div className={`bg-brand-green border border-brand-cream/10 rounded-3xl p-7 sm:p-8 ${className}`}>
       {/* Free profiles don't include a headshot slot at all (not just a hidden one) —
           per the client's Free Access spec, a photo is a member-tier field. */}
       {showRolesAsPills &&
@@ -366,10 +369,10 @@ function IdentityCard({
             {initials}
           </div>
         ))}
-      <h1 className="font-heading font-bold text-3xl sm:text-4xl text-brand-brown leading-[0.95] tracking-tight">
+      <h1 className="font-heading font-bold text-3xl sm:text-4xl text-brand-cream leading-[0.95] tracking-tight">
         {fullName}
       </h1>
-      {subtitle && <p className="text-sm text-brand-brown/60 mt-2">{subtitle}</p>}
+      {subtitle && <p className="text-sm text-brand-cream/60 mt-2">{subtitle}</p>}
 
       <div className="flex flex-wrap gap-2 mt-5">
         {location && (
@@ -387,12 +390,12 @@ function IdentityCard({
               </span>
             ))
           : roles.length > 0 && (
-              <span className="text-xs uppercase font-semibold bg-brand-green text-brand-cream px-3 py-1 rounded-full">
+              <span className="text-xs uppercase font-semibold bg-brand-cream text-brand-green px-3 py-1 rounded-full">
                 {formatRoleLine(roles)}
               </span>
             )}
         {experienceLevel && (
-          <span className="text-xs uppercase font-semibold bg-brand-green text-brand-cream px-3 py-1 rounded-full">
+          <span className="text-xs uppercase font-semibold bg-brand-cream text-brand-green px-3 py-1 rounded-full">
             {experienceLevel}
           </span>
         )}
@@ -403,7 +406,7 @@ function IdentityCard({
           href={normalizeUrl(headlineLink)}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm text-brand-green font-medium hover:text-brand-green/70 transition-colors mt-5"
+          className="inline-flex items-center gap-1.5 text-sm text-brand-cream font-medium hover:text-brand-cream/70 transition-colors mt-5"
         >
           <GlobeGlyph /> {headlineLink.replace(/^https?:\/\//, "")}
         </a>
@@ -435,8 +438,8 @@ function Detail({ label, value }: { label: string; value: string }) {
 function WfhRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="font-semibold text-brand-brown mb-0.5">{label}</dt>
-      <dd className="text-brand-brown/80 text-sm">{value}</dd>
+      <dt className="font-semibold text-brand-cream mb-0.5">{label}</dt>
+      <dd className="text-brand-cream/80 text-sm">{value}</dd>
     </div>
   );
 }
