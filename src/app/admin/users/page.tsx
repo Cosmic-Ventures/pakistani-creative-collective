@@ -24,7 +24,7 @@ export default async function UsersPage({
   const users = await db.user.findMany({
     where: role === "ALL" ? {} : { role: role as "UNPAID" | "PAID" | "ADMIN" },
     orderBy: { createdAt: "desc" },
-    include: { creative: { select: { id: true, slug: true, status: true } } },
+    include: { creative: { select: { id: true, slug: true, status: true, promoConsent: true } } },
   });
 
   return (
@@ -61,6 +61,7 @@ export default async function UsersPage({
               <th className="px-4 py-3 font-medium">Role</th>
               <th className="px-4 py-3 font-medium">Subscription</th>
               <th className="px-4 py-3 font-medium">Linked Profile</th>
+              <th className="px-4 py-3 font-medium">Promo Consent</th>
               <th className="px-4 py-3 font-medium">Joined</th>
               <th className="px-4 py-3 font-medium">Actions</th>
             </tr>
@@ -88,6 +89,19 @@ export default async function UsersPage({
                     </Link>
                   ) : (
                     <span className="text-stone-600">None</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-xs">
+                  {u.creative ? (
+                    u.creative.promoConsent ? (
+                      <span className="text-emerald-400 bg-emerald-950/40 border border-emerald-700/40 px-2 py-0.5 rounded-full">
+                        Opted in
+                      </span>
+                    ) : (
+                      <span className="text-stone-500">Not opted in</span>
+                    )
+                  ) : (
+                    <span className="text-stone-700">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-xs text-stone-500">{new Date(u.createdAt).toLocaleDateString()}</td>

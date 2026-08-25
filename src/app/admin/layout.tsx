@@ -42,7 +42,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               {label}
             </Link>
           ))}
-          <div className="border-t border-stone-800 mt-2 pt-2 w-full">
+          <div className="border-t border-stone-800 mt-2 pt-2 w-full flex lg:flex-col gap-1 flex-wrap">
+            <Link href="/account?tab=profile" className="px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-white hover:bg-stone-800 transition-colors block">
+              Edit My Profile
+            </Link>
             <Link href="/directory" className="px-3 py-2 rounded-lg text-sm text-stone-600 hover:text-stone-400 transition-colors block">
               ← Back to site
             </Link>
