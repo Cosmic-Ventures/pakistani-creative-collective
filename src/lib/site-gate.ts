@@ -55,6 +55,10 @@ export function tokensMatch(a: string | undefined, b: string): boolean {
  */
 const PRELAUNCH_ALLOWED = [
   "/gate",
+  // The homepage itself (08/24 round: "make the homepage public/live for
+  // those who have the password"). Exact-match only — the `${p}/` prefix
+  // check below would otherwise match every path on the site.
+  "/",
   "/enroll",
   "/join",
   "/auth",

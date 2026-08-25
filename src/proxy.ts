@@ -54,7 +54,12 @@ export async function proxy(req: NextRequest) {
 
     if (!unlocked && pathname !== "/gate") {
       const url = new URL("/gate", req.url);
-      if (pathname !== "/") url.searchParams.set("next", pathname);
+      // The homepage is itself a prelaunch-allowed destination (08/24 round),
+      // so always carry `next` through — including for "/" — so someone who
+      // hits the gate from the homepage lands back on it after entering the
+      // password, instead of being bounced to /enroll by gate-actions.ts's
+      // default.
+      url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);
     }
 

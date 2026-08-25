@@ -4,6 +4,14 @@ import { logoutAction } from "@/lib/auth-actions";
 import Logo from "@/components/Logo";
 import { gateEnabled } from "@/lib/site-gate";
 
+// 08/24 feedback round: "make the subscription page one of the tabs on
+// navigation (private for now)." The tab exists in code and is wired to
+// /subscribe, but stays hidden until the client says it's ready to go public
+// — flip this to true (and, if the site is still gated, add "/subscribe" to
+// PRELAUNCH_ALLOWED in src/lib/site-gate.ts) to turn it on. No other change
+// needed.
+const NAV_SUBSCRIBE_TAB_ENABLED = false;
+
 export default async function Nav() {
   const session = await getSession();
   const isMember = session?.role === "PAID" || session?.role === "ADMIN";
@@ -16,12 +24,17 @@ export default async function Nav() {
     return (
       <header className="border-b border-brand-cream/15 bg-brand-green/95 backdrop-blur-sm sticky top-0 z-50 print:hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-          <Link href="/enroll" className="flex items-center group">
+          <Link href="/" className="flex items-center group">
             <Logo variant="square" className="h-9 w-auto group-hover:opacity-80 transition-opacity" />
           </Link>
           {/* Apply sits last so it lands at the far right, as a white pill —
               it's the one thing we want people to do before launch. */}
           <nav className="flex items-center gap-5 text-sm">
+            {NAV_SUBSCRIBE_TAB_ENABLED && !isMember && (
+              <Link href="/subscribe" className="text-brand-cream/80 hover:text-brand-cream transition-colors">
+                Subscribe
+              </Link>
+            )}
             {session ? (
               <form action={logoutAction}>
                 <button className="text-brand-cream/50 hover:text-brand-cream transition-colors">

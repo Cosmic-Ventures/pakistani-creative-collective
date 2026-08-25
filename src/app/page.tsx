@@ -42,6 +42,20 @@ const buildHowItWorks = (prices: DisplayPrices) => [
 
 const SPOTLIGHT_HEADSHOT = "/brand/aneesa-khan-headshot.jpg";
 
+// 08/24 feedback round: "hide all buttons for now, except Apply to Join" —
+// the directory, contact-request, and profile pages aren't public yet, and
+// several of them are also behind the pre-launch gate (see PRELAUNCH_ALLOWED
+// in src/lib/site-gate.ts), so linking to them from the homepage just bounces
+// visitors back to /enroll. Apply to Join is the one flow that's actually
+// open. Flip any of these back to true — no other change needed — once the
+// corresponding page is ready to be public.
+const HOMEPAGE_CTAS = {
+  applyToJoin: true,
+  browseDirectory: false,
+  submitRequest: false,
+  viewFullProfile: false,
+};
+
 const FREE_ACCESS = [
   "Creative's name",
   "Role",
@@ -106,18 +120,22 @@ export default async function Home() {
             searchable, vetted, and built for sustainable global collaboration.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
-            <Link
-              href="/directory"
-              className="bg-brand-cream hover:bg-white text-brand-green font-semibold px-6 py-3 rounded-full transition-colors"
-            >
-              Browse the Directory
-            </Link>
-            <Link
-              href="/join"
-              className="border border-brand-cream/40 hover:border-brand-cream text-brand-cream font-semibold px-6 py-3 rounded-full transition-colors"
-            >
-              Apply to Join
-            </Link>
+            {HOMEPAGE_CTAS.browseDirectory && (
+              <Link
+                href="/directory"
+                className="bg-brand-cream hover:bg-white text-brand-green font-semibold px-6 py-3 rounded-full transition-colors"
+              >
+                Browse the Directory
+              </Link>
+            )}
+            {HOMEPAGE_CTAS.applyToJoin && (
+              <Link
+                href="/join"
+                className="border border-brand-cream/40 hover:border-brand-cream text-brand-cream font-semibold px-6 py-3 rounded-full transition-colors"
+              >
+                Apply to Join
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -260,12 +278,14 @@ export default async function Home() {
                   <p className="text-black font-semibold text-sm mb-2">{featured.roles.join(" · ")}</p>
                 )}
                 <p className="text-black/80 text-sm leading-relaxed line-clamp-5">{featured.bio}</p>
-                <Link
-                  href={`/directory/${featured.slug}`}
-                  className="inline-block mt-4 text-black font-semibold text-sm underline underline-offset-2 hover:no-underline w-fit"
-                >
-                  View full profile →
-                </Link>
+                {HOMEPAGE_CTAS.viewFullProfile && (
+                  <Link
+                    href={`/directory/${featured.slug}`}
+                    className="inline-block mt-4 text-black font-semibold text-sm underline underline-offset-2 hover:no-underline w-fit"
+                  >
+                    View full profile →
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -283,12 +303,14 @@ export default async function Home() {
               <span className="block pl-4 mt-1">All requests are screened before matching.</span>
             </p>
           </div>
-          <Link
-            href="/request"
-            className="shrink-0 bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-6 py-3 rounded-full transition-colors"
-          >
-            Submit a Request
-          </Link>
+          {HOMEPAGE_CTAS.submitRequest && (
+            <Link
+              href="/request"
+              className="shrink-0 bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-6 py-3 rounded-full transition-colors"
+            >
+              Submit a Request
+            </Link>
+          )}
         </div>
       </section>
     </div>
