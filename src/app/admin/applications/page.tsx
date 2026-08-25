@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { approveCreative, rejectCreative, setCreativeStatus, flagCreativeForReview, updateCreativeFields } from "@/lib/admin-actions";
+import { FilterTabs } from "@/components/admin/FilterTabs";
 
 export const metadata: Metadata = { title: "Applications · Admin" };
 export const dynamic = "force-dynamic";
@@ -13,6 +14,8 @@ const STATUS_COLORS: Record<string, string> = {
   FLAGGED: "text-orange-400 bg-orange-950/40 border-orange-700/40",
 };
 
+const STATUSES = ["PENDING", "APPROVED", "REJECTED", "FLAGGED", "INACTIVE", "ALL"] as const;
+
 export default async function ApplicationsPage({
   searchParams,
 }: {
@@ -20,30 +23,50 @@ export default async function ApplicationsPage({
 }) {
   const { status = "PENDING" } = await searchParams;
 
-  const creatives = await db.creative.findMany({
-    where: status === "ALL" ? {} : { status: status as "PENDING" | "APPROVED" | "REJECTED" | "INACTIVE" | "FLAGGED" },
-    orderBy: { createdAt: "desc" },
-  });
+  // Only select the fields the list view actually renders — in particular,
+  // never select `headshot` here, a base64 image data URL that can run to
+  // hundreds of KB per row and this view never displays (AGENTS.md gotcha #11).
+  const [creatives, statusCounts] = await Promise.all([
+    db.creative.findMany({
+      where: status === "ALL" ? {} : { status: status as "PENDING" | "APPROVED" | "REJECTED" | "INACTIVE" | "FLAGGED" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        pronouns: true,
+        email: true,
+        createdAt: true,
+        referralName: true,
+        status: true,
+        experienceLevel: true,
+        roles: true,
+        website: true,
+        imdb: true,
+        bio: true,
+        adminNotes: true,
+        notableAchievements: true,
+        pccGoals: true,
+      },
+    }),
+    db.creative.groupBy({ by: ["status"], _count: true }),
+  ]);
+
+  const countByStatus = Object.fromEntries(statusCounts.map((s) => [s.status, s._count]));
+  const totalCount = statusCounts.reduce((sum, s) => sum + s._count, 0);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
         <h2 className="text-lg font-semibold text-white">Applications</h2>
-        <div className="flex gap-2 text-sm">
-          {["PENDING", "APPROVED", "REJECTED", "FLAGGED", "INACTIVE", "ALL"].map((s) => (
-            <a
-              key={s}
-              href={`/admin/applications?status=${s}`}
-              className={`px-3 py-1 rounded-full border transition-colors ${
-                status === s
-                  ? "bg-stone-700 border-stone-600 text-white"
-                  : "border-stone-800 text-stone-500 hover:text-stone-300"
-              }`}
-            >
-              {s.charAt(0) + s.slice(1).toLowerCase()}
-            </a>
-          ))}
-        </div>
+        <FilterTabs
+          tabs={STATUSES.map((s) => ({
+            label: s.charAt(0) + s.slice(1).toLowerCase(),
+            href: `/admin/applications?status=${s}`,
+            active: status === s,
+            count: s === "ALL" ? totalCount : (countByStatus[s] ?? 0),
+          }))}
+        />
       </div>
       <div className="mb-6">
         <a

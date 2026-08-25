@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { forwardContactRequest, updateContactRequestStatus } from "@/lib/admin-actions";
+import { FilterTabs } from "@/components/admin/FilterTabs";
 
 export const metadata: Metadata = { title: "Contact Requests · Admin" };
 export const dynamic = "force-dynamic";
@@ -23,33 +24,35 @@ export default async function ContactRequestsPage({
   const { status } = await searchParams;
   const activeStatus = STATUSES.includes(status as (typeof STATUSES)[number]) ? status! : "ALL";
 
-  const requests = await db.contactRequest.findMany({
-    where: activeStatus === "ALL" ? undefined : { status: activeStatus as never },
-    orderBy: { createdAt: "desc" },
-    include: {
-      creative: { select: { firstName: true, lastName: true, slug: true } },
-      user: { select: { name: true, email: true } },
-    },
-  });
+  const [requests, statusCounts] = await Promise.all([
+    db.contactRequest.findMany({
+      where: activeStatus === "ALL" ? undefined : { status: activeStatus as never },
+      orderBy: { createdAt: "desc" },
+      include: {
+        creative: { select: { firstName: true, lastName: true, slug: true } },
+        user: { select: { name: true, email: true } },
+      },
+    }),
+    db.contactRequest.groupBy({ by: ["status"], _count: true }),
+  ]);
+
+  const countByStatus = Object.fromEntries(statusCounts.map((s) => [s.status, s._count]));
+  const totalCount = statusCounts.reduce((sum, s) => sum + s._count, 0);
 
   return (
     <div>
       <h2 className="text-lg font-semibold text-white mb-6">Contact Requests</h2>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {STATUSES.map((s) => (
-          <a
-            key={s}
-            href={s === "ALL" ? "/admin/contact-requests" : `/admin/contact-requests?status=${s}`}
-            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-              activeStatus === s
-                ? "bg-emerald-700 border-emerald-600 text-white"
-                : "bg-stone-900 border-stone-800 text-stone-400 hover:text-stone-200"
-            }`}
-          >
-            {s === "ALL" ? "All" : s.charAt(0) + s.slice(1).toLowerCase()}
-          </a>
-        ))}
+      <div className="mb-6">
+        <FilterTabs
+          variant="emerald"
+          tabs={STATUSES.map((s) => ({
+            label: s === "ALL" ? "All" : s.charAt(0) + s.slice(1).toLowerCase(),
+            href: s === "ALL" ? "/admin/contact-requests" : `/admin/contact-requests?status=${s}`,
+            active: activeStatus === s,
+            count: s === "ALL" ? totalCount : (countByStatus[s] ?? 0),
+          }))}
+        />
       </div>
 
       {requests.length === 0 && <p className="text-stone-500 text-sm">No contact requests match this filter.</p>}

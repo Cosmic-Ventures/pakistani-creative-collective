@@ -1,15 +1,32 @@
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { approveFeatureRequest, rejectFeatureRequest } from "@/lib/admin-actions";
+import { FilterTabs } from "@/components/admin/FilterTabs";
 
 export const metadata: Metadata = { title: "Feature Requests · Admin" };
 export const dynamic = "force-dynamic";
 
-export default async function FeatureRequestsPage() {
-  const requests = await db.featureRequest.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { creative: { select: { firstName: true, lastName: true, slug: true, featured: true, featuredUntil: true } } },
-  });
+const STATUSES = ["ALL", "PENDING", "APPROVED", "REJECTED"] as const;
+
+export default async function FeatureRequestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
+  const activeStatus = STATUSES.includes(status as (typeof STATUSES)[number]) ? status! : "ALL";
+
+  const [requests, statusCounts] = await Promise.all([
+    db.featureRequest.findMany({
+      where: activeStatus === "ALL" ? {} : { status: activeStatus as "PENDING" | "APPROVED" | "REJECTED" },
+      orderBy: { createdAt: "desc" },
+      include: { creative: { select: { firstName: true, lastName: true, slug: true, featured: true, featuredUntil: true } } },
+    }),
+    db.featureRequest.groupBy({ by: ["status"], _count: true }),
+  ]);
+
+  const countByStatus = Object.fromEntries(statusCounts.map((s) => [s.status, s._count]));
+  const totalCount = statusCounts.reduce((sum, s) => sum + s._count, 0);
 
   // End of next month as default featured period
   const defaultUntil = new Date();
@@ -18,9 +35,19 @@ export default async function FeatureRequestsPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-white mb-6">Feature Requests</h2>
+      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
+        <h2 className="text-lg font-semibold text-white">Feature Requests</h2>
+        <FilterTabs
+          tabs={STATUSES.map((s) => ({
+            label: s === "ALL" ? "All" : s.charAt(0) + s.slice(1).toLowerCase(),
+            href: s === "ALL" ? "/admin/feature-requests" : `/admin/feature-requests?status=${s}`,
+            active: activeStatus === s,
+            count: s === "ALL" ? totalCount : (countByStatus[s] ?? 0),
+          }))}
+        />
+      </div>
 
-      {requests.length === 0 && <p className="text-stone-500 text-sm">No feature requests yet.</p>}
+      {requests.length === 0 && <p className="text-stone-500 text-sm">No feature requests match this filter.</p>}
 
       <div className="space-y-4">
         {requests.map((r) => (

@@ -14,6 +14,7 @@ import {
   sendBulkPostNotification,
 } from "@/lib/community-admin-actions";
 import { POST_CATEGORY_LABELS } from "@/lib/community-constants";
+import { FilterTabs } from "@/components/admin/FilterTabs";
 
 export const metadata: Metadata = { title: "Community · Admin" };
 export const dynamic = "force-dynamic";
@@ -36,58 +37,66 @@ export default async function AdminCommunityPage({
   const fromDate = from ? new Date(from) : null;
   const toDate = to ? new Date(`${to}T23:59:59`) : null;
 
-  const posts = await db.post.findMany({
-    where: {
-      ...(status === "ALL" ? {} : { status: status as "PENDING" | "APPROVED" | "REJECTED" }),
-      ...(category ? { category: category as keyof typeof POST_CATEGORY_LABELS } : {}),
-      ...(q
-        ? {
-            OR: [
-              { creative: { firstName: { contains: q, mode: "insensitive" as const } } },
-              { creative: { lastName: { contains: q, mode: "insensitive" as const } } },
-              { region: { contains: q, mode: "insensitive" as const } },
-            ],
-          }
-        : {}),
-      ...(fromDate || toDate
-        ? { createdAt: { ...(fromDate ? { gte: fromDate } : {}), ...(toDate ? { lte: toDate } : {}) } }
-        : {}),
-    },
-    orderBy: { createdAt: "desc" },
-    include: { creative: { select: { firstName: true, lastName: true, email: true, slug: true } } },
-  });
+  // Shared filter (everything except status) — reused for both the list query
+  // and the per-status counts on the tabs, so counts reflect the active
+  // category/search/date filters rather than the whole table.
+  const sharedWhere = {
+    ...(category ? { category: category as keyof typeof POST_CATEGORY_LABELS } : {}),
+    ...(q
+      ? {
+          OR: [
+            { creative: { firstName: { contains: q, mode: "insensitive" as const } } },
+            { creative: { lastName: { contains: q, mode: "insensitive" as const } } },
+            { region: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+    ...(fromDate || toDate
+      ? { createdAt: { ...(fromDate ? { gte: fromDate } : {}), ...(toDate ? { lte: toDate } : {}) } }
+      : {}),
+  };
 
-  const reports = await db.commentReport.findMany({
-    where: { status: "PENDING" },
-    orderBy: { createdAt: "desc" },
-    include: {
-      comment: { include: { creative: { select: { firstName: true, lastName: true, slug: true } }, post: { select: { title: true } } } },
-      creative: { select: { firstName: true, lastName: true, slug: true } },
-    },
-  });
+  const [posts, reports, flaggedOrSuspended] = await Promise.all([
+    db.post.findMany({
+      where: { ...sharedWhere, ...(status === "ALL" ? {} : { status: status as "PENDING" | "APPROVED" | "REJECTED" }) },
+      orderBy: { createdAt: "desc" },
+      include: { creative: { select: { firstName: true, lastName: true, email: true, slug: true } } },
+    }),
+    db.commentReport.findMany({
+      where: { status: "PENDING" },
+      orderBy: { createdAt: "desc" },
+      include: {
+        comment: { include: { creative: { select: { firstName: true, lastName: true, slug: true } }, post: { select: { title: true } } } },
+        creative: { select: { firstName: true, lastName: true, slug: true } },
+      },
+    }),
+    db.creative.findMany({
+      where: { OR: [{ commentFlagged: true }, { commentSuspended: true }] },
+      select: { id: true, firstName: true, lastName: true, slug: true, commentFlagged: true, commentSuspended: true },
+    }),
+  ]);
 
-  const flaggedOrSuspended = await db.creative.findMany({
-    where: { OR: [{ commentFlagged: true }, { commentSuspended: true }] },
-    select: { id: true, firstName: true, lastName: true, slug: true, commentFlagged: true, commentSuspended: true },
-  });
+  // groupBy's batch typing is imprecise inside $transaction (AGENTS.md gotcha
+  // #8), so this is a standalone await alongside the Promise.all above rather
+  // than folded into it.
+  const postStatusCounts = await db.post.groupBy({ by: ["status"], where: sharedWhere, _count: true });
+  const countByStatus = Object.fromEntries(postStatusCounts.map((s) => [s.status, s._count]));
+  const totalPostCount = postStatusCounts.reduce((sum, s) => sum + s._count, 0);
 
   return (
     <div className="space-y-10">
       <div>
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <h2 className="text-lg font-semibold text-white">Community Posts</h2>
-          <div className="flex gap-2 text-sm flex-wrap">
-            {["PENDING", "APPROVED", "REJECTED", "ALL"].map((s) => (
-              <a
-                key={s}
-                href={`/admin/community?status=${s}${category ? `&category=${category}` : ""}`}
-                className={`px-3 py-1 rounded-full border transition-colors ${
-                  status === s ? "bg-stone-700 border-stone-600 text-white" : "border-stone-800 text-stone-500 hover:text-stone-300"
-                }`}
-              >
-                {s.charAt(0) + s.slice(1).toLowerCase()}
-              </a>
-            ))}
+          <div className="flex gap-2 text-sm flex-wrap items-center">
+            <FilterTabs
+              tabs={["PENDING", "APPROVED", "REJECTED", "ALL"].map((s) => ({
+                label: s.charAt(0) + s.slice(1).toLowerCase(),
+                href: `/admin/community?status=${s}${category ? `&category=${category}` : ""}`,
+                active: status === s,
+                count: s === "ALL" ? totalPostCount : (countByStatus[s] ?? 0),
+              }))}
+            />
             <a
               href={`/admin/community?status=${status}`}
               className={`px-3 py-1 rounded-full border transition-colors ${
@@ -257,7 +266,7 @@ export default async function AdminCommunityPage({
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-white mb-6">Reported Comments</h2>
+        <h2 className="text-lg font-semibold text-white mb-6">Reported Comments ({reports.length})</h2>
         {reports.length === 0 && <p className="text-stone-500 text-sm">No pending reports.</p>}
         <div className="space-y-4">
           {reports.map((r) => (
@@ -293,7 +302,7 @@ export default async function AdminCommunityPage({
 
       {flaggedOrSuspended.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-white mb-6">Flagged / Suspended Members</h2>
+          <h2 className="text-lg font-semibold text-white mb-6">Flagged / Suspended Members ({flaggedOrSuspended.length})</h2>
           <div className="space-y-3">
             {flaggedOrSuspended.map((c) => (
               <div key={c.id} className="bg-stone-900 border border-stone-800 rounded-xl p-4 flex items-center justify-between flex-wrap gap-2">

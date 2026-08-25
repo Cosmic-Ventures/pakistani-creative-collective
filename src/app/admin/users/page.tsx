@@ -3,6 +3,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { RoleControl } from "@/components/AdminRoleControl";
+import { FilterTabs } from "@/components/admin/FilterTabs";
 
 export const metadata: Metadata = { title: "Users · Admin" };
 export const dynamic = "force-dynamic";
@@ -13,39 +14,49 @@ const ROLE_COLORS: Record<string, string> = {
   UNPAID: "text-stone-400 bg-stone-800 border-stone-700",
 };
 
+const ROLES = ["ALL", "ADMIN", "PAID", "UNPAID"] as const;
+
 export default async function UsersPage({
   searchParams,
 }: {
   searchParams: Promise<{ role?: string }>;
 }) {
   const { role = "ALL" } = await searchParams;
-  const session = await getSession();
 
-  const users = await db.user.findMany({
-    where: role === "ALL" ? {} : { role: role as "UNPAID" | "PAID" | "ADMIN" },
-    orderBy: { createdAt: "desc" },
-    include: { creative: { select: { id: true, slug: true, status: true, promoConsent: true } } },
-  });
+  const [session, users, roleCounts] = await Promise.all([
+    getSession(),
+    db.user.findMany({
+      where: role === "ALL" ? {} : { role: role as "UNPAID" | "PAID" | "ADMIN" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        subStatus: true,
+        subCurrentPeriodEnd: true,
+        createdAt: true,
+        creative: { select: { id: true, slug: true, status: true, promoConsent: true } },
+      },
+    }),
+    db.user.groupBy({ by: ["role"], _count: true }),
+  ]);
+
+  const countByRole = Object.fromEntries(roleCounts.map((r) => [r.role, r._count]));
+  const totalCount = roleCounts.reduce((sum, r) => sum + r._count, 0);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <h2 className="text-lg font-semibold text-white">Users</h2>
-        <div className="flex gap-2 text-sm">
-          {["ALL", "ADMIN", "PAID", "UNPAID"].map((r) => (
-            <a
-              key={r}
-              href={`/admin/users?role=${r}`}
-              className={`px-3 py-1 rounded-full border transition-colors ${
-                role === r
-                  ? "bg-stone-700 border-stone-600 text-white"
-                  : "border-stone-800 text-stone-500 hover:text-stone-300"
-              }`}
-            >
-              {r.charAt(0) + r.slice(1).toLowerCase()}
-            </a>
-          ))}
-        </div>
+        <FilterTabs
+          tabs={ROLES.map((r) => ({
+            label: r.charAt(0) + r.slice(1).toLowerCase(),
+            href: `/admin/users?role=${r}`,
+            active: role === r,
+            count: r === "ALL" ? totalCount : (countByRole[r] ?? 0),
+          }))}
+        />
       </div>
 
       <p className="text-xs text-stone-600 mb-4">
