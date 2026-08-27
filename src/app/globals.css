@@ -2,18 +2,15 @@
 
 /*
  * Brand palette and type from "Pakistani Creative Collective - Website Outline",
- * updated per client feedback (July 2026) to Playfair Display SC for headers.
- * Headings are intentionally NOT uppercase-transformed: the "SC" cut renders
- * lowercase input as small caps and true capitals as full-height caps, so
- * natural title-case text is what produces the small-caps look. Don't re-add
- * a global `uppercase` treatment to font-heading elements — it would defeat
- * the SC variant's whole purpose (see Website Notes doc, "Branding changes").
+ * updated per client feedback: headers were Playfair Display SC (July 2026),
+ * now DM Serif Display (08/26 round) — set in title case, not uppercase-
+ * transformed (see Website Notes doc, "Branding changes").
  */
 @theme {
   --color-brand-green: #294d3d;
   --color-brand-brown: #2a1511;
   --color-brand-cream: #fffcf9;
-  --color-brand-mint: #91d2a6;
+  --color-brand-mint: #c1f8d3;
 
   --font-heading: var(--font-heading-sans), serif;
   --font-body: var(--font-body-sans), sans-serif;

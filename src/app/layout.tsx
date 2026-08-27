@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Playfair_Display_SC } from "next/font/google";
+import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
@@ -9,10 +9,10 @@ const bodyFont = DM_Sans({
   subsets: ["latin"],
 });
 
-// Client-specified header font — see globals.css note on the small-caps treatment.
-const headingFont = Playfair_Display_SC({
+// Client-specified header font (08/26 round), written in title case — see globals.css.
+const headingFont = DM_Serif_Display({
   variable: "--font-heading-sans",
-  weight: ["400", "700", "900"],
+  weight: "400",
   subsets: ["latin"],
 });
 

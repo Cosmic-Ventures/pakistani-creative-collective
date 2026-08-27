@@ -20,7 +20,7 @@ const ADMIN_EMAIL = process.env.PCC_NOTIFICATION_EMAIL ?? "pcc@aneesatalks.com";
 
 const BRAND_GREEN = "#294D3D";
 const BRAND_CREAM = "#FFFCF9";
-const BRAND_MINT = "#91D2A6";
+const BRAND_MINT = "#C1F8D3";
 // Emails are dark-green-on-white throughout, per the client: the card, not just
 // the header band, sits on brand green with white copy.
 const BODY_TEXT = BRAND_CREAM;

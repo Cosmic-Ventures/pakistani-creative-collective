@@ -72,6 +72,7 @@ const MEMBER_ACCESS = [
   "Rate range, if the creative chooses to share it",
   "Search and filter by experience level, medium, availability, language, and project type, in addition to role and location",
   "Ability to submit a contact request through Aneesa Talks",
+  "Access to the community dashboard to post and respond to member updates, job postings, and more",
 ];
 
 export default async function Home() {
@@ -111,7 +112,7 @@ export default async function Home() {
             against the lighter swirls there. */}
         <div className="absolute inset-0 bg-gradient-to-r from-brand-green via-brand-green/85 to-brand-green/10 pointer-events-none" />
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32 lg:max-w-6xl">
-          <Logo variant="square" className="h-20 sm:h-24 w-auto mb-8 opacity-95" />
+          <Logo variant="square" className="h-28 sm:h-36 w-auto mb-8 opacity-95" />
           <h1 className="font-heading font-bold text-4xl sm:text-6xl leading-[1.05] max-w-2xl">
             Built for Pakistani creatives to be discovered.
           </h1>

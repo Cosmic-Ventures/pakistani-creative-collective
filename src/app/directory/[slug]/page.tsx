@@ -124,7 +124,11 @@ export default async function MemberPage({
             left the shorter card (the name/tags block on free profiles, the bio
             block on paid ones) padded out with empty space below its content —
             the "dead or blank space in the shape blocks" from the 08/08 round. */}
-        <div className={`grid gap-6 items-start ${showFull ? "lg:grid-cols-3" : "lg:grid-cols-5"}`}>
+        {/* showFull uses a straight 2-col grid so row 1 (identity/details) lines up
+            evenly with row 2 (biography/work-for-hire) below it — client feedback
+            (08/26 round): every block should be the same width as others in its
+            column. Free profiles keep the 5-col split (untouched by that ask). */}
+        <div className={`grid gap-6 items-start ${showFull ? "lg:grid-cols-2" : "lg:grid-cols-5"}`}>
           {/* Identity card — white */}
           <IdentityCard
             fullName={fullName}
@@ -144,7 +148,7 @@ export default async function MemberPage({
                column (no primary sample) used to reserve a whole blank grid
                track, and "Connect" rendered even with zero links — both read
                as dead space; both are gone now that this is a single flow. */
-            <div className="text-brand-cream space-y-5 lg:col-span-2">
+            <div className="text-brand-cream space-y-5">
               {creative.education && <Detail label="Education" value={creative.education} />}
               {creative.availability && <Detail label="Availability" value={creative.availability} />}
               {creative.languages.length > 0 && (
