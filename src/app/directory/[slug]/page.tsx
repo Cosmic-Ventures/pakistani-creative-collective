@@ -119,145 +119,203 @@ export default async function MemberPage({
           )}
         </div>
 
-        {/* ── Row 1 ─────────────────────────────────────────────── */}
-        {/* items-start: grid items default to stretching to the row's height, which
-            left the shorter card (the name/tags block on free profiles, the bio
-            block on paid ones) padded out with empty space below its content —
-            the "dead or blank space in the shape blocks" from the 08/08 round. */}
-        {/* showFull uses a straight 2-col grid so row 1 (identity/details) lines up
-            evenly with row 2 (biography/work-for-hire) below it — client feedback
-            (08/26 round): every block should be the same width as others in its
-            column. Free profiles keep the 5-col split (untouched by that ask). */}
-        <div className={`grid gap-6 items-start ${showFull ? "lg:grid-cols-2" : "lg:grid-cols-5"}`}>
-          {/* Identity card — white */}
-          <IdentityCard
-            fullName={fullName}
-            subtitle={subtitle}
-            headshot={showFull ? creative.headshot : null}
-            location={creative.location}
-            roles={creative.roles}
-            experienceLevel={creative.experienceLevel}
-            headlineLink={headlineLink}
-            showRolesAsPills={showFull}
-            className={showFull ? "" : "lg:col-span-2"}
-          />
+        {/* ── Identity / Biography / Details / Work-For-Hire ───────── */}
+        {/* Paid layout: two independent flex columns rather than a two-row grid.
+            A grid row's height is set by its tallest cell, so pairing a short
+            IdentityCard against a tall details column (video embed and all)
+            left a dead gap below the card before Biography could start below
+            it — client feedback (08/27 round): "remove empty space between
+            blocks". Stacking each column's own cards with flex removes that:
+            each column is exactly as tall as its own content. */}
+        {showFull ? (
+          <div className="grid gap-6 items-start lg:grid-cols-2">
+            <div className="flex flex-col gap-6">
+              <IdentityCard
+                fullName={fullName}
+                subtitle={subtitle}
+                headshot={creative.headshot}
+                location={creative.location}
+                roles={creative.roles}
+                experienceLevel={creative.experienceLevel}
+                headlineLink={headlineLink}
+                showRolesAsPills
+              />
+              <BiographyCard bio={bio} />
 
-          {showFull ? (
-            /* Details + primary work sample — stacked one after another on
-               green, not split into two side-by-side columns. A second empty
-               column (no primary sample) used to reserve a whole blank grid
-               track, and "Connect" rendered even with zero links — both read
-               as dead space; both are gone now that this is a single flow. */
-            <div className="text-brand-cream space-y-5">
-              {creative.education && <Detail label="Education" value={creative.education} />}
-              {creative.availability && <Detail label="Availability" value={creative.availability} />}
-              {creative.languages.length > 0 && (
-                <Detail label="Languages" value={creative.languages.join(", ")} />
+              {/* Contact CTA and more-samples live in the left column, not after
+                  the whole grid — client feedback (08/28 round): stacking them
+                  below the taller right column left a gap under Biography that
+                  had nothing to do with either column's real height. */}
+              {session && (
+                <div className="bg-brand-mint rounded-3xl p-7 print:hidden">
+                  <p className="text-brand-green mb-3 text-sm">
+                    <span className="font-semibold">Want to work with {creative.firstName}?</span>{" "}
+                    Submit a contact request and our team will facilitate the introduction.
+                  </p>
+                  <Link
+                    href={`/directory/${creative.slug}/request`}
+                    className="inline-block bg-brand-green text-brand-cream font-semibold px-5 py-2.5 rounded-full hover:bg-brand-green/90 transition-colors text-sm"
+                  >
+                    Submit contact request →
+                  </Link>
+                </div>
               )}
-              {creative.mediums.length > 0 && (
-                <Detail label="Medium(s)" value={creative.mediums.join(", ")} />
-              )}
-              {hasSocialLinks && (
-                <div>
-                  <p className="font-heading font-bold text-sm tracking-wide mb-2">Connect</p>
-                  <div className="flex flex-wrap gap-2">
-                    {headlineLink && <SocialIcon href={normalizeUrl(headlineLink)} kind="globe" />}
-                    {creative.instagram && (
-                      <SocialIcon href={normalizeUrl(creative.instagram, "https://instagram.com/")} kind="instagram" />
-                    )}
-                    {creative.linkedin && (
-                      <SocialIcon href={normalizeUrl(creative.linkedin, "https://linkedin.com/in/")} kind="linkedin" />
-                    )}
-                    {creative.imdb && <SocialIcon href={normalizeUrl(creative.imdb)} kind="imdb" />}
-                    {creative.vimeo && <SocialIcon href={normalizeUrl(creative.vimeo)} kind="play" />}
+
+              {otherSamples.length > 0 && (
+                <div className="bg-brand-green border border-brand-cream/10 rounded-3xl p-7">
+                  <p className="font-heading font-bold text-brand-cream text-lg mb-3">
+                    More Work Samples
+                  </p>
+                  <div className="space-y-2">
+                    {otherSamples.map((ws, i) => (
+                      <div key={i} className="flex items-start justify-between gap-2 text-sm">
+                        <div>
+                          <span className="text-brand-cream">{ws.title}</span>
+                          {ws.role && <span className="text-brand-cream/60"> · {ws.role}</span>}
+                          {ws.medium && <span className="text-brand-cream/60"> · {ws.medium}</span>}
+                          {ws.year && <span className="text-brand-cream/60"> · {ws.year}</span>}
+                        </div>
+                        {ws.link && (
+                          <a
+                            href={ws.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-brand-cream hover:text-brand-cream/70 shrink-0"
+                          >
+                            ↗
+                          </a>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
-              {primarySample && (
-                <>
-                  <Detail
-                    label="Primary Work Sample"
-                    value={[primarySample.title, primarySample.medium, primarySample.year]
-                      .filter(Boolean)
-                      .join(", ")}
-                  />
-                  {primarySample.role && <Detail label="Role(s)" value={primarySample.role} />}
-                  {primarySample.link && <ProjectEmbed link={primarySample.link} />}
-                </>
+            </div>
+
+            <div className="flex flex-col gap-6">
+              {/* Details + primary work sample — stacked one after another on
+                  green, not split into two side-by-side columns. A second empty
+                  column (no primary sample) used to reserve a whole blank grid
+                  track, and "Connect" rendered even with zero links — both read
+                  as dead space; both are gone now that this is a single flow. */}
+              <div className="text-brand-cream space-y-5">
+                {creative.education && <Detail label="Education" value={creative.education} />}
+                {creative.availability && <Detail label="Availability" value={creative.availability} />}
+                {creative.languages.length > 0 && (
+                  <Detail label="Languages" value={creative.languages.join(", ")} />
+                )}
+                {creative.mediums.length > 0 && (
+                  <Detail label="Medium(s)" value={creative.mediums.join(", ")} />
+                )}
+                {hasSocialLinks && (
+                  <div>
+                    <p className="font-heading font-bold text-lg tracking-wide mb-2">Connect</p>
+                    <div className="flex flex-wrap gap-2">
+                      {headlineLink && <SocialIcon href={normalizeUrl(headlineLink)} kind="globe" />}
+                      {creative.instagram && (
+                        <SocialIcon href={normalizeUrl(creative.instagram, "https://instagram.com/")} kind="instagram" />
+                      )}
+                      {creative.linkedin && (
+                        <SocialIcon href={normalizeUrl(creative.linkedin, "https://linkedin.com/in/")} kind="linkedin" />
+                      )}
+                      {creative.imdb && <SocialIcon href={normalizeUrl(creative.imdb)} kind="imdb" />}
+                      {creative.vimeo && <SocialIcon href={normalizeUrl(creative.vimeo)} kind="play" />}
+                    </div>
+                  </div>
+                )}
+                {primarySample && (
+                  <>
+                    <Detail
+                      label="Primary Work Sample"
+                      value={[primarySample.title, primarySample.medium, primarySample.year]
+                        .filter(Boolean)
+                        .join(", ")}
+                    />
+                    {primarySample.role && <Detail label="Role(s)" value={primarySample.role} />}
+                    {primarySample.link && <ProjectEmbed link={primarySample.link} />}
+                  </>
+                )}
+              </div>
+
+              {(creative.rateStructure ||
+                creative.collaborationPreferences ||
+                creative.travel ||
+                headlineLink ||
+                creative.preferredProjectTypes.length > 0) && (
+                <div className="bg-brand-green border border-brand-cream/10 rounded-3xl p-7 sm:p-8">
+                  <div className="flex items-center justify-center gap-3 mb-6">
+                    <span className="h-px flex-1 bg-brand-cream/30" />
+                    <span className="text-brand-cream text-xs">☾</span>
+                    <h2 className="font-heading font-bold text-brand-cream text-lg tracking-tight">
+                      Work For Hire
+                    </h2>
+                    <span className="text-brand-cream text-xs">☾</span>
+                    <span className="h-px flex-1 bg-brand-cream/30" />
+                  </div>
+                  <dl className="space-y-4">
+                    {creative.ratePublic && (creative.rateRange || creative.rateStructure) && (
+                      <WfhRow
+                        label="Rate structure"
+                        value={[creative.rateStructure, creative.ratePublic ? creative.rateRange : null]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      />
+                    )}
+                    {headlineLink && (
+                      <div>
+                        <dt className="font-semibold text-brand-cream mb-0.5">Work Portfolio</dt>
+                        <dd>
+                          <a
+                            href={normalizeUrl(headlineLink)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-brand-cream underline decoration-brand-cream/40 underline-offset-2 hover:decoration-brand-cream"
+                          >
+                            <GlobeGlyph /> {headlineLink.replace(/^https?:\/\//, "")}
+                          </a>
+                        </dd>
+                      </div>
+                    )}
+                    {creative.collaborationPreferences && (
+                      <WfhRow label="Open to working with" value={creative.collaborationPreferences} />
+                    )}
+                    {creative.roles.length > 0 && (
+                      <div>
+                        <dt className="font-semibold text-brand-cream mb-2">Role(s)</dt>
+                        <dd className="flex flex-wrap gap-2">
+                          {creative.roles.map((r) => (
+                            <span
+                              key={r}
+                              className="text-xs uppercase font-semibold border border-brand-cream/40 text-brand-cream px-3 py-1 rounded-full"
+                            >
+                              {r}
+                            </span>
+                          ))}
+                        </dd>
+                      </div>
+                    )}
+                    {creative.travel && <WfhRow label="Travel" value={creative.travel} />}
+                  </dl>
+                </div>
               )}
             </div>
-          ) : (
-            /* Biography card — mint (public view) */
+          </div>
+        ) : (
+          /* Free profile: unchanged single-row 5-col layout — the dead-space
+             and equal-width feedback only concerned the paid view above. */
+          <div className="grid gap-6 items-start lg:grid-cols-5">
+            <IdentityCard
+              fullName={fullName}
+              subtitle={subtitle}
+              headshot={null}
+              location={creative.location}
+              roles={creative.roles}
+              experienceLevel={creative.experienceLevel}
+              headlineLink={headlineLink}
+              showRolesAsPills={false}
+              className="lg:col-span-2"
+            />
             <BiographyCard bio={bio} className="lg:col-span-3" />
-          )}
-        </div>
-
-        {/* ── Row 2 (paid) ──────────────────────────────────────── */}
-        {showFull && (
-          <div className="grid gap-6 items-start lg:grid-cols-2 mt-6">
-            <BiographyCard bio={bio} />
-
-            {(creative.rateStructure ||
-              creative.collaborationPreferences ||
-              creative.travel ||
-              headlineLink ||
-              creative.preferredProjectTypes.length > 0) && (
-              <div className="bg-brand-green border border-brand-cream/10 rounded-3xl p-7 sm:p-8">
-                <div className="flex items-center justify-center gap-3 mb-6">
-                  <span className="h-px flex-1 bg-brand-cream/30" />
-                  <span className="text-brand-cream text-xs">☾</span>
-                  <h2 className="font-heading font-bold text-brand-cream text-lg tracking-tight">
-                    Work For Hire
-                  </h2>
-                  <span className="text-brand-cream text-xs">☾</span>
-                  <span className="h-px flex-1 bg-brand-cream/30" />
-                </div>
-                <dl className="space-y-4">
-                  {creative.ratePublic && (creative.rateRange || creative.rateStructure) && (
-                    <WfhRow
-                      label="Rate structure"
-                      value={[creative.rateStructure, creative.ratePublic ? creative.rateRange : null]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    />
-                  )}
-                  {headlineLink && (
-                    <div>
-                      <dt className="font-semibold text-brand-cream mb-0.5">Work Portfolio</dt>
-                      <dd>
-                        <a
-                          href={normalizeUrl(headlineLink)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-brand-cream underline decoration-brand-cream/40 underline-offset-2 hover:decoration-brand-cream"
-                        >
-                          <GlobeGlyph /> {headlineLink.replace(/^https?:\/\//, "")}
-                        </a>
-                      </dd>
-                    </div>
-                  )}
-                  {creative.collaborationPreferences && (
-                    <WfhRow label="Open to working with" value={creative.collaborationPreferences} />
-                  )}
-                  {creative.roles.length > 0 && (
-                    <div>
-                      <dt className="font-semibold text-brand-cream mb-2">Role(s)</dt>
-                      <dd className="flex flex-wrap gap-2">
-                        {creative.roles.map((r) => (
-                          <span
-                            key={r}
-                            className="text-xs uppercase font-semibold border border-brand-cream/40 text-brand-cream px-3 py-1 rounded-full"
-                          >
-                            {r}
-                          </span>
-                        ))}
-                      </dd>
-                    </div>
-                  )}
-                  {creative.travel && <WfhRow label="Travel" value={creative.travel} />}
-                </dl>
-              </div>
-            )}
           </div>
         )}
 
@@ -276,53 +334,6 @@ export default async function MemberPage({
             >
               Subscribe — from {prices.monthly}/month
             </Link>
-          </div>
-        )}
-
-        {/* Contact request CTA for paid users */}
-        {showFull && session && (
-          <div className="mt-6 bg-brand-mint rounded-3xl p-7 max-w-xl print:hidden">
-            <p className="text-brand-green mb-3 text-sm">
-              <span className="font-semibold">Want to work with {creative.firstName}?</span>{" "}
-              Submit a contact request and our team will facilitate the introduction.
-            </p>
-            <Link
-              href={`/directory/${creative.slug}/request`}
-              className="inline-block bg-brand-green text-brand-cream font-semibold px-5 py-2.5 rounded-full hover:bg-brand-green/90 transition-colors text-sm"
-            >
-              Submit contact request →
-            </Link>
-          </div>
-        )}
-
-        {/* More work samples (paid) */}
-        {showFull && otherSamples.length > 0 && (
-          <div className="mt-6 bg-brand-green border border-brand-cream/10 rounded-3xl p-7 max-w-xl">
-            <p className="font-heading font-bold text-brand-cream text-sm mb-3">
-              More Work Samples
-            </p>
-            <div className="space-y-2">
-              {otherSamples.map((ws, i) => (
-                <div key={i} className="flex items-start justify-between gap-2 text-sm">
-                  <div>
-                    <span className="text-brand-cream">{ws.title}</span>
-                    {ws.role && <span className="text-brand-cream/60"> · {ws.role}</span>}
-                    {ws.medium && <span className="text-brand-cream/60"> · {ws.medium}</span>}
-                    {ws.year && <span className="text-brand-cream/60"> · {ws.year}</span>}
-                  </div>
-                  {ws.link && (
-                    <a
-                      href={ws.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-brand-cream hover:text-brand-cream/70 shrink-0"
-                    >
-                      ↗
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
           </div>
         )}
       </div>
@@ -422,7 +433,7 @@ function IdentityCard({
 function BiographyCard({ bio, className = "" }: { bio: string; className?: string }) {
   return (
     <div className={`bg-brand-mint rounded-3xl p-7 sm:p-8 ${className}`}>
-      <p className="font-heading font-bold text-brand-green text-sm tracking-wide mb-3">
+      <p className="font-heading font-bold text-brand-green text-lg tracking-wide mb-3">
         Biography
       </p>
       <p className="text-brand-green/90 text-sm leading-relaxed">{bio}</p>
@@ -433,7 +444,7 @@ function BiographyCard({ bio, className = "" }: { bio: string; className?: strin
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="font-heading font-bold text-sm tracking-wide">{label}</p>
+      <p className="font-heading font-bold text-lg tracking-wide">{label}</p>
       <p className="text-brand-cream/80 text-sm mt-1 leading-relaxed">{value}</p>
     </div>
   );
@@ -452,7 +463,7 @@ function ProjectEmbed({ link }: { link: string }) {
   const embed = toEmbedUrl(link);
   return (
     <div>
-      <p className="font-heading font-bold text-sm tracking-wide mb-2">Project Link</p>
+      <p className="font-heading font-bold text-lg tracking-wide mb-2">Project Link</p>
       {embed ? (
         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
           <iframe

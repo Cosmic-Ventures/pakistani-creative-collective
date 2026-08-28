@@ -137,6 +137,96 @@ export async function setUserRole(userId: string, role: UserRole): Promise<SetUs
   return { success: true };
 }
 
+// Full profile editor for the admin application-detail page — the client
+// asked to be able to edit and revise every part of any creative's profile
+// (her own included), not just the narrow grammar-fix fields `updateCreativeFields`
+// covers pre-approval. One big form, one big update; required fields fall back
+// to the existing value rather than being wiped if the field is left blank.
+export async function updateCreativeProfile(creativeId: string, formData: FormData) {
+  await requireAdmin();
+  const existing = await db.creative.findUniqueOrThrow({ where: { id: creativeId } });
+
+  const str = (name: string) => {
+    const v = formData.get(name);
+    return typeof v === "string" ? v.trim() : "";
+  };
+  const strOrNull = (name: string) => str(name) || null;
+  const list = (name: string) =>
+    str(name)
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  const bool = (name: string) => formData.get(name) === "on";
+
+  const workSamples = [1, 2, 3]
+    .map((n) => ({
+      title: str(`ws${n}Title`),
+      medium: str(`ws${n}Medium`),
+      year: str(`ws${n}Year`),
+      role: str(`ws${n}Role`),
+      link: str(`ws${n}Link`),
+    }))
+    .filter((ws) => ws.title);
+
+  const featuredUntilRaw = str("featuredUntil");
+
+  const creative = await db.creative.update({
+    where: { id: creativeId },
+    data: {
+      firstName: str("firstName") || existing.firstName,
+      lastName: str("lastName") || existing.lastName,
+      pronouns: strOrNull("pronouns"),
+      email: str("email") || existing.email,
+      phone: strOrNull("phone"),
+      address: strOrNull("address"),
+      location: strOrNull("location"),
+      howHeard: strOrNull("howHeard"),
+      referralName: strOrNull("referralName"),
+      bio: str("bio") || existing.bio,
+      pccGoals: strOrNull("pccGoals"),
+      previousCollaborators: strOrNull("previousCollaborators"),
+      unionMemberships: strOrNull("unionMemberships"),
+      education: strOrNull("education"),
+      additionalNotes: strOrNull("additionalNotes"),
+      specialSkills: strOrNull("specialSkills"),
+      equipment: strOrNull("equipment"),
+      references: strOrNull("references"),
+      experienceLevel: strOrNull("experienceLevel"),
+      yearsExperience: strOrNull("yearsExperience"),
+      completedProjects: strOrNull("completedProjects"),
+      notableAchievements: strOrNull("notableAchievements"),
+      website: strOrNull("website"),
+      imdb: strOrNull("imdb"),
+      instagram: strOrNull("instagram"),
+      linkedin: strOrNull("linkedin"),
+      vimeo: strOrNull("vimeo"),
+      publicLink: strOrNull("publicLink"),
+      rateStructure: strOrNull("rateStructure"),
+      rateRange: strOrNull("rateRange"),
+      availability: strOrNull("availability"),
+      travel: strOrNull("travel"),
+      collaborationPreferences: strOrNull("collaborationPreferences"),
+      roles: list("roles"),
+      mediums: list("mediums"),
+      languages: list("languages"),
+      preferredProjectTypes: list("preferredProjectTypes"),
+      ratePublic: bool("ratePublic"),
+      promoConsent: bool("promoConsent"),
+      featured: bool("featured"),
+      commentSuspended: bool("commentSuspended"),
+      commentFlagged: bool("commentFlagged"),
+      featuredUntil: featuredUntilRaw ? new Date(featuredUntilRaw) : null,
+      workSamples,
+    },
+  });
+
+  revalidatePath("/admin/applications");
+  revalidatePath(`/admin/applications/${creativeId}`);
+  revalidatePath("/directory");
+  revalidatePath(`/directory/${creative.slug}`);
+  revalidatePath("/");
+}
+
 // Admin-side re-crop: the client asked to be able to re-crop any creative's
 // photo after the fact, not just what the applicant originally uploaded.
 export async function updateCreativeHeadshot(creativeId: string, dataUrl: string) {

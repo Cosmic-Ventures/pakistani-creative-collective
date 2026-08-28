@@ -293,27 +293,27 @@ export default async function Home() {
         )}
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
-        <div className="bg-white text-black rounded-2xl p-8 sm:p-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div>
-            <h2 className="font-heading font-bold text-xl mb-2 text-black">
-              Looking to hire Pakistani creative talent?
-            </h2>
-            <p className="text-black/70 text-sm max-w-lg">
-              Submit a talent request and we&apos;ll match you with vetted professionals.
-              <span className="block pl-4 mt-1">All requests are screened before matching.</span>
-            </p>
-          </div>
-          {HOMEPAGE_CTAS.submitRequest && (
+      {HOMEPAGE_CTAS.submitRequest && (
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+          <div className="bg-white text-black rounded-2xl p-8 sm:p-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <div>
+              <h2 className="font-heading font-bold text-xl mb-2 text-black">
+                Looking to hire Pakistani creative talent?
+              </h2>
+              <p className="text-black/70 text-sm max-w-lg">
+                Submit a talent request and we&apos;ll match you with vetted professionals.
+                <span className="block pl-4 mt-1">All requests are screened before matching.</span>
+              </p>
+            </div>
             <Link
               href="/request"
               className="shrink-0 bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-6 py-3 rounded-full transition-colors"
             >
               Submit a Request
             </Link>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
