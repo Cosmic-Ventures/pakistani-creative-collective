@@ -36,6 +36,8 @@ updated: 2026-09-01
   result: 108 tests pass, lint has zero errors, and the production build succeeds after Prisma client generation.
 - timestamp: 2026-09-01T15:32:00-07:00
   result: Deployment dpl_96yJsby9VzGigtomjQgHESAuNn1j is READY and aliased to https://pcc.aneesatalks.com.
+- timestamp: 2026-09-01T15:34:00-07:00
+  result: Live authenticated production form verified at 390×844; the review step shows all nine missing items and “Review 9 required items,” with no misleading Submit button present.
 
 ## Eliminated
 
@@ -50,5 +52,5 @@ updated: 2026-09-01
 
 - root_cause: Final-step client validation could stop the click before any POST while the control still said “Submit Application,” making an incomplete earlier field look like a dead button. Existing logs could not observe pre-POST blockers.
 - fix: Show the missing-item checklist immediately on the review step; show “Review N required items” until ready; only render “Submit Application” when no blockers remain; log allow-listed blocker field names without applicant data.
-- verification: Full test suite (108 tests), lint (0 errors), production build, Vercel deployment, custom-domain alias, and gated /enroll response all pass.
+- verification: Full test suite (108 tests), lint (0 errors), production build, Vercel deployment, custom-domain alias, and live authenticated 390×844 review-step verification all pass.
 - files_changed: src/components/EnrollForm.tsx, src/lib/enroll-action.ts, tests/enroll-action.test.ts
