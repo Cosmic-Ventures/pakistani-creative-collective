@@ -13,9 +13,12 @@ const { dbMock, redirectMock, sendResetMock } = vi.hoisted(() => ({
     $transaction: vi.fn(),
   },
   redirectMock: vi.fn(),
-  // Called with .catch(), so it has to return a real promise. Parameters are
-  // spelled out so the assertions below can read them back off `mock.calls`.
-  sendResetMock: vi.fn((_firstName: string, _email: string, _resetUrl: string) => Promise.resolve()),
+  // Called with .catch(), so it has to return a real promise. Typed (rather
+  // than given placeholder parameters) so the assertions below can read the
+  // arguments back off `mock.calls` without tripping no-unused-vars.
+  sendResetMock: vi.fn<(firstName: string, email: string, resetUrl: string) => Promise<void>>(
+    () => Promise.resolve()
+  ),
 }));
 vi.mock("@/lib/db", () => ({ db: dbMock }));
 vi.mock("next/navigation", () => ({ redirect: redirectMock }));
