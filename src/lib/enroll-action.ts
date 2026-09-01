@@ -97,7 +97,18 @@ export async function enrollAction(
   // a POST endpoint reachable on its own — this is the check that actually
   // holds.
   const session = await getSession();
-  if (!session) return { error: "Sign in to submit your application." };
+  if (!session) {
+    // 09/01: an applicant hit a submit that "did nothing". The POST reached us
+    // and returned an error result, but nothing was written anywhere, so there
+    // was no way to tell which of these early returns fired. Every one of them
+    // logs now — these lines are what make the next report diagnosable from the
+    // Vercel logs alone, instead of by inference from an empty database.
+    console.error("[enroll] rejected: no session on submit");
+    return {
+      error:
+        "Your sign-in seems to have expired. Open this page in a new tab, sign in again, and your saved progress will be waiting.",
+    };
+  }
 
   // Multi-value fields
   const roles = formData.getAll("roles") as string[];
@@ -131,7 +142,16 @@ export async function enrollAction(
 
   const parsed = EnrollSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    return { error: parsed.error.issues[0].message };
+    // Field names only — never the values, which are the applicant's personal
+    // details and have no business in a log.
+    console.error(
+      "[enroll] rejected: validation failed on",
+      parsed.error.issues.map((i) => i.path.join(".") || "(root)").join(", ")
+    );
+    // Every problem, not just the first: fixing one and being told about the
+    // next is what makes a form feel broken.
+    const problems = [...new Set(parsed.error.issues.map((i) => i.message))];
+    return { error: problems.join(" ") };
   }
 
   const d = parsed.data;
@@ -150,54 +170,65 @@ export async function enrollAction(
     return trimmed ? trimmed : undefined;
   };
 
-  await db.creative.create({
-    data: {
-      slug,
-      firstName: d.firstName,
-      lastName: d.lastName,
-      pronouns: opt(d.pronouns),
-      email: d.email,
-      phone: opt(d.phone),
-      address: opt(d.address),
-      location: opt(d.location),
-      bio: d.bio,
-      headshot: d.headshotLink,
-      previousCollaborators: opt(d.previousCollaborators),
-      unionMemberships: opt(d.unionMemberships),
-      education: opt(d.education),
-      pccGoals: opt(d.pccGoals),
-      experienceLevel: shortExperienceLevel(d.experienceLevel),
-      notableAchievements: opt(d.notableAchievements),
-      website: opt(d.website),
-      imdb: opt(d.imdb),
-      instagram: opt(d.instagram),
-      linkedin: opt(d.linkedin),
-      vimeo: opt(d.vimeo),
-      rateStructure: opt(d.rateStructure),
-      rateRange,
-      ratePublic: d.ratePublic === "yes",
-      availability: opt(d.availability),
-      travel: opt(d.travel),
-      languages: [
-        ...languagesCheck,
-        ...(d.languages ? d.languages.split(",").map((l) => l.trim()).filter(Boolean) : []),
-      ],
-      specialSkills: opt(d.specialSkills),
-      yearsExperience: opt(d.yearsExperience),
-      completedProjects: opt(d.completedProjects),
-      equipment: opt(d.equipment),
-      collaborationPreferences: opt(d.collaborationPreferences),
-      references: opt(d.references),
-      additionalNotes: opt(d.additionalNotes),
-      howHeard: opt(d.howHeard),
-      referralName: opt(d.referralName),
-      promoConsent: d.consentPromo === "on",
-      roles: allRoles,
-      mediums: allMediums,
-      preferredProjectTypes,
-      workSamples: workSamples.length > 0 ? workSamples : undefined,
-    },
-  });
+  try {
+    await db.creative.create({
+      data: {
+        slug,
+        firstName: d.firstName,
+        lastName: d.lastName,
+        pronouns: opt(d.pronouns),
+        email: d.email,
+        phone: opt(d.phone),
+        address: opt(d.address),
+        location: opt(d.location),
+        bio: d.bio,
+        headshot: d.headshotLink,
+        previousCollaborators: opt(d.previousCollaborators),
+        unionMemberships: opt(d.unionMemberships),
+        education: opt(d.education),
+        pccGoals: opt(d.pccGoals),
+        experienceLevel: shortExperienceLevel(d.experienceLevel),
+        notableAchievements: opt(d.notableAchievements),
+        website: opt(d.website),
+        imdb: opt(d.imdb),
+        instagram: opt(d.instagram),
+        linkedin: opt(d.linkedin),
+        vimeo: opt(d.vimeo),
+        rateStructure: opt(d.rateStructure),
+        rateRange,
+        ratePublic: d.ratePublic === "yes",
+        availability: opt(d.availability),
+        travel: opt(d.travel),
+        languages: [
+          ...languagesCheck,
+          ...(d.languages ? d.languages.split(",").map((l) => l.trim()).filter(Boolean) : []),
+        ],
+        specialSkills: opt(d.specialSkills),
+        yearsExperience: opt(d.yearsExperience),
+        completedProjects: opt(d.completedProjects),
+        equipment: opt(d.equipment),
+        collaborationPreferences: opt(d.collaborationPreferences),
+        references: opt(d.references),
+        additionalNotes: opt(d.additionalNotes),
+        howHeard: opt(d.howHeard),
+        referralName: opt(d.referralName),
+        promoConsent: d.consentPromo === "on",
+        roles: allRoles,
+        mediums: allMediums,
+          preferredProjectTypes,
+        workSamples: workSamples.length > 0 ? workSamples : undefined,
+      },
+    });
+  } catch (error) {
+    // Previously this threw straight through, which surfaces to the applicant
+    // as a submit that does nothing at all. Tell them plainly, and leave the
+    // draft intact so nothing they typed is lost.
+    console.error("[enroll] rejected: database write failed", error);
+    return {
+      error:
+        "Something went wrong saving your application on our side — nothing you typed has been lost. Please try again in a moment, and email pcc@aneesatalks.com if it keeps happening.",
+    };
+  }
 
   await sendEnrollmentNotification({
     firstName: d.firstName,

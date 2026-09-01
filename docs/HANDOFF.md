@@ -100,16 +100,36 @@ All creatives, posts, and applications currently in the site are **sample data**
   is switched off, since your account already has full access.
 
 **Application form — the "Submit does nothing" bug**
-- Root cause found and fixed. It was the headshot step, not the submit button: choosing a photo
-  opened the crop window, and the photo only counted as uploaded if you pressed "Use this crop".
-  Anyone who tapped Cancel — or closed that window — was left with no headshot while the form still
-  said "Selected: their-photo.jpg" under a visible preview of their own face. The form then refused
-  to submit because the headshot was missing, which from the applicant's side looks exactly like a
-  dead button. Reproduced on a phone-sized screen against the live code, then fixed: choosing a
-  photo now counts immediately (using the same square framing the crop window opens on), so
-  cropping only ever adjusts a photo you already have.
-- Nothing was lost. No application was ever half-saved — the ones affected simply never got sent,
-  so anyone who gave up will need to come back and submit again.
+- **One confirmed cause, found and fixed.** The headshot step, not the submit button: choosing a
+  photo opened the crop window, and the photo only counted as uploaded if you pressed "Use this
+  crop". Anyone who tapped Cancel — or closed that window — was left with no headshot while the
+  form still said "Selected: their-photo.jpg" under a visible preview of their own face. The form
+  then refused to submit over a missing headshot, which from the applicant's side is
+  indistinguishable from a dead button. Reproduced on a phone-sized screen against the live code
+  and fixed: choosing a photo now counts immediately, so cropping only ever adjusts a photo you
+  already have.
+- **Javaria's own case is not fully explained by that**, and it would be wrong to say otherwise.
+  Her saved draft passes every validation rule, and the server logs show her submit did reach us
+  and came back rejected rather than failing outright. Whatever it objected to, she was told
+  nothing, because the error message renders at the top of a five-step form while she was at the
+  bottom of it on a phone.
+- **So the form now cannot fail silently, whatever the reason.** Any server-side rejection scrolls
+  itself into view under a "Your application wasn't submitted" heading, every failing rule is
+  listed at once rather than one at a time, an expired sign-in says so and explains what to do, and
+  a database problem says so plainly instead of doing nothing. Each of those paths also writes a
+  line to the server log, so the next occurrence can be identified in one look instead of inferred
+  from an empty table.
+- **Nothing anyone typed was lost.** Applications are never half-saved, and the nine part-finished
+  drafts are all still on file — see below.
+
+**Nine applicants are part-way through and none have submitted**
+- Every one of the nine saved drafts belongs to someone who started an application and never
+  completed it, going back to 21 August. Seven of them have a photo and a finished-looking bio.
+  These are real people from your outreach who are one step from being in the directory. Their
+  progress is saved, so they can pick up exactly where they left off — worth a short note asking
+  them to try again now the form is fixed.
+- Applications do work in general: six were submitted successfully between 22 and 31 August, the
+  most recent the day before the report. This was never a form that was broken for everybody.
 
 **Application form — clearer about what needs fixing**
 - Submitting with something missing no longer just shows a list: the form jumps to the first

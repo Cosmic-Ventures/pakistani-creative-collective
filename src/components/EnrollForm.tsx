@@ -548,6 +548,20 @@ export default function EnrollForm({
     setLastError(state.error);
     setShowMissing(true);
     setStep(0);
+    // 09/01: the server rejected an application and the applicant saw nothing
+    // happen at all. The banner was rendering the whole time — at the top of a
+    // five-step form, while she was at the bottom of it on a phone. Jumping to
+    // step 1 without moving the viewport is indistinguishable from a dead
+    // button. Scroll it into view; whatever the server objected to, it has to
+    // be on screen.
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        document.getElementById("enroll-server-error")?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      });
+    }
   }
 
   const bioText = values.bio ?? "";
@@ -658,9 +672,14 @@ export default function EnrollForm({
   return (
     <form action={formAction} className="bg-white rounded-3xl p-6 sm:p-10">
       {lastError && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2 mb-6">
-          {lastError}
-        </p>
+        <div
+          id="enroll-server-error"
+          role="alert"
+          className="scroll-mt-24 text-sm text-red-700 bg-red-50 border border-red-500 rounded-lg px-4 py-3 mb-6"
+        >
+          <p className="font-semibold mb-0.5">Your application wasn&apos;t submitted</p>
+          <p>{lastError}</p>
+        </div>
       )}
 
       {savedAt && (

@@ -50,8 +50,57 @@ describe("enrollAction", () => {
       })
     );
 
-    expect(result).toEqual({ error: expect.stringContaining("Sign in") });
+    // Asserted on intent, not on the exact sentence: what matters is that the
+    // applicant is told their sign-in is the problem and that nothing was
+    // written, not the wording, which is copy we tune.
+    expect(result).toEqual({ error: expect.stringMatching(/sign.?in/i) });
     expect(dbMock.creative.create).not.toHaveBeenCalled();
+  });
+
+  // A failed write used to throw straight out of the action, which reaches the
+  // applicant as a submit that does nothing at all — the 09/01 report. It has to
+  // come back as something they can read.
+  it("reports a database failure instead of throwing", async () => {
+    dbMock.creative.create.mockRejectedValue(new Error("connection lost"));
+
+    const result = await enrollAction(
+      null,
+      formData({
+        firstName: "Sara",
+        lastName: "Khan",
+        email: "sara@example.com",
+        headshotLink: "data:image/jpeg;base64,AAAA",
+        bio: LONG_BIO,
+        experienceLevel: "Established (5-8 years)",
+      })
+    );
+
+    expect(result).toEqual({ error: expect.stringContaining("nothing you typed has been lost") });
+    // The draft is deliberately left alone so they can retry.
+    expect(discardEnrollmentDraftMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  // Fixing one problem only to be told about the next is what makes a form feel
+  // broken, so every failing rule comes back at once.
+  it("reports every validation problem at once, not just the first", async () => {
+    const result = await enrollAction(
+      null,
+      formData({
+        firstName: "",
+        lastName: "Khan",
+        email: "not-an-email",
+        headshotLink: "",
+        bio: "too short",
+        experienceLevel: "",
+      })
+    );
+
+    const message = (result as { error: string }).error;
+    expect(message).toContain("First name");
+    expect(message).toContain("valid email");
+    expect(message).toContain("headshot");
+    expect(message).toContain("experience level");
   });
 
   it("rejects a bio that's too short", async () => {
