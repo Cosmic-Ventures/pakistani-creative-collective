@@ -1,5 +1,5 @@
 ---
-status: fixing
+status: resolved
 trigger: "2 to 3 people tried again and the enrollment form still does not go through when they press Submit; the button appears to do nothing."
 created: 2026-09-01
 updated: 2026-09-01
@@ -20,7 +20,7 @@ updated: 2026-09-01
 - hypothesis: The submission service is healthy; the UX presents a Submit button even while earlier required fields block the click, which users experience as a dead or permission-disabled button.
 - test: Make final-step readiness explicit, reserve the Submit label for a ready form, log privacy-safe blocker field names, then deploy and verify production.
 - expecting: Incomplete applications show a required-item checklist and review action; complete applications submit and redirect; future blocked clicks identify the exact field in logs.
-- next_action: deploy the verified UX and diagnostic change to production
+- next_action: monitor new blocker logs if another applicant reports difficulty
 - reasoning_checkpoint:
 - tdd_checkpoint:
 
@@ -34,6 +34,8 @@ updated: 2026-09-01
   result: Current form code only disables the real submit while pending. Missing client-side requirements intercept the click before POST, leaving no server evidence of which item blocked it.
 - timestamp: 2026-09-01T15:29:00-07:00
   result: 108 tests pass, lint has zero errors, and the production build succeeds after Prisma client generation.
+- timestamp: 2026-09-01T15:32:00-07:00
+  result: Deployment dpl_96yJsby9VzGigtomjQgHESAuNn1j is READY and aliased to https://pcc.aneesatalks.com.
 
 ## Eliminated
 
@@ -48,5 +50,5 @@ updated: 2026-09-01
 
 - root_cause: Final-step client validation could stop the click before any POST while the control still said “Submit Application,” making an incomplete earlier field look like a dead button. Existing logs could not observe pre-POST blockers.
 - fix: Show the missing-item checklist immediately on the review step; show “Review N required items” until ready; only render “Submit Application” when no blockers remain; log allow-listed blocker field names without applicant data.
-- verification: Full test suite (108 tests), lint (0 errors), and production build pass. Production deploy and live verification remain.
+- verification: Full test suite (108 tests), lint (0 errors), production build, Vercel deployment, custom-domain alias, and gated /enroll response all pass.
 - files_changed: src/components/EnrollForm.tsx, src/lib/enroll-action.ts, tests/enroll-action.test.ts
