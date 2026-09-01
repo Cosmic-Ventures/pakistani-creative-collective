@@ -13,7 +13,7 @@ vi.mock("@/lib/email", () => ({ sendEnrollmentNotification: sendEnrollmentNotifi
 vi.mock("@/lib/enroll-draft-actions", () => ({ discardEnrollmentDraft: discardEnrollmentDraftMock }));
 vi.mock("@/lib/session", () => ({ getSession: getSessionMock }));
 
-import { enrollAction } from "@/lib/enroll-action";
+import { enrollAction, reportEnrollmentBlockers } from "@/lib/enroll-action";
 
 const LONG_BIO = "A".repeat(120);
 
@@ -367,5 +367,18 @@ describe("enrollAction", () => {
     expect(dbMock.creative.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ slug: "sara-khan-3" }) })
     );
+  });
+});
+
+describe("reportEnrollmentBlockers", () => {
+  it("logs only allow-listed field names and never applicant-provided values", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    await reportEnrollmentBlockers(["bio", "headshotLink", "private-email@example.com", "bio"]);
+
+    expect(warn).toHaveBeenCalledWith(
+      "[enroll] client blocked before submit: bio, headshotLink"
+    );
+    warn.mockRestore();
   });
 });

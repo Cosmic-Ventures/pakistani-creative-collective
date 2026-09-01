@@ -88,6 +88,38 @@ const EnrollSchema = z.object({
 
 export type EnrollResult = { error: string } | { success: true };
 
+const ENROLLMENT_BLOCKER_FIELDS = new Set([
+  "firstName",
+  "lastName",
+  "email",
+  "headshotLink",
+  "bio",
+  "roles",
+  "mediums",
+  "experienceLevel",
+  "consents",
+]);
+
+/**
+ * Records the reason a click was stopped in the browser before the real form
+ * action could run. Field names are allow-listed and contain no applicant data.
+ * This closes the diagnostic blind spot behind every report that the submit
+ * button "did nothing": Vercel can now distinguish a validation blocker from a
+ * request that reached the database.
+ */
+export async function reportEnrollmentBlockers(fields: string[]): Promise<void> {
+  const session = await getSession();
+  const safeFields = Array.isArray(fields)
+    ? [...new Set(fields.filter((field) => ENROLLMENT_BLOCKER_FIELDS.has(field)))].slice(0, 10)
+    : [];
+
+  console.warn(
+    `[enroll] client blocked before submit: ${safeFields.length ? safeFields.join(", ") : "unknown"}${
+      session ? "" : " (session expired)"
+    }`
+  );
+}
+
 export async function enrollAction(
   _prev: EnrollResult | null,
   formData: FormData

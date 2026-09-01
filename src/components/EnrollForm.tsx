@@ -2,7 +2,11 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import { useActionState } from "react";
-import { enrollAction, type EnrollResult } from "@/lib/enroll-action";
+import {
+  enrollAction,
+  reportEnrollmentBlockers,
+  type EnrollResult,
+} from "@/lib/enroll-action";
 import { saveEnrollmentDraft, discardEnrollmentDraft } from "@/lib/enroll-draft-actions";
 import { HeadshotUpload } from "@/components/HeadshotUpload";
 import { EXPERIENCE_LEVELS, EXPERIENCE_TIERS } from "@/lib/experience-levels";
@@ -595,8 +599,6 @@ export default function EnrollForm({
   if (!values.experienceLevel) problem(2, "experienceLevel", "Experience level", "Choose the tier that best describes your experience.");
   if (consents.some((c) => !c)) problem(4, "consents", "All six consent checkboxes", "Please tick all six required consent boxes.");
 
-  const canSubmit = problems.length === 0 && !pending;
-
   /**
    * Nothing turns red until submit has been attempted — a form that scolds you
    * about the last field while you're still typing in the first one is nagging,
@@ -1027,12 +1029,18 @@ export default function EnrollForm({
       {/* Outstanding required fields, with a jump link to wherever each one
           lives — so a blocked submit says exactly what's missing and where,
           instead of failing with a single server-side message. */}
-      {showMissing && problems.length > 0 && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-500 rounded-lg px-4 py-3 mb-6">
+      {problems.length > 0 && (step === STEPS.length - 1 || showMissing) && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="text-sm text-red-700 bg-red-50 border border-red-500 rounded-lg px-4 py-3 mb-6"
+        >
           <p className="font-semibold mb-1.5">
-            Your application wasn&apos;t submitted yet — {problems.length}{" "}
-            {problems.length === 1 ? "item needs" : "items need"} your attention. Each one is
-            highlighted in red on its step:
+            {showMissing ? "Your application wasn’t submitted yet" : "Before you can submit"} — {problems.length}{" "}
+            {problems.length === 1 ? "item needs" : "items need"} your attention.
+            {showMissing
+              ? " Each one is highlighted in red on its step:"
+              : " Use a link below to jump straight to it:"}
           </p>
           <ul className="space-y-1">
             {problems.map((m) => (
@@ -1087,20 +1095,22 @@ export default function EnrollForm({
             >
               Next →
             </button>
+          ) : problems.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => {
+                setShowMissing(true);
+                void reportEnrollmentBlockers(problems.map((problem) => problem.field));
+                goToProblem(problems[0]);
+              }}
+              className="bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-8 py-3 rounded-full transition-colors text-sm"
+            >
+              Review {problems.length} required {problems.length === 1 ? "item" : "items"} →
+            </button>
           ) : (
             <button
               type="submit"
               disabled={pending}
-              onClick={(e) => {
-                if (!canSubmit) {
-                  e.preventDefault();
-                  setShowMissing(true);
-                  // Take them straight to the first thing that needs fixing
-                  // rather than leaving them on the review step wondering which
-                  // of the five it was on.
-                  if (problems.length > 0) goToProblem(problems[0]);
-                }
-              }}
               className="bg-brand-green hover:bg-brand-green/90 disabled:opacity-50 text-brand-cream font-semibold px-8 py-3 rounded-full transition-colors text-sm"
             >
               {pending ? "Submitting application…" : "Submit Application"}
