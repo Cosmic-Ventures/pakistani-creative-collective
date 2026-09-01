@@ -7,8 +7,16 @@ import { z } from "zod";
 import { db } from "./db";
 import { appUrl, PASSWORD_RESET_EXPIRY_HOURS, sendPasswordResetEmail } from "./email";
 import { PasswordSchema } from "./password-rules";
+import { isMissingSchemaError } from "./db-availability";
 
 export type ResetActionResult = { error: string } | { sent: true };
+
+// Shown when the PasswordResetToken table hasn't been created yet. Deliberately
+// honest rather than a silent "check your inbox" for an email that will never
+// arrive — someone locked out of their account needs to know to ask for help,
+// not to keep refreshing their inbox.
+const RESET_UNAVAILABLE =
+  "Password resets aren't switched on yet. Please email pcc@aneesatalks.com and we'll reset it for you.";
 
 const RequestSchema = z.object({ email: z.email("Enter a valid email address") });
 
@@ -55,34 +63,47 @@ export async function requestPasswordResetAction(
   // turns this form into a way to find out who has a PCC account — the same
   // reasoning as the deliberately generic sign-in error.
   if (user) {
-    const recent = await db.passwordResetToken.count({
-      where: { userId: user.id, createdAt: { gt: new Date(Date.now() - 60 * 60_000) } },
-    });
-
-    if (recent < MAX_REQUESTS_PER_HOUR) {
-      const token = randomBytes(32).toString("hex");
-
-      // Any earlier link stops working the moment a new one is issued, so a
-      // forwarded or leaked older email is spent.
-      await db.passwordResetToken.deleteMany({ where: { userId: user.id, usedAt: null } });
-      await db.passwordResetToken.create({
-        data: {
-          userId: user.id,
-          tokenHash: hashToken(token),
-          expiresAt: new Date(Date.now() + PASSWORD_RESET_EXPIRY_HOURS * 60 * 60_000),
-        },
-      });
-
-      const firstName = user.name?.trim().split(/\s+/)[0] || "there";
-      await sendPasswordResetEmail(
-        firstName,
-        user.email,
-        `${appUrl()}/auth/reset?token=${token}`
-      ).catch(console.error);
+    try {
+      await issueResetLink(user);
+    } catch (error) {
+      if (!isMissingSchemaError(error)) throw error;
+      console.error("Password reset requested before the PasswordResetToken migration was applied");
+      return { error: RESET_UNAVAILABLE };
     }
   }
 
   return { sent: true };
+}
+
+/**
+ * The token half of a reset request, split out so a missing table surfaces as a
+ * message rather than an unhandled error taking the page down.
+ */
+async function issueResetLink(user: { id: string; email: string; name: string | null }) {
+  const recent = await db.passwordResetToken.count({
+    where: { userId: user.id, createdAt: { gt: new Date(Date.now() - 60 * 60_000) } },
+  });
+  if (recent >= MAX_REQUESTS_PER_HOUR) return;
+
+  const token = randomBytes(32).toString("hex");
+
+  // Any earlier link stops working the moment a new one is issued, so a
+  // forwarded or leaked older email is spent.
+  await db.passwordResetToken.deleteMany({ where: { userId: user.id, usedAt: null } });
+  await db.passwordResetToken.create({
+    data: {
+      userId: user.id,
+      tokenHash: hashToken(token),
+      expiresAt: new Date(Date.now() + PASSWORD_RESET_EXPIRY_HOURS * 60 * 60_000),
+    },
+  });
+
+  const firstName = user.name?.trim().split(/\s+/)[0] || "there";
+  await sendPasswordResetEmail(
+    firstName,
+    user.email,
+    `${appUrl()}/auth/reset?token=${token}`
+  ).catch(console.error);
 }
 
 export async function resetPasswordAction(
@@ -97,7 +118,14 @@ export async function resetPasswordAction(
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const { token, password } = parsed.data;
-  const record = await db.passwordResetToken.findUnique({ where: { tokenHash: hashToken(token) } });
+
+  let record;
+  try {
+    record = await db.passwordResetToken.findUnique({ where: { tokenHash: hashToken(token) } });
+  } catch (error) {
+    if (!isMissingSchemaError(error)) throw error;
+    return { error: RESET_UNAVAILABLE };
+  }
 
   if (!record || record.usedAt || record.expiresAt <= new Date()) {
     return { error: "This reset link has expired or has already been used. Request a new one below." };

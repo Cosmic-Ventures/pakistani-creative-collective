@@ -5,6 +5,7 @@ import { db } from "./db";
 import { requireAdmin } from "./session";
 import { isResendConfigured, sendTemplatePreview } from "./email";
 import { getTemplateDef, sampleValues, unknownVariables, type TemplateContent } from "./email-templates";
+import { isMissingSchemaError, MIGRATION_PENDING_MESSAGE } from "./db-availability";
 
 // Only async functions may be exported from a "use server" file (AGENTS.md
 // gotcha #1) — the template definitions live in ./email-templates, which both
@@ -53,11 +54,16 @@ export async function saveEmailTemplate(
   const error = validate(key, content);
   if (error) return { error };
 
-  await db.emailTemplate.upsert({
-    where: { key },
-    create: { key, ...content, updatedBy: admin.email },
-    update: { ...content, updatedBy: admin.email },
-  });
+  try {
+    await db.emailTemplate.upsert({
+      where: { key },
+      create: { key, ...content, updatedBy: admin.email },
+      update: { ...content, updatedBy: admin.email },
+    });
+  } catch (error) {
+    if (!isMissingSchemaError(error)) throw error;
+    return { error: MIGRATION_PENDING_MESSAGE };
+  }
 
   revalidatePath("/admin/emails");
   revalidatePath(`/admin/emails/${key}`);
@@ -71,7 +77,13 @@ export async function saveEmailTemplate(
  */
 export async function resetEmailTemplate(key: string): Promise<void> {
   await requireAdmin();
-  await db.emailTemplate.deleteMany({ where: { key } });
+  try {
+    await db.emailTemplate.deleteMany({ where: { key } });
+  } catch (error) {
+    if (!isMissingSchemaError(error)) throw error;
+    // Nothing stored means nothing to restore — the shipped copy is already
+    // what's sending.
+  }
   revalidatePath("/admin/emails");
   revalidatePath(`/admin/emails/${key}`);
 }

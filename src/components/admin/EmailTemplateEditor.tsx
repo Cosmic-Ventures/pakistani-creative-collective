@@ -25,6 +25,7 @@ export default function EmailTemplateEditor({
   isEdited,
   editedBy,
   editedAt,
+  migrationPending = false,
 }: {
   def: EmailTemplateDef;
   /** What's currently in force — the client's saved copy, or the default. */
@@ -32,6 +33,8 @@ export default function EmailTemplateEditor({
   isEdited: boolean;
   editedBy: string | null;
   editedAt: string | null;
+  /** The EmailTemplate table isn't in this database yet — read-only until it is. */
+  migrationPending?: boolean;
 }) {
   const [state, formAction, saving] = useActionState<TemplateActionResult | null, FormData>(
     saveEmailTemplate,
@@ -100,7 +103,7 @@ export default function EmailTemplateEditor({
           >
             Send me a test
           </button>
-          {isEdited && (
+          {isEdited && !migrationPending && (
             <button
               type="button"
               onClick={handleReset}
@@ -112,6 +115,14 @@ export default function EmailTemplateEditor({
           )}
         </div>
       </div>
+
+      {migrationPending && (
+        <p className="text-sm text-amber-300 bg-amber-950/30 border border-amber-700/60 rounded-lg px-4 py-3 mb-4">
+          <strong>Read-only for now.</strong> This template needs a one-time database update before
+          edits can be saved. Preview and wording below are live; this email is sending its original
+          text as normal.
+        </p>
+      )}
 
       {notice && (
         <p className="text-sm text-stone-200 bg-stone-800 border border-stone-700 rounded-lg px-4 py-2 mb-4">
@@ -179,7 +190,7 @@ export default function EmailTemplateEditor({
           <div className="flex items-center gap-3">
             <button
               type="submit"
-              disabled={saving || !dirty}
+              disabled={saving || !dirty || migrationPending}
               className="bg-stone-100 hover:bg-white disabled:opacity-40 text-stone-900 font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
             >
               {saving ? "Saving…" : "Save changes"}

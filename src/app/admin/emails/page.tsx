@@ -3,16 +3,25 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { EMAIL_TEMPLATES } from "@/lib/email-templates";
 import { isResendConfigured } from "@/lib/email";
+import { isMissingSchemaError, MIGRATION_PENDING_MESSAGE } from "@/lib/db-availability";
 
 export const metadata: Metadata = { title: "Emails · Admin" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminEmailsPage() {
   // Only the templates she's actually edited have a row; everything else is
-  // still running on the wording that shipped.
-  const edited = await db.emailTemplate.findMany({
-    select: { key: true, updatedAt: true, updatedBy: true },
-  });
+  // still running on the wording that shipped. If the table isn't there yet,
+  // that's every template — say so rather than failing the page.
+  let edited: { key: string; updatedAt: Date; updatedBy: string | null }[] = [];
+  let migrationPending = false;
+  try {
+    edited = await db.emailTemplate.findMany({
+      select: { key: true, updatedAt: true, updatedBy: true },
+    });
+  } catch (error) {
+    if (!isMissingSchemaError(error)) throw error;
+    migrationPending = true;
+  }
   const editedByKey = new Map(edited.map((e) => [e.key, e]));
 
   return (
@@ -25,6 +34,14 @@ export default async function AdminEmailsPage() {
           original&rdquo; puts back the version that shipped.
         </p>
       </div>
+
+      {migrationPending && (
+        <p className="text-sm text-amber-300 bg-amber-950/30 border border-amber-700/60 rounded-lg px-4 py-3 mb-5">
+          <strong>Saving is switched off for now.</strong> {MIGRATION_PENDING_MESSAGE} You can still
+          read and preview every template below, and each one is sending its original wording as
+          normal.
+        </p>
+      )}
 
       {!isResendConfigured && (
         <p className="text-xs text-amber-400 bg-amber-950/30 border border-amber-800/60 rounded-lg px-4 py-2.5 mb-5">

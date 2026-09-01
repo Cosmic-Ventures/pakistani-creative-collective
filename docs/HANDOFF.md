@@ -99,6 +99,18 @@ All creatives, posts, and applications currently in the site are **sample data**
   instead of bouncing you to the directory. It's marked as an admin preview and the purchase button
   is switched off, since your account already has full access.
 
+**Application form — the "Submit does nothing" bug**
+- Root cause found and fixed. It was the headshot step, not the submit button: choosing a photo
+  opened the crop window, and the photo only counted as uploaded if you pressed "Use this crop".
+  Anyone who tapped Cancel — or closed that window — was left with no headshot while the form still
+  said "Selected: their-photo.jpg" under a visible preview of their own face. The form then refused
+  to submit because the headshot was missing, which from the applicant's side looks exactly like a
+  dead button. Reproduced on a phone-sized screen against the live code, then fixed: choosing a
+  photo now counts immediately (using the same square framing the crop window opens on), so
+  cropping only ever adjusts a photo you already have.
+- Nothing was lost. No application was ever half-saved — the ones affected simply never got sent,
+  so anyone who gave up will need to come back and submit again.
+
 **Application form — clearer about what needs fixing**
 - Submitting with something missing no longer just shows a list: the form jumps to the first
   problem, outlines every affected field in red with a short explanation underneath it, and marks
@@ -223,10 +235,16 @@ Stripe redirects all use; `aneesatalks.com` is verified in Resend, so mail is de
 
 **0. Apply the September 1 database migration.** The email-template editor and the password-reset
 flow each need a new table (`EmailTemplate`, `PasswordResetToken`). The migration is written and
-committed, but has **not** been run against the live Supabase database — deploying the code without
-it will make Admin → Email Templates and the reset links error out. Run `npx prisma migrate deploy`
-with `DIRECT_URL` pointing at the session pooler (see AGENTS.md). It only adds tables; nothing
-existing is touched, and emails keep sending on their default wording until the table exists.
+committed but has **not** been run against the live Supabase database yet. Run
+`npx prisma migrate deploy` with `DIRECT_URL` pointing at the session pooler (see AGENTS.md); it
+only adds tables, nothing existing is touched.
+
+This is **not** a blocker for deploying — it's safe to ship the code first and run the migration
+whenever suits. Until it's applied, Admin → Email Templates is read-only (it shows every template
+and its preview, with a banner explaining why saving is off), "Forgot your password?" says resets
+aren't switched on yet and points people at the PCC inbox, and every email keeps sending its
+original wording. Verified by dropping both tables and re-checking every page. The moment the
+migration runs, both features start working with no redeploy.
 
 **1. Stripe: sandbox → live.** The site runs on Stripe **test** keys today; no real card is ever
 charged. Switching over is more than swapping a key:
