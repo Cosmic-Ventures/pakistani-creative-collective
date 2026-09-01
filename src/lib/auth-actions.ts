@@ -4,16 +4,15 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "./db";
+import { PasswordSchema } from "./password-rules";
 import { createSession, deleteSession } from "./session";
 
 const SignupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.email("Invalid email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Za-z]/, "Password must contain a letter")
-    .regex(/[0-9]/, "Password must contain a number"),
+  // Shared with the password-reset flow, so a password you can't sign up with
+  // is also one you can't reset to.
+  password: PasswordSchema,
 });
 
 const LoginSchema = z.object({

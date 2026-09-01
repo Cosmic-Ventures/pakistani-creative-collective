@@ -43,79 +43,135 @@ function Section({ title, children, dark }: { title: string; children: React.Rea
   );
 }
 
-function Field({
-  label, required, children, hint, dark,
-}: { label: string; required?: boolean; children: React.ReactNode; hint?: string; dark?: boolean }) {
+/**
+ * The red callout for the checkbox groups, which have no single input to outline
+ * — roles, mediums and the consent list. Module scope, not a nested component:
+ * a component declared inside EnrollForm is a new type on every render and
+ * remounts everything under it (AGENTS.md gotcha #12).
+ */
+function FieldNotice({ id, message }: { id: string; message: string }) {
   return (
-    <div className="mb-5">
-      <label className={`block text-sm mb-1.5 ${dark ? "text-brand-cream/80" : "text-black/70"}`}>
+    <p
+      id={id}
+      className="scroll-mt-24 text-sm text-red-600 font-semibold bg-red-50 border border-red-500 rounded-lg px-3 py-2 mb-4"
+    >
+      {message}
+    </p>
+  );
+}
+
+/** DOM id for a field's wrapper, so the pre-submit summary can scroll to it. */
+function anchorId(name: string): string {
+  return `field-${name}`;
+}
+
+/**
+ * `error` is what turns a field red. It's only ever passed once the applicant
+ * has tried to submit (09/01 round: "the parts they need to revise ... be
+ * highlighted in red so that they know what to revise before resubmitting"), and
+ * it clears itself the moment the field is filled in correctly, because it's
+ * derived during render rather than stored.
+ *
+ * `anchor` gives the field a DOM id so the summary above the submit button can
+ * scroll straight to it.
+ */
+function Field({
+  label, required, children, hint, dark, error, anchor,
+}: {
+  label: string; required?: boolean; children: React.ReactNode; hint?: string; dark?: boolean;
+  error?: string; anchor?: string;
+}) {
+  return (
+    <div className="mb-5 scroll-mt-24" id={anchor}>
+      <label
+        className={`block text-sm mb-1.5 ${
+          error ? "text-red-600 font-semibold" : dark ? "text-brand-cream/80" : "text-black/70"
+        }`}
+      >
         {label}
-        {required && <span className="text-red-400 ml-0.5">*</span>}
+        {required && <span className={error ? "text-red-600 ml-0.5" : "text-red-400 ml-0.5"}>*</span>}
       </label>
       {children}
-      {hint && <p className={`text-xs mt-1 ${dark ? "text-brand-cream/60" : "text-black/40"}`}>{hint}</p>}
+      {error ? (
+        <p className="text-xs mt-1 text-red-600 font-semibold">{error}</p>
+      ) : (
+        hint && <p className={`text-xs mt-1 ${dark ? "text-brand-cream/60" : "text-black/40"}`}>{hint}</p>
+      )}
     </div>
   );
 }
 
 const inputCls = "w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-black placeholder-black/40 focus:outline-none focus:border-brand-green text-sm";
 const textareaCls = `${inputCls} resize-none`;
+// Spelled out in full rather than appended to `inputCls`: `border-red-500` and
+// `border-brand-green/20` are the same Tailwind property, so which one wins
+// depends on their order in the generated stylesheet, not in the attribute.
+const inputErrorCls = "w-full bg-red-50 border border-red-500 ring-2 ring-red-500/20 rounded-lg px-4 py-2.5 text-black placeholder-black/40 focus:outline-none focus:border-red-600 text-sm";
+const textareaErrorCls = `${inputErrorCls} resize-none`;
+
+function inputClsFor(error?: string): string {
+  return error ? inputErrorCls : inputCls;
+}
 
 type Values = Record<string, string>;
 
 function TextField({
-  name, label, required, hint, type = "text", placeholder, values, update, dark,
+  name, label, required, hint, type = "text", placeholder, values, update, dark, error,
 }: {
   name: string; label: string; required?: boolean; hint?: string; type?: string; placeholder?: string;
-  values: Values; update: (name: string, value: string) => void; dark?: boolean;
+  values: Values; update: (name: string, value: string) => void; dark?: boolean; error?: string;
 }) {
   return (
-    <Field label={label} required={required} hint={hint} dark={dark}>
+    <Field label={label} required={required} hint={hint} dark={dark} error={error} anchor={anchorId(name)}>
       <input
         name={name}
         type={type}
         value={values[name] ?? ""}
         onChange={(e) => update(name, e.target.value)}
-        className={inputCls}
+        className={inputClsFor(error)}
         placeholder={placeholder}
+        aria-invalid={error ? true : undefined}
       />
     </Field>
   );
 }
 
 function TextAreaField({
-  name, label, required, hint, rows = 3, placeholder, values, update, dark,
+  name, label, required, hint, rows = 3, placeholder, values, update, dark, error,
 }: {
   name: string; label: string; required?: boolean; hint?: string; rows?: number; placeholder?: string;
-  values: Values; update: (name: string, value: string) => void; dark?: boolean;
+  values: Values; update: (name: string, value: string) => void; dark?: boolean; error?: string;
 }) {
   return (
-    <Field label={label} required={required} hint={hint} dark={dark}>
+    <Field label={label} required={required} hint={hint} dark={dark} error={error} anchor={anchorId(name)}>
       <textarea
         name={name}
         rows={rows}
         value={values[name] ?? ""}
         onChange={(e) => update(name, e.target.value)}
-        className={textareaCls}
+        className={error ? textareaErrorCls : textareaCls}
         placeholder={placeholder}
+        aria-invalid={error ? true : undefined}
       />
     </Field>
   );
 }
 
 function SelectField({
-  name, label, required, hint, options, values, update, placeholder = "Select…", dark,
+  name, label, required, hint, options, values, update, placeholder = "Select…", dark, error,
 }: {
   name: string; label: string; required?: boolean; hint?: string; options: readonly string[];
   values: Values; update: (name: string, value: string) => void; placeholder?: string; dark?: boolean;
+  error?: string;
 }) {
   return (
-    <Field label={label} required={required} hint={hint} dark={dark}>
+    <Field label={label} required={required} hint={hint} dark={dark} error={error} anchor={anchorId(name)}>
       <select
         name={name}
         value={values[name] ?? ""}
         onChange={(e) => update(name, e.target.value)}
-        className={inputCls}
+        className={inputClsFor(error)}
+        aria-invalid={error ? true : undefined}
       >
         <option value="">{placeholder}</option>
         {options.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -305,9 +361,11 @@ function MultiSelectDropdown({
   );
 }
 
-function HeadshotUploadField({ values, update }: { values: Values; update: (name: string, value: string) => void }) {
+function HeadshotUploadField({
+  values, update, error,
+}: { values: Values; update: (name: string, value: string) => void; error?: string }) {
   return (
-    <Field label="Professional Headshot" required hint="Image file, up to 8MB">
+    <Field label="Professional Headshot" required hint="Image file, up to 8MB" error={error} anchor={anchorId("headshotLink")}>
       <HeadshotUpload
         name="headshotLink"
         value={values.headshotLink ?? ""}
@@ -393,8 +451,19 @@ function AvailabilityRanges({
   );
 }
 
-/** Everything the applicant must supply before the form will submit. */
-type Missing = { step: number; label: string };
+/**
+ * Everything still standing between the applicant and a successful submit.
+ *
+ * `label` is the one-line version listed in the summary above the submit button;
+ * `message` is the longer sentence shown in red under the field itself; `field`
+ * is the input's name, which doubles as its scroll anchor.
+ */
+type Problem = { step: number; field: string; label: string; message: string };
+
+// Deliberately loose — this catches the typos an applicant actually makes
+// ("sara@gmail", "sara.gmail.com"), and anything subtler is the server's Zod
+// schema to reject. A stricter regex here would start rejecting valid addresses.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export type EnrollFormProps = {
   initialDraft?: Record<string, unknown> | null;
@@ -477,6 +546,7 @@ export default function EnrollForm({
   // a useEffect: surface a server-side error where the applicant can see it.
   if (state && "error" in state && state.error !== lastError) {
     setLastError(state.error);
+    setShowMissing(true);
     setStep(0);
   }
 
@@ -490,19 +560,51 @@ export default function EnrollForm({
    * and every work sample — an emerging creative may legitimately have none of
    * them yet.
    */
-  const missing: Missing[] = [];
-  if (!values.firstName) missing.push({ step: 0, label: "First name" });
-  if (!values.lastName) missing.push({ step: 0, label: "Last name" });
-  if (!values.email) missing.push({ step: 0, label: "Email address" });
-  if (!values.headshotLink) missing.push({ step: 0, label: "Professional headshot" });
-  if (bioText.trim().length < 100) missing.push({ step: 0, label: "Professional bio (at least 100 characters)" });
-  else if (bioWords > 200) missing.push({ step: 0, label: "Professional bio (200 words maximum)" });
-  if (roles.length === 0 && !values.rolesOther) missing.push({ step: 1, label: "At least one professional role" });
-  if (mediums.length === 0 && !values.mediumsOther) missing.push({ step: 1, label: "At least one medium" });
-  if (!values.experienceLevel) missing.push({ step: 2, label: "Experience level" });
-  if (consents.some((c) => !c)) missing.push({ step: 4, label: "All six consent checkboxes" });
+  const problems: Problem[] = [];
+  const problem = (step: number, field: string, label: string, message: string) =>
+    problems.push({ step, field, label, message });
 
-  const canSubmit = missing.length === 0 && !pending;
+  if (!values.firstName?.trim()) problem(0, "firstName", "First name", "First name is required.");
+  if (!values.lastName?.trim()) problem(0, "lastName", "Last name", "Last name is required.");
+  if (!values.email?.trim()) problem(0, "email", "Email address", "Email address is required.");
+  else if (!EMAIL_RE.test(values.email.trim()))
+    problem(0, "email", "Email address — check the format", "That doesn't look like an email address. It should read like name@example.com.");
+  if (!values.headshotLink) problem(0, "headshotLink", "Professional headshot", "Upload a headshot before submitting.");
+  if (bioText.trim().length < 100)
+    problem(0, "bio", "Professional bio — at least 100 characters", `Your bio is ${bioText.trim().length} character${bioText.trim().length === 1 ? "" : "s"} long; it needs at least 100.`);
+  else if (bioWords > 200)
+    problem(0, "bio", "Professional bio — 200 words maximum", `Your bio is ${bioWords} words; please trim it to 200 or fewer.`);
+  if (roles.length === 0 && !values.rolesOther?.trim())
+    problem(1, "roles", "At least one professional role", "Tick at least one role, or type your own under \u201cOther role(s) not listed\u201d.");
+  if (mediums.length === 0 && !values.mediumsOther?.trim())
+    problem(1, "mediums", "At least one medium", "Tick at least one medium, or type your own under \u201cOther medium(s) not listed\u201d.");
+  if (!values.experienceLevel) problem(2, "experienceLevel", "Experience level", "Choose the tier that best describes your experience.");
+  if (consents.some((c) => !c)) problem(4, "consents", "All six consent checkboxes", "Please tick all six required consent boxes.");
+
+  const canSubmit = problems.length === 0 && !pending;
+
+  /**
+   * Nothing turns red until submit has been attempted — a form that scolds you
+   * about the last field while you're still typing in the first one is nagging,
+   * not helping. After that the highlight is derived on every render, so it
+   * clears itself the moment the applicant fixes the field.
+   */
+  const errorFor = (field: string): string | undefined =>
+    showMissing ? problems.find((p) => p.field === field)?.message : undefined;
+  const stepHasProblem = (index: number) => showMissing && problems.some((p) => p.step === index);
+
+  function goToProblem(p: Problem) {
+    setStep(p.step);
+    setShowMissing(true);
+    // The target step is revealed in this same commit, so wait a frame for it to
+    // be laid out before scrolling — `hidden` elements have no position to
+    // scroll to.
+    requestAnimationFrame(() => {
+      const el = document.getElementById(anchorId(p.field));
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      el?.querySelector<HTMLElement>("input, textarea, select")?.focus({ preventScroll: true });
+    });
+  }
 
   function snapshot(): Snapshot {
     return {
@@ -585,10 +687,15 @@ export default function EnrollForm({
               className={`px-3 py-1.5 rounded-full transition-colors ${
                 i === step
                   ? "bg-brand-green text-brand-cream"
+                  : stepHasProblem(i)
+                  ? "bg-red-50 text-red-700 border border-red-500 hover:bg-red-100"
                   : "bg-brand-mint/25 text-brand-green hover:bg-brand-mint/40"
               }`}
             >
               {i + 1}. {label}
+              {stepHasProblem(i) && (
+                <span className={i === step ? "ml-1.5 text-red-300" : "ml-1.5 text-red-600"}>&#9679;</span>
+              )}
             </button>
           </li>
         ))}
@@ -597,11 +704,11 @@ export default function EnrollForm({
       <div className={stepClass(0)}>
         <Section title="Personal / Basic Info">
           <div className="grid grid-cols-2 gap-4">
-            <TextField name="firstName" label="First Name" required values={values} update={update} />
-            <TextField name="lastName" label="Last Name" required values={values} update={update} />
+            <TextField name="firstName" label="First Name" required values={values} update={update} error={errorFor("firstName")} />
+            <TextField name="lastName" label="Last Name" required values={values} update={update} error={errorFor("lastName")} />
           </div>
           <SelectField name="pronouns" label="Pronouns" options={PRONOUNS} values={values} update={update} />
-          <TextField name="email" label="Email Address" type="email" required values={values} update={update} />
+          <TextField name="email" label="Email Address" type="email" required values={values} update={update} error={errorFor("email")} />
           <TextField name="phone" label="Phone Number" type="tel" values={values} update={update} />
           <TextField
             name="address"
@@ -629,7 +736,7 @@ export default function EnrollForm({
               update={update}
             />
           )}
-          <HeadshotUploadField values={values} update={update} />
+          <HeadshotUploadField values={values} update={update} error={errorFor("headshotLink")} />
         </Section>
 
         <Section title="Bio & Background">
@@ -637,14 +744,17 @@ export default function EnrollForm({
             label="Professional Bio"
             required
             hint={`${bioWords} / 200 words max — at least 100 characters (${bioText.trim().length} so far)`}
+            error={errorFor("bio")}
+            anchor={anchorId("bio")}
           >
             <textarea
               name="bio"
               rows={8}
               value={values.bio ?? ""}
               onChange={(e) => update("bio", e.target.value)}
-              className={textareaCls}
+              className={errorFor("bio") ? textareaErrorCls : textareaCls}
               placeholder="Write your professional bio in third person…"
+              aria-invalid={errorFor("bio") ? true : undefined}
             />
           </Field>
           <TextAreaField name="pccGoals" label="What are you looking for from the PCC?" rows={3} values={values} update={update} />
@@ -658,6 +768,7 @@ export default function EnrollForm({
       <div className={stepClass(1)}>
         <Section title="Professional Roles">
           <p className="text-xs text-black/50 mb-4">Select all that apply.</p>
+          {errorFor("roles") && <FieldNotice id={anchorId("roles")} message={errorFor("roles")!} />}
           <div className="space-y-5">
             {Object.entries(ROLE_CATEGORIES).map(([category, opts]) => (
               <div key={category}>
@@ -672,6 +783,7 @@ export default function EnrollForm({
         </Section>
 
         <Section title="Mediums">
+          {errorFor("mediums") && <FieldNotice id={anchorId("mediums")} message={errorFor("mediums")!} />}
           <CheckboxGrid name="mediums" options={MEDIUMS} selected={mediums} onToggle={(v) => setMediums((m) => toggleValue(m, v))} />
           {/* Breathing room between the medium checkboxes and the free-text
               field below them, per the 08/08 round. */}
@@ -685,7 +797,7 @@ export default function EnrollForm({
         <Section title="Experience & Portfolio">
           <p className="text-xs text-black/50 mb-3">Not sure which tier fits? Here&apos;s how the five levels break down:</p>
           <TierReference />
-          <SelectField name="experienceLevel" label="Experience Level" required options={EXPERIENCE_LEVELS} values={values} update={update} />
+          <SelectField name="experienceLevel" label="Experience Level" required options={EXPERIENCE_LEVELS} values={values} update={update} error={errorFor("experienceLevel")} />
           <div className="grid grid-cols-2 gap-4">
             <TextField name="yearsExperience" label="Years of Professional Experience" type="number" values={values} update={update} />
             <TextField name="completedProjects" label="Completed Projects" type="number" values={values} update={update} />
@@ -842,6 +954,7 @@ export default function EnrollForm({
           <p className="text-sm text-black/60 mb-5">
             Please confirm the following before submitting your application.
           </p>
+          {errorFor("consents") && <FieldNotice id={anchorId("consents")} message={errorFor("consents")!} />}
           <div className="space-y-3">
             {[
               "I consent to my information being added to the PCC database.",
@@ -851,17 +964,26 @@ export default function EnrollForm({
               "I agree to notify the PCC if my information changes significantly.",
               "I understand that the PCC reserves the right to reject any application at their discretion.",
             ].map((text, i) => (
-              <label key={i} className="flex items-start gap-3 text-sm text-black/80 cursor-pointer">
+              <label
+                key={i}
+                className={`flex items-start gap-3 text-sm cursor-pointer ${
+                  errorFor("consents") && !consents[i] ? "text-red-600 font-semibold" : "text-black/80"
+                }`}
+              >
                 <input
                   type="checkbox"
                   name={`consent${i}`}
                   checked={consents[i]}
                   onChange={() => setConsents((c) => c.map((v, idx) => (idx === i ? !v : v)))}
-                  className="accent-brand-green mt-0.5 shrink-0"
+                  className={`mt-0.5 shrink-0 ${
+                    errorFor("consents") && !consents[i]
+                      ? "accent-red-600 outline outline-2 outline-offset-2 outline-red-500"
+                      : "accent-brand-green"
+                  }`}
                 />
                 <span>
                   {text}
-                  <span className="text-red-400 ml-0.5">*</span>
+                  <span className="text-red-500 ml-0.5">*</span>
                 </span>
               </label>
             ))}
@@ -886,15 +1008,19 @@ export default function EnrollForm({
       {/* Outstanding required fields, with a jump link to wherever each one
           lives — so a blocked submit says exactly what's missing and where,
           instead of failing with a single server-side message. */}
-      {showMissing && missing.length > 0 && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-6">
-          <p className="font-semibold mb-1.5">Before you can submit, please complete:</p>
+      {showMissing && problems.length > 0 && (
+        <div className="text-sm text-red-700 bg-red-50 border border-red-500 rounded-lg px-4 py-3 mb-6">
+          <p className="font-semibold mb-1.5">
+            Your application wasn&apos;t submitted yet — {problems.length}{" "}
+            {problems.length === 1 ? "item needs" : "items need"} your attention. Each one is
+            highlighted in red on its step:
+          </p>
           <ul className="space-y-1">
-            {missing.map((m) => (
-              <li key={m.label}>
+            {problems.map((m) => (
+              <li key={m.field + m.label}>
                 <button
                   type="button"
-                  onClick={() => setStep(m.step)}
+                  onClick={() => goToProblem(m)}
                   className="underline underline-offset-2 hover:no-underline text-left"
                 >
                   {m.label} <span className="text-red-500">— step {m.step + 1}</span>
@@ -950,6 +1076,10 @@ export default function EnrollForm({
                 if (!canSubmit) {
                   e.preventDefault();
                   setShowMissing(true);
+                  // Take them straight to the first thing that needs fixing
+                  // rather than leaving them on the review step wondering which
+                  // of the five it was on.
+                  if (problems.length > 0) goToProblem(problems[0]);
                 }
               }}
               className="bg-brand-green hover:bg-brand-green/90 disabled:opacity-50 text-brand-cream font-semibold px-8 py-3 rounded-full transition-colors text-sm"

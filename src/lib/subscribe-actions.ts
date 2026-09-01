@@ -5,9 +5,19 @@ import { db } from "./db";
 import { getSession, createSession } from "./session";
 import { stripe, PRICE_MONTHLY, PRICE_ANNUAL } from "./stripe";
 
+/**
+ * Nobody who already has access has any business starting a checkout. The
+ * subscribe page renders for admins now (so the client can review it) with the
+ * button disabled, but a disabled button is styling — this is the check that
+ * holds, and it also covers a PAID member replaying the POST.
+ */
+function alreadyHasAccess(role: string): boolean {
+  return role === "PAID" || role === "ADMIN";
+}
+
 export async function createCheckoutSession(plan: "monthly" | "annual") {
   const session = await getSession();
-  if (!session) return;
+  if (!session || alreadyHasAccess(session.role)) return;
   const user = await db.user.findUnique({ where: { id: session.userId } });
   if (!user) return;
 
@@ -35,7 +45,10 @@ export async function createCheckoutSession(plan: "monthly" | "annual") {
 // Used in place of createCheckoutSession when Stripe isn't configured yet (pre-launch / no API keys).
 export async function simulatePayment() {
   const session = await getSession();
-  if (!session) return;
+  // An admin running this would write role: "PAID" over their own ADMIN role and
+  // lock themselves out of the admin panel — the one way this demo shortcut can
+  // do real damage, and reachable the moment the page renders for them.
+  if (!session || alreadyHasAccess(session.role)) return;
   await db.user.update({
     where: { id: session.userId },
     data: { role: "PAID", subStatus: "active" },

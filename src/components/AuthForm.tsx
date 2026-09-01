@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import type { ActionResult } from "@/lib/auth-actions";
+import { PASSWORD_HINT } from "@/lib/password-rules";
 
 type Props = {
   mode: "signin" | "signup";
@@ -63,11 +64,7 @@ export default function AuthForm({ mode, action, next }: Props) {
           autoComplete={mode === "signup" ? "new-password" : "current-password"}
           className="w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm"
         />
-        {mode === "signup" && (
-          <p className="text-xs text-brand-brown/40 mt-1">
-            At least 8 characters, one letter, one number.
-          </p>
-        )}
+        {mode === "signup" && <p className="text-xs text-brand-brown/40 mt-1">{PASSWORD_HINT}</p>}
       </div>
 
       <button

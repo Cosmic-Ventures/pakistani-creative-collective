@@ -15,6 +15,835 @@
   <h1>PCC transactional emails</h1>
   <p class="note">Every email shares one shell: white square logo, brand-green card, white body text, mint labels and buttons.</p>
   <div class="card">
+    <p class="label">Application received (editable in the admin panel)</p>
+    <p class="subject">Subject: PCC — We received your application</p>
+    <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;utf-8&quot; />
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
+<title>Pakistani Creative Collective</title>
+<!--
+  Without a declared colour scheme, mail clients in dark mode apply their own
+  inversion: our dark green card came out pale sage with dark text in the
+  client's inbox, the exact opposite of what's authored here. Declaring both
+  schemes tells the client we've handled dark mode ourselves and to leave the
+  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
+-->
+<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
+<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Re-assert the palette for clients that do run their own dark-mode pass,
+     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
+     Outlook.com injects when it rewrites colours. */
+  @media (prefers-color-scheme: dark) {
+    .pcc-page { background-color: #1E3A2E !important; }
+    .pcc-card { background-color: #294D3D !important; }
+    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
+    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
+    .pcc-btn { background-color: #FFFCF9 !important; }
+    .pcc-btn a { color: #294D3D !important; }
+    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
+  }
+  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
+  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
+  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
+  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
+</style>
+</head>
+<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
+  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>We've received your application and will be in touch soon.</div>
+  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
+    <tr>
+      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
+        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
+          <tr>
+            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
+              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
+                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
+                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
+                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
+              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
+<p style=&quot;margin:0 0 16px;&quot;>Thank you for applying to the Pakistani Creative Collective. We've received your application and will review it shortly. You'll hear from us via email once a decision has been made.</p>
+<p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
+              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
+                Pakistani Creative Collective &middot; Curated by
+                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"></iframe>
+  </div>
+<div class="card">
+    <p class="label">Application approved (editable in the admin panel)</p>
+    <p class="subject">Subject: You've been approved for the Pakistani Creative Collective!</p>
+    <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;utf-8&quot; />
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
+<title>Pakistani Creative Collective</title>
+<!--
+  Without a declared colour scheme, mail clients in dark mode apply their own
+  inversion: our dark green card came out pale sage with dark text in the
+  client's inbox, the exact opposite of what's authored here. Declaring both
+  schemes tells the client we've handled dark mode ourselves and to leave the
+  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
+-->
+<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
+<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Re-assert the palette for clients that do run their own dark-mode pass,
+     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
+     Outlook.com injects when it rewrites colours. */
+  @media (prefers-color-scheme: dark) {
+    .pcc-page { background-color: #1E3A2E !important; }
+    .pcc-card { background-color: #294D3D !important; }
+    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
+    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
+    .pcc-btn { background-color: #FFFCF9 !important; }
+    .pcc-btn a { color: #294D3D !important; }
+    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
+  }
+  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
+  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
+  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
+  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
+</style>
+</head>
+<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
+  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>You're in — we'll be in touch the moment the directory goes live.</div>
+  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
+    <tr>
+      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
+        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
+          <tr>
+            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
+              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
+                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
+                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
+                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
+              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
+<p style=&quot;margin:0 0 16px;&quot;>Great news — your application to the Pakistani Creative Collective has been approved. You're officially part of the collective.</p>
+<p style=&quot;margin:0 0 16px;&quot;>The directory and subscriptions aren't open to the public just yet. We're putting the finishing touches on everything, and you'll be the first to know the moment it goes live — keep an eye on your inbox.</p>
+<p style=&quot;margin:0 0 16px;&quot;>Thank you for being part of this from the beginning.</p>
+<p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
+              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
+                Pakistani Creative Collective &middot; Curated by
+                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"></iframe>
+  </div>
+<div class="card">
+    <p class="label">Application needs revisions (editable in the admin panel)</p>
+    <p class="subject">Subject: PCC — Your application needs a few changes</p>
+    <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;utf-8&quot; />
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
+<title>Pakistani Creative Collective</title>
+<!--
+  Without a declared colour scheme, mail clients in dark mode apply their own
+  inversion: our dark green card came out pale sage with dark text in the
+  client's inbox, the exact opposite of what's authored here. Declaring both
+  schemes tells the client we've handled dark mode ourselves and to leave the
+  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
+-->
+<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
+<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Re-assert the palette for clients that do run their own dark-mode pass,
+     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
+     Outlook.com injects when it rewrites colours. */
+  @media (prefers-color-scheme: dark) {
+    .pcc-page { background-color: #1E3A2E !important; }
+    .pcc-card { background-color: #294D3D !important; }
+    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
+    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
+    .pcc-btn { background-color: #FFFCF9 !important; }
+    .pcc-btn a { color: #294D3D !important; }
+    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
+  }
+  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
+  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
+  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
+  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
+</style>
+</head>
+<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
+  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>Your application needs a few changes before it can be approved.</div>
+  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
+    <tr>
+      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
+        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
+          <tr>
+            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
+              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
+                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
+                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
+                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
+              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
+<p style=&quot;margin:0 0 16px;&quot;>Thanks for applying to the Pakistani Creative Collective. Your application needs a few changes before we can approve it:</p>
+
+    <div class=&quot;pcc-panel&quot; style=&quot;background-color:rgba(255,255,255,0.08); border-radius:12px; padding:14px 18px; margin:0 0 16px; color:#FFFCF9;&quot;>
+      Please add at least one work sample and expand your bio to 100 characters.
+    </div>
+<p style=&quot;margin:0 0 16px;&quot;>You're welcome to reapply with the revisions above using the same application link.</p>
+
+    <table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin:8px 0 20px;&quot;>
+      <tr>
+        <td class=&quot;pcc-btn&quot; style=&quot;background-color:#FFFCF9; border-radius:999px;&quot;>
+          <a href=&quot;https://pcc.aneesatalks.com/enroll&quot; style=&quot;display:inline-block; padding:12px 24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:14px; font-weight:700; color:#294D3D; text-decoration:none;&quot;>Reapply to the PCC →</a>
+        </td>
+      </tr>
+    </table>
+<p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
+              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
+                Pakistani Creative Collective &middot; Curated by
+                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"></iframe>
+  </div>
+<div class="card">
+    <p class="label">Application not accepted (editable in the admin panel)</p>
+    <p class="subject">Subject: PCC — Application Update</p>
+    <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;utf-8&quot; />
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
+<title>Pakistani Creative Collective</title>
+<!--
+  Without a declared colour scheme, mail clients in dark mode apply their own
+  inversion: our dark green card came out pale sage with dark text in the
+  client's inbox, the exact opposite of what's authored here. Declaring both
+  schemes tells the client we've handled dark mode ourselves and to leave the
+  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
+-->
+<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
+<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Re-assert the palette for clients that do run their own dark-mode pass,
+     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
+     Outlook.com injects when it rewrites colours. */
+  @media (prefers-color-scheme: dark) {
+    .pcc-page { background-color: #1E3A2E !important; }
+    .pcc-card { background-color: #294D3D !important; }
+    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
+    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
+    .pcc-btn { background-color: #FFFCF9 !important; }
+    .pcc-btn a { color: #294D3D !important; }
+    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
+  }
+  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
+  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
+  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
+  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
+</style>
+</head>
+<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
+  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>An update on your PCC application.</div>
+  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
+    <tr>
+      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
+        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
+          <tr>
+            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
+              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
+                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
+                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
+                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
+              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
+<p style=&quot;margin:0 0 16px;&quot;>Thank you for your interest in the Pakistani Creative Collective. After reviewing your application, we're not able to add you to the database at this time. This may change in the future.</p>
+<p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
+              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
+                Pakistani Creative Collective &middot; Curated by
+                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"></iframe>
+  </div>
+<div class="card">
+    <p class="label">Contact request forwarded (editable in the admin panel)</p>
+    <p class="subject">Subject: You have a new contact request on the PCC</p>
+    <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;utf-8&quot; />
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
+<title>Pakistani Creative Collective</title>
+<!--
+  Without a declared colour scheme, mail clients in dark mode apply their own
+  inversion: our dark green card came out pale sage with dark text in the
+  client's inbox, the exact opposite of what's authored here. Declaring both
+  schemes tells the client we've handled dark mode ourselves and to leave the
+  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
+-->
+<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
+<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Re-assert the palette for clients that do run their own dark-mode pass,
+     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
+     Outlook.com injects when it rewrites colours. */
+  @media (prefers-color-scheme: dark) {
+    .pcc-page { background-color: #1E3A2E !important; }
+    .pcc-card { background-color: #294D3D !important; }
+    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
+    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
+    .pcc-btn { background-color: #FFFCF9 !important; }
+    .pcc-btn a { color: #294D3D !important; }
+    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
+  }
+  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
+  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
+  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
+  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
+</style>
+</head>
+<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
+  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>Imran Malik would like to connect with you through the PCC.</div>
+  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
+    <tr>
+      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
+        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
+          <tr>
+            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
+              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
+                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
+                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
+                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
+              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
+<p style=&quot;margin:0 0 16px;&quot;>Someone is interested in working with you through the Pakistani Creative Collective. This request has been reviewed by Aneesa Talks and forwarded to you — you're not obligated to respond.</p>
+<p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>From:</strong> Imran Malik</p>
+<p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Request type:</strong> Collaboration Opportunity</p>
+<p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Timeline:</strong> Within next 3 months</p>
+<p style=&quot;margin:0 0 16px;&quot;>Here's what they said:</p>
+
+    <div class=&quot;pcc-panel&quot; style=&quot;background-color:rgba(255,255,255,0.08); border-radius:12px; padding:14px 18px; margin:0 0 16px; color:#FFFCF9;&quot;>
+      I'm producing a short film in Karachi this spring and would love to talk about you shooting it.
+    </div>
+<p style=&quot;margin:0 0 16px;&quot;>Reply to Aneesa Talks directly to let us know if you'd like to connect, and we'll help facilitate the introduction.</p>
+<p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
+              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
+                Pakistani Creative Collective &middot; Curated by
+                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"></iframe>
+  </div>
+<div class="card">
+    <p class="label">Selected as featured creative (editable in the admin panel)</p>
+    <p class="subject">Subject: You've been selected as a PCC Featured Creative!</p>
+    <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;utf-8&quot; />
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
+<title>Pakistani Creative Collective</title>
+<!--
+  Without a declared colour scheme, mail clients in dark mode apply their own
+  inversion: our dark green card came out pale sage with dark text in the
+  client's inbox, the exact opposite of what's authored here. Declaring both
+  schemes tells the client we've handled dark mode ourselves and to leave the
+  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
+-->
+<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
+<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Re-assert the palette for clients that do run their own dark-mode pass,
+     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
+     Outlook.com injects when it rewrites colours. */
+  @media (prefers-color-scheme: dark) {
+    .pcc-page { background-color: #1E3A2E !important; }
+    .pcc-card { background-color: #294D3D !important; }
+    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
+    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
+    .pcc-btn { background-color: #FFFCF9 !important; }
+    .pcc-btn a { color: #294D3D !important; }
+    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
+  }
+  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
+  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
+  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
+  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
+</style>
+</head>
+<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
+  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>Your profile has been selected as this month's featured creative.</div>
+  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
+    <tr>
+      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
+        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
+          <tr>
+            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
+              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
+                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
+                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
+                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
+              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
+<p style=&quot;margin:0 0 16px;&quot;>We're excited to let you know that your profile has been selected as a featured creative for this month on the Pakistani Creative Collective. Your full profile will be publicly visible to all visitors for the duration of the featured period.</p>
+
+    <table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin:8px 0 20px;&quot;>
+      <tr>
+        <td class=&quot;pcc-btn&quot; style=&quot;background-color:#FFFCF9; border-radius:999px;&quot;>
+          <a href=&quot;https://pcc.aneesatalks.com/directory/sara-khan&quot; style=&quot;display:inline-block; padding:12px 24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:14px; font-weight:700; color:#294D3D; text-decoration:none;&quot;>View your profile →</a>
+        </td>
+      </tr>
+    </table>
+<p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
+              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
+                Pakistani Creative Collective &middot; Curated by
+                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"></iframe>
+  </div>
+<div class="card">
+    <p class="label">Community post approved (editable in the admin panel)</p>
+    <p class="subject">Subject: Your Community post is live</p>
+    <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;utf-8&quot; />
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
+<title>Pakistani Creative Collective</title>
+<!--
+  Without a declared colour scheme, mail clients in dark mode apply their own
+  inversion: our dark green card came out pale sage with dark text in the
+  client's inbox, the exact opposite of what's authored here. Declaring both
+  schemes tells the client we've handled dark mode ourselves and to leave the
+  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
+-->
+<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
+<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Re-assert the palette for clients that do run their own dark-mode pass,
+     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
+     Outlook.com injects when it rewrites colours. */
+  @media (prefers-color-scheme: dark) {
+    .pcc-page { background-color: #1E3A2E !important; }
+    .pcc-card { background-color: #294D3D !important; }
+    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
+    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
+    .pcc-btn { background-color: #FFFCF9 !important; }
+    .pcc-btn a { color: #294D3D !important; }
+    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
+  }
+  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
+  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
+  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
+  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
+</style>
+</head>
+<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
+  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>Your post is now live on the Community Dashboard.</div>
+  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
+    <tr>
+      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
+        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
+          <tr>
+            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
+              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
+                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
+                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
+                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
+              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
+<p style=&quot;margin:0 0 16px;&quot;>Your post &quot;Seeking a gaffer for a Karachi shoot&quot; has been approved and is now live on the Community Dashboard.</p>
+
+    <table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin:8px 0 20px;&quot;>
+      <tr>
+        <td class=&quot;pcc-btn&quot; style=&quot;background-color:#FFFCF9; border-radius:999px;&quot;>
+          <a href=&quot;https://pcc.aneesatalks.com/community&quot; style=&quot;display:inline-block; padding:12px 24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:14px; font-weight:700; color:#294D3D; text-decoration:none;&quot;>View the dashboard →</a>
+        </td>
+      </tr>
+    </table>
+<p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
+              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
+                Pakistani Creative Collective &middot; Curated by
+                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"></iframe>
+  </div>
+<div class="card">
+    <p class="label">Community post not approved (editable in the admin panel)</p>
+    <p class="subject">Subject: Update on your Community post</p>
+    <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;utf-8&quot; />
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
+<title>Pakistani Creative Collective</title>
+<!--
+  Without a declared colour scheme, mail clients in dark mode apply their own
+  inversion: our dark green card came out pale sage with dark text in the
+  client's inbox, the exact opposite of what's authored here. Declaring both
+  schemes tells the client we've handled dark mode ourselves and to leave the
+  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
+-->
+<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
+<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Re-assert the palette for clients that do run their own dark-mode pass,
+     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
+     Outlook.com injects when it rewrites colours. */
+  @media (prefers-color-scheme: dark) {
+    .pcc-page { background-color: #1E3A2E !important; }
+    .pcc-card { background-color: #294D3D !important; }
+    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
+    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
+    .pcc-btn { background-color: #FFFCF9 !important; }
+    .pcc-btn a { color: #294D3D !important; }
+    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
+  }
+  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
+  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
+  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
+  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
+</style>
+</head>
+<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
+  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>An update on your Community post.</div>
+  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
+    <tr>
+      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
+        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
+          <tr>
+            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
+              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
+                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
+                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
+                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
+              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
+<p style=&quot;margin:0 0 16px;&quot;>Your post &quot;Seeking a gaffer for a Karachi shoot&quot; wasn't approved for the Community Dashboard at this time.</p>
+<p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
+              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
+                Pakistani Creative Collective &middot; Curated by
+                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"></iframe>
+  </div>
+<div class="card">
+    <p class="label">Comment removed (editable in the admin panel)</p>
+    <p class="subject">Subject: A comment of yours was removed</p>
+    <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;utf-8&quot; />
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
+<title>Pakistani Creative Collective</title>
+<!--
+  Without a declared colour scheme, mail clients in dark mode apply their own
+  inversion: our dark green card came out pale sage with dark text in the
+  client's inbox, the exact opposite of what's authored here. Declaring both
+  schemes tells the client we've handled dark mode ourselves and to leave the
+  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
+-->
+<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
+<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Re-assert the palette for clients that do run their own dark-mode pass,
+     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
+     Outlook.com injects when it rewrites colours. */
+  @media (prefers-color-scheme: dark) {
+    .pcc-page { background-color: #1E3A2E !important; }
+    .pcc-card { background-color: #294D3D !important; }
+    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
+    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
+    .pcc-btn { background-color: #FFFCF9 !important; }
+    .pcc-btn a { color: #294D3D !important; }
+    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
+  }
+  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
+  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
+  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
+  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
+</style>
+</head>
+<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
+  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>A comment you posted was removed.</div>
+  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
+    <tr>
+      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
+        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
+          <tr>
+            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
+              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
+                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
+                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
+                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
+              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
+<p style=&quot;margin:0 0 16px;&quot;>A comment you posted on the Community Dashboard was removed by Aneesa Talks.</p>
+<p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
+              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
+                Pakistani Creative Collective &middot; Curated by
+                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"></iframe>
+  </div>
+<div class="card">
+    <p class="label">Password reset (editable in the admin panel)</p>
+    <p class="subject">Subject: PCC — Reset your password</p>
+    <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;utf-8&quot; />
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
+<title>Pakistani Creative Collective</title>
+<!--
+  Without a declared colour scheme, mail clients in dark mode apply their own
+  inversion: our dark green card came out pale sage with dark text in the
+  client's inbox, the exact opposite of what's authored here. Declaring both
+  schemes tells the client we've handled dark mode ourselves and to leave the
+  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
+-->
+<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
+<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Re-assert the palette for clients that do run their own dark-mode pass,
+     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
+     Outlook.com injects when it rewrites colours. */
+  @media (prefers-color-scheme: dark) {
+    .pcc-page { background-color: #1E3A2E !important; }
+    .pcc-card { background-color: #294D3D !important; }
+    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
+    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
+    .pcc-btn { background-color: #FFFCF9 !important; }
+    .pcc-btn a { color: #294D3D !important; }
+    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
+  }
+  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
+  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
+  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
+  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
+  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
+</style>
+</head>
+<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
+  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>A link to set a new password for your PCC account.</div>
+  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
+    <tr>
+      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
+        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
+          <tr>
+            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
+              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
+                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
+                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
+                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
+              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
+<p style=&quot;margin:0 0 16px;&quot;>We received a request to reset the password on your Pakistani Creative Collective account. Click the button below to choose a new one — the link expires in 1 hour(s).</p>
+
+    <table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin:8px 0 20px;&quot;>
+      <tr>
+        <td class=&quot;pcc-btn&quot; style=&quot;background-color:#FFFCF9; border-radius:999px;&quot;>
+          <a href=&quot;https://pcc.aneesatalks.com/auth/reset?token=example&quot; style=&quot;display:inline-block; padding:12px 24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:14px; font-weight:700; color:#294D3D; text-decoration:none;&quot;>Set a new password →</a>
+        </td>
+      </tr>
+    </table>
+<p style=&quot;margin:0 0 16px;&quot;>If you didn't ask for this, you can safely ignore this email; your password stays as it is.</p>
+<p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
+            </td>
+          </tr>
+          <tr>
+            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
+              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
+                Pakistani Creative Collective &middot; Curated by
+                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"></iframe>
+  </div>
+<div class="card">
     <p class="label">New application (to the PCC inbox)</p>
     <p class="subject">Subject: New PCC Application: Sara Khan</p>
     <iframe srcdoc="<!DOCTYPE html>
@@ -41,7 +870,7 @@
     .pcc-page { background-color: #1E3A2E !important; }
     .pcc-card { background-color: #294D3D !important; }
     .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
     .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
     .pcc-btn { background-color: #FFFCF9 !important; }
     .pcc-btn a { color: #294D3D !important; }
@@ -50,7 +879,7 @@
   [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
   [data-ogsc] .pcc-card { background-color: #294D3D !important; }
   [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
   [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
   [data-ogsc] .pcc-btn a { color: #294D3D !important; }
 </style>
@@ -74,14 +903,15 @@
             <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
               
     <p style=&quot;margin:0 0 16px; font-family:Georgia, 'Times New Roman', serif; font-size:18px; font-weight:700; color:#FFFCF9;&quot;>New Application</p>
-    <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Applicant:</strong> Sara Khan</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Email:</strong> sara@example.com</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Location:</strong> Lahore</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Role(s):</strong> Director of Photography (DP/Cinematographer), Camera Operator</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Experience level:</strong> Established Creative</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Portfolio:</strong> <a href=&quot;https://sarakhan.com&quot; style=&quot;color:#FFFCF9;&quot;>sarakhan.com</a></p>
+    <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Applicant:</strong> Sara Khan</p>
+       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Email:</strong> sara@example.com</p>
+       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Location:</strong> Lahore</p>
+       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Role(s):</strong> Director of Photography (DP/Cinematographer), Camera Operator</p>
+       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Experience level:</strong> Established Creative</p>
+       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Portfolio:</strong> <a href=&quot;https://sarakhan.com&quot; style=&quot;color:#FFFCF9;&quot;>sarakhan.com</a></p>
        
-    <p style=&quot;margin:16px 0 6px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Bio:</strong></p>
+    <p style=&quot;margin:16px 0 6px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Bio:</strong></p>
+    
     <div class=&quot;pcc-panel&quot; style=&quot;background-color:rgba(255,255,255,0.08); border-radius:12px; padding:14px 18px; margin:0 0 16px; color:#FFFCF9;&quot;>
       Sara Khan is a Lahore-based cinematographer whose work spans independent features, documentary, and music video. She trained at NCA and has shot in Pakistan, the UAE, and the UK.
     </div>
@@ -94,349 +924,6 @@
       </tr>
     </table>
   
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
-              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
-                Pakistani Creative Collective &middot; Curated by
-                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"></iframe>
-  </div>
-<div class="card">
-    <p class="label">Application received (to the applicant)</p>
-    <p class="subject">Subject: PCC — We received your application</p>
-    <iframe srcdoc="<!DOCTYPE html>
-<html lang=&quot;en&quot;>
-<head>
-<meta charset=&quot;utf-8&quot; />
-<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
-<title>Pakistani Creative Collective</title>
-<!--
-  Without a declared colour scheme, mail clients in dark mode apply their own
-  inversion: our dark green card came out pale sage with dark text in the
-  client's inbox, the exact opposite of what's authored here. Declaring both
-  schemes tells the client we've handled dark mode ourselves and to leave the
-  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
--->
-<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
-<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
-<style>
-  :root { color-scheme: light dark; supported-color-schemes: light dark; }
-  /* Re-assert the palette for clients that do run their own dark-mode pass,
-     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
-     Outlook.com injects when it rewrites colours. */
-  @media (prefers-color-scheme: dark) {
-    .pcc-page { background-color: #1E3A2E !important; }
-    .pcc-card { background-color: #294D3D !important; }
-    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
-    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
-    .pcc-btn { background-color: #FFFCF9 !important; }
-    .pcc-btn a { color: #294D3D !important; }
-    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
-  }
-  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
-  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
-  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
-  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
-</style>
-</head>
-<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
-  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>We've received your application and will be in touch soon.</div>
-  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
-    <tr>
-      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
-        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
-          <tr>
-            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
-              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
-                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
-                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
-                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
-              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
-       <p style=&quot;margin:0 0 16px;&quot;>Thank you for applying to the Pakistani Creative Collective. We&rsquo;ve received your application and will review it shortly. You&rsquo;ll hear from us via email once a decision has been made.</p>
-       <p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
-              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
-                Pakistani Creative Collective &middot; Curated by
-                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"></iframe>
-  </div>
-<div class="card">
-    <p class="label">Approved (to the applicant)</p>
-    <p class="subject">Subject: You've been approved for the Pakistani Creative Collective!</p>
-    <iframe srcdoc="<!DOCTYPE html>
-<html lang=&quot;en&quot;>
-<head>
-<meta charset=&quot;utf-8&quot; />
-<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
-<title>Pakistani Creative Collective</title>
-<!--
-  Without a declared colour scheme, mail clients in dark mode apply their own
-  inversion: our dark green card came out pale sage with dark text in the
-  client's inbox, the exact opposite of what's authored here. Declaring both
-  schemes tells the client we've handled dark mode ourselves and to leave the
-  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
--->
-<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
-<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
-<style>
-  :root { color-scheme: light dark; supported-color-schemes: light dark; }
-  /* Re-assert the palette for clients that do run their own dark-mode pass,
-     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
-     Outlook.com injects when it rewrites colours. */
-  @media (prefers-color-scheme: dark) {
-    .pcc-page { background-color: #1E3A2E !important; }
-    .pcc-card { background-color: #294D3D !important; }
-    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
-    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
-    .pcc-btn { background-color: #FFFCF9 !important; }
-    .pcc-btn a { color: #294D3D !important; }
-    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
-  }
-  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
-  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
-  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
-  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
-</style>
-</head>
-<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
-  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>Your profile is now live in the directory.</div>
-  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
-    <tr>
-      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
-        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
-          <tr>
-            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
-              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
-                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
-                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
-                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
-              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
-       <p style=&quot;margin:0 0 16px;&quot;>Great news &mdash; your application to the Pakistani Creative Collective has been approved. Your profile is now live in the database.</p>
-       
-    <table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin:8px 0 20px;&quot;>
-      <tr>
-        <td class=&quot;pcc-btn&quot; style=&quot;background-color:#FFFCF9; border-radius:999px;&quot;>
-          <a href=&quot;https://pcc.aneesatalks.com/directory/sara-khan&quot; style=&quot;display:inline-block; padding:12px 24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:14px; font-weight:700; color:#294D3D; text-decoration:none;&quot;>View your profile →</a>
-        </td>
-      </tr>
-    </table>
-       <p style=&quot;margin:0 0 16px;&quot;>To access the full directory and submit contact requests, you'll need to subscribe.</p>
-       
-    <table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin:8px 0 20px;&quot;>
-      <tr>
-        <td class=&quot;pcc-btn&quot; style=&quot;background-color:#FFFCF9; border-radius:999px;&quot;>
-          <a href=&quot;https://pcc.aneesatalks.com/subscribe&quot; style=&quot;display:inline-block; padding:12px 24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:14px; font-weight:700; color:#294D3D; text-decoration:none;&quot;>Subscribe from $7.99/month →</a>
-        </td>
-      </tr>
-    </table>
-       <p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
-              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
-                Pakistani Creative Collective &middot; Curated by
-                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"></iframe>
-  </div>
-<div class="card">
-    <p class="label">Needs revisions (to the applicant)</p>
-    <p class="subject">Subject: PCC — Your application needs a few changes</p>
-    <iframe srcdoc="<!DOCTYPE html>
-<html lang=&quot;en&quot;>
-<head>
-<meta charset=&quot;utf-8&quot; />
-<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
-<title>Pakistani Creative Collective</title>
-<!--
-  Without a declared colour scheme, mail clients in dark mode apply their own
-  inversion: our dark green card came out pale sage with dark text in the
-  client's inbox, the exact opposite of what's authored here. Declaring both
-  schemes tells the client we've handled dark mode ourselves and to leave the
-  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
--->
-<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
-<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
-<style>
-  :root { color-scheme: light dark; supported-color-schemes: light dark; }
-  /* Re-assert the palette for clients that do run their own dark-mode pass,
-     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
-     Outlook.com injects when it rewrites colours. */
-  @media (prefers-color-scheme: dark) {
-    .pcc-page { background-color: #1E3A2E !important; }
-    .pcc-card { background-color: #294D3D !important; }
-    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
-    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
-    .pcc-btn { background-color: #FFFCF9 !important; }
-    .pcc-btn a { color: #294D3D !important; }
-    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
-  }
-  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
-  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
-  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
-  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
-</style>
-</head>
-<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
-  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>Your application needs a few changes before it can be approved.</div>
-  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
-    <tr>
-      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
-        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
-          <tr>
-            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
-              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
-                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
-                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
-                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
-              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
-       <p style=&quot;margin:0 0 16px;&quot;>Thanks for applying to the Pakistani Creative Collective. Your application needs a few changes before we can approve it:</p>
-       
-    <p style=&quot;margin:16px 0 6px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>What needs revising:</strong></p>
-    <div class=&quot;pcc-panel&quot; style=&quot;background-color:rgba(255,255,255,0.08); border-radius:12px; padding:14px 18px; margin:0 0 16px; color:#FFFCF9;&quot;>
-      Please shorten the bio to under 200 words and add a working link to your reel — the current one 404s.
-    </div>
-       <p style=&quot;margin:0 0 16px;&quot;>You're welcome to reapply with the revisions above using the same application link.</p>
-       
-    <table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin:8px 0 20px;&quot;>
-      <tr>
-        <td class=&quot;pcc-btn&quot; style=&quot;background-color:#FFFCF9; border-radius:999px;&quot;>
-          <a href=&quot;https://pcc.aneesatalks.com/enroll&quot; style=&quot;display:inline-block; padding:12px 24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:14px; font-weight:700; color:#294D3D; text-decoration:none;&quot;>Reapply to the PCC →</a>
-        </td>
-      </tr>
-    </table>
-       <p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
-              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
-                Pakistani Creative Collective &middot; Curated by
-                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"></iframe>
-  </div>
-<div class="card">
-    <p class="label">Not accepted (to the applicant)</p>
-    <p class="subject">Subject: PCC — Application Update</p>
-    <iframe srcdoc="<!DOCTYPE html>
-<html lang=&quot;en&quot;>
-<head>
-<meta charset=&quot;utf-8&quot; />
-<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
-<title>Pakistani Creative Collective</title>
-<!--
-  Without a declared colour scheme, mail clients in dark mode apply their own
-  inversion: our dark green card came out pale sage with dark text in the
-  client's inbox, the exact opposite of what's authored here. Declaring both
-  schemes tells the client we've handled dark mode ourselves and to leave the
-  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
--->
-<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
-<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
-<style>
-  :root { color-scheme: light dark; supported-color-schemes: light dark; }
-  /* Re-assert the palette for clients that do run their own dark-mode pass,
-     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
-     Outlook.com injects when it rewrites colours. */
-  @media (prefers-color-scheme: dark) {
-    .pcc-page { background-color: #1E3A2E !important; }
-    .pcc-card { background-color: #294D3D !important; }
-    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
-    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
-    .pcc-btn { background-color: #FFFCF9 !important; }
-    .pcc-btn a { color: #294D3D !important; }
-    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
-  }
-  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
-  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
-  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
-  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
-</style>
-</head>
-<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
-  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>An update on your PCC application.</div>
-  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
-    <tr>
-      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
-        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
-          <tr>
-            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
-              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
-                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
-                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
-                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
-              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
-       <p style=&quot;margin:0 0 16px;&quot;>Thank you for your interest in the Pakistani Creative Collective. After reviewing your application, we&rsquo;re not able to add you to the database at this time. This may change in the future.</p>
-       <p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
             </td>
           </tr>
           <tr>
@@ -481,7 +968,7 @@
     .pcc-page { background-color: #1E3A2E !important; }
     .pcc-card { background-color: #294D3D !important; }
     .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
     .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
     .pcc-btn { background-color: #FFFCF9 !important; }
     .pcc-btn a { color: #294D3D !important; }
@@ -490,7 +977,7 @@
   [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
   [data-ogsc] .pcc-card { background-color: #294D3D !important; }
   [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
   [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
   [data-ogsc] .pcc-btn a { color: #294D3D !important; }
 </style>
@@ -514,12 +1001,13 @@
             <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
               
     <p style=&quot;margin:0 0 16px; font-family:Georgia, 'Times New Roman', serif; font-size:18px; font-weight:700; color:#FFFCF9;&quot;>New Contact Request</p>
-    <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Creative:</strong> Sara Khan</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>From:</strong> Layla Ahmed, Northwind Films</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Request type:</strong> Paid project</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Timeline:</strong> Shooting in March</p>
+    <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Creative:</strong> Sara Khan</p>
+       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>From:</strong> Layla Ahmed, Northwind Films</p>
+       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Request type:</strong> Paid project</p>
+       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Timeline:</strong> Shooting in March</p>
        
-    <p style=&quot;margin:16px 0 6px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Message:</strong></p>
+    <p style=&quot;margin:16px 0 6px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Message:</strong></p>
+    
     <div class=&quot;pcc-panel&quot; style=&quot;background-color:rgba(255,255,255,0.08); border-radius:12px; padding:14px 18px; margin:0 0 16px; color:#FFFCF9;&quot;>
       We're crewing up a short documentary in Karachi and would love to talk to Sara about shooting it.
     </div>
@@ -532,93 +1020,6 @@
       </tr>
     </table>
   
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
-              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
-                Pakistani Creative Collective &middot; Curated by
-                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"></iframe>
-  </div>
-<div class="card">
-    <p class="label">Contact request forwarded (to the creative)</p>
-    <p class="subject">Subject: You have a new contact request on the PCC</p>
-    <iframe srcdoc="<!DOCTYPE html>
-<html lang=&quot;en&quot;>
-<head>
-<meta charset=&quot;utf-8&quot; />
-<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
-<title>Pakistani Creative Collective</title>
-<!--
-  Without a declared colour scheme, mail clients in dark mode apply their own
-  inversion: our dark green card came out pale sage with dark text in the
-  client's inbox, the exact opposite of what's authored here. Declaring both
-  schemes tells the client we've handled dark mode ourselves and to leave the
-  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
--->
-<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
-<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
-<style>
-  :root { color-scheme: light dark; supported-color-schemes: light dark; }
-  /* Re-assert the palette for clients that do run their own dark-mode pass,
-     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
-     Outlook.com injects when it rewrites colours. */
-  @media (prefers-color-scheme: dark) {
-    .pcc-page { background-color: #1E3A2E !important; }
-    .pcc-card { background-color: #294D3D !important; }
-    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
-    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
-    .pcc-btn { background-color: #FFFCF9 !important; }
-    .pcc-btn a { color: #294D3D !important; }
-    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
-  }
-  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
-  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
-  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
-  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
-</style>
-</head>
-<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
-  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>Layla Ahmed would like to connect with you through the PCC.</div>
-  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
-    <tr>
-      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
-        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
-          <tr>
-            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
-              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
-                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
-                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
-                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
-              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
-       <p style=&quot;margin:0 0 16px;&quot;>Someone is interested in working with you through the Pakistani Creative Collective. This request has been reviewed by Aneesa Talks and forwarded to you &mdash; you&rsquo;re not obligated to respond.</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>From:</strong> Layla Ahmed, Northwind Films</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Request type:</strong> Paid project</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Timeline:</strong> Shooting in March</p>
-       
-    <p style=&quot;margin:16px 0 6px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Message:</strong></p>
-    <div class=&quot;pcc-panel&quot; style=&quot;background-color:rgba(255,255,255,0.08); border-radius:12px; padding:14px 18px; margin:0 0 16px; color:#FFFCF9;&quot;>
-      We're crewing up a short documentary in Karachi and would love to talk to Sara about shooting it.
-    </div>
-       <p style=&quot;margin:0 0 16px;&quot;>Reply to Aneesa Talks directly to let us know if you&rsquo;d like to connect, and we&rsquo;ll help facilitate the introduction.</p>
-       <p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
             </td>
           </tr>
           <tr>
@@ -663,7 +1064,7 @@
     .pcc-page { background-color: #1E3A2E !important; }
     .pcc-card { background-color: #294D3D !important; }
     .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
     .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
     .pcc-btn { background-color: #FFFCF9 !important; }
     .pcc-btn a { color: #294D3D !important; }
@@ -672,7 +1073,7 @@
   [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
   [data-ogsc] .pcc-card { background-color: #294D3D !important; }
   [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
   [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
   [data-ogsc] .pcc-btn a { color: #294D3D !important; }
 </style>
@@ -696,9 +1097,9 @@
             <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
               
     <p style=&quot;margin:0 0 16px; font-family:Georgia, 'Times New Roman', serif; font-size:18px; font-weight:700; color:#FFFCF9;&quot;>New Community Post</p>
-    <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Member:</strong> Sara Khan</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Category:</strong> Recent Work</p>
-       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#91D2A6;&quot;>Title:</strong> Wrapped on my first feature</p>
+    <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Member:</strong> Sara Khan</p>
+       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Category:</strong> Recent Work</p>
+       <p style=&quot;margin:0 0 8px;&quot;><strong class=&quot;pcc-accent&quot; style=&quot;color:#C1F8D3;&quot;>Title:</strong> Wrapped on my first feature</p>
        
     <table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin:8px 0 20px;&quot;>
       <tr>
@@ -726,257 +1127,7 @@
 </html>"></iframe>
   </div>
 <div class="card">
-    <p class="label">Community post approved (to the member)</p>
-    <p class="subject">Subject: Your Community post is live</p>
-    <iframe srcdoc="<!DOCTYPE html>
-<html lang=&quot;en&quot;>
-<head>
-<meta charset=&quot;utf-8&quot; />
-<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
-<title>Pakistani Creative Collective</title>
-<!--
-  Without a declared colour scheme, mail clients in dark mode apply their own
-  inversion: our dark green card came out pale sage with dark text in the
-  client's inbox, the exact opposite of what's authored here. Declaring both
-  schemes tells the client we've handled dark mode ourselves and to leave the
-  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
--->
-<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
-<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
-<style>
-  :root { color-scheme: light dark; supported-color-schemes: light dark; }
-  /* Re-assert the palette for clients that do run their own dark-mode pass,
-     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
-     Outlook.com injects when it rewrites colours. */
-  @media (prefers-color-scheme: dark) {
-    .pcc-page { background-color: #1E3A2E !important; }
-    .pcc-card { background-color: #294D3D !important; }
-    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
-    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
-    .pcc-btn { background-color: #FFFCF9 !important; }
-    .pcc-btn a { color: #294D3D !important; }
-    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
-  }
-  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
-  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
-  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
-  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
-</style>
-</head>
-<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
-  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>Your post is now live on the Community Dashboard.</div>
-  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
-    <tr>
-      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
-        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
-          <tr>
-            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
-              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
-                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
-                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
-                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
-              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
-       <p style=&quot;margin:0 0 16px;&quot;>Your post &ldquo;Wrapped on my first feature&rdquo; has been approved and is now live on the Community Dashboard.</p>
-       
-    <table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin:8px 0 20px;&quot;>
-      <tr>
-        <td class=&quot;pcc-btn&quot; style=&quot;background-color:#FFFCF9; border-radius:999px;&quot;>
-          <a href=&quot;https://pcc.aneesatalks.com/community&quot; style=&quot;display:inline-block; padding:12px 24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:14px; font-weight:700; color:#294D3D; text-decoration:none;&quot;>View the dashboard →</a>
-        </td>
-      </tr>
-    </table>
-       <p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
-              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
-                Pakistani Creative Collective &middot; Curated by
-                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"></iframe>
-  </div>
-<div class="card">
-    <p class="label">Comment removed (to the member)</p>
-    <p class="subject">Subject: A comment of yours was removed</p>
-    <iframe srcdoc="<!DOCTYPE html>
-<html lang=&quot;en&quot;>
-<head>
-<meta charset=&quot;utf-8&quot; />
-<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
-<title>Pakistani Creative Collective</title>
-<!--
-  Without a declared colour scheme, mail clients in dark mode apply their own
-  inversion: our dark green card came out pale sage with dark text in the
-  client's inbox, the exact opposite of what's authored here. Declaring both
-  schemes tells the client we've handled dark mode ourselves and to leave the
-  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
--->
-<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
-<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
-<style>
-  :root { color-scheme: light dark; supported-color-schemes: light dark; }
-  /* Re-assert the palette for clients that do run their own dark-mode pass,
-     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
-     Outlook.com injects when it rewrites colours. */
-  @media (prefers-color-scheme: dark) {
-    .pcc-page { background-color: #1E3A2E !important; }
-    .pcc-card { background-color: #294D3D !important; }
-    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
-    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
-    .pcc-btn { background-color: #FFFCF9 !important; }
-    .pcc-btn a { color: #294D3D !important; }
-    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
-  }
-  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
-  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
-  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
-  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
-</style>
-</head>
-<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
-  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>A comment you posted was removed.</div>
-  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
-    <tr>
-      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
-        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
-          <tr>
-            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
-              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
-                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
-                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
-                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
-              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
-       <p style=&quot;margin:0 0 16px;&quot;>A comment you posted on the Community Dashboard was removed by Aneesa Talks.</p>
-       <p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
-              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
-                Pakistani Creative Collective &middot; Curated by
-                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"></iframe>
-  </div>
-<div class="card">
-    <p class="label">Featured creative (to the member)</p>
-    <p class="subject">Subject: You've been selected as a PCC Featured Creative!</p>
-    <iframe srcdoc="<!DOCTYPE html>
-<html lang=&quot;en&quot;>
-<head>
-<meta charset=&quot;utf-8&quot; />
-<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; />
-<title>Pakistani Creative Collective</title>
-<!--
-  Without a declared colour scheme, mail clients in dark mode apply their own
-  inversion: our dark green card came out pale sage with dark text in the
-  client's inbox, the exact opposite of what's authored here. Declaring both
-  schemes tells the client we've handled dark mode ourselves and to leave the
-  palette alone (respected by Apple Mail and Outlook; Gmail honours it in part).
--->
-<meta name=&quot;color-scheme&quot; content=&quot;light dark&quot; />
-<meta name=&quot;supported-color-schemes&quot; content=&quot;light dark&quot; />
-<style>
-  :root { color-scheme: light dark; supported-color-schemes: light dark; }
-  /* Re-assert the palette for clients that do run their own dark-mode pass,
-     rather than letting them guess. [data-ogsc]/[data-ogsb] are the attributes
-     Outlook.com injects when it rewrites colours. */
-  @media (prefers-color-scheme: dark) {
-    .pcc-page { background-color: #1E3A2E !important; }
-    .pcc-card { background-color: #294D3D !important; }
-    .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
-    .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
-    .pcc-btn { background-color: #FFFCF9 !important; }
-    .pcc-btn a { color: #294D3D !important; }
-    .pcc-panel { background-color: rgba(255,255,255,0.08) !important; }
-  }
-  [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
-  [data-ogsc] .pcc-card { background-color: #294D3D !important; }
-  [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
-  [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-btn a { color: #294D3D !important; }
-</style>
-</head>
-<body class=&quot;pcc-page&quot; style=&quot;margin:0; padding:0; background-color:#1E3A2E;&quot;>
-  <div style=&quot;display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;&quot;>Your profile has been selected as this month's featured creative.</div>
-  <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-page&quot; style=&quot;background-color:#1E3A2E;&quot;>
-    <tr>
-      <td align=&quot;center&quot; style=&quot;padding:32px 16px;&quot;>
-        <table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; class=&quot;pcc-card&quot; style=&quot;max-width:560px; background-color:#294D3D; border-radius:16px; overflow:hidden; border:1px solid rgba(255,252,249,0.14);&quot;>
-          <tr>
-            <td align=&quot;center&quot; class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:32px 32px 12px;&quot;>
-              <a href=&quot;https://pcc.aneesatalks.com&quot; style=&quot;text-decoration:none;&quot;>
-                <img src=&quot;https://pcc.aneesatalks.com/brand/logo-square-white.png&quot;
-                     width=&quot;132&quot; height=&quot;132&quot; alt=&quot;Pakistani Creative Collective&quot;
-                     style=&quot;display:block; width:132px; height:132px; border:0; outline:none; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:700; color:#FFFCF9;&quot; />
-              </a>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
-              <p style=&quot;margin:0 0 16px;&quot;>Hi Sara,</p>
-       <p style=&quot;margin:0 0 16px;&quot;>We&rsquo;re excited to let you know that your profile has been selected as a featured creative for this month on the Pakistani Creative Collective. Your full profile will be publicly visible to all visitors for the duration of the featured period.</p>
-       
-    <table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin:8px 0 20px;&quot;>
-      <tr>
-        <td class=&quot;pcc-btn&quot; style=&quot;background-color:#FFFCF9; border-radius:999px;&quot;>
-          <a href=&quot;https://pcc.aneesatalks.com/directory/sara-khan&quot; style=&quot;display:inline-block; padding:12px 24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:14px; font-weight:700; color:#294D3D; text-decoration:none;&quot;>View your profile →</a>
-        </td>
-      </tr>
-    </table>
-       <p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
-            </td>
-          </tr>
-          <tr>
-            <td class=&quot;pcc-card&quot; style=&quot;background-color:#294D3D; padding:20px 32px; border-top:1px solid rgba(255,252,249,0.15);&quot;>
-              <p class=&quot;pcc-muted&quot; style=&quot;margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:12px; color:rgba(255,252,249,0.6);&quot;>
-                Pakistani Creative Collective &middot; Curated by
-                <a href=&quot;https://aneesatalks.com&quot; style=&quot;color:rgba(255,252,249,0.6);&quot;>Aneesa Talks</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"></iframe>
-  </div>
-<div class="card">
-    <p class="label">Bulk announcement (to all members)</p>
+    <p class="label">Bulk announcement (to all members) — composed in the admin panel</p>
     <p class="subject">Subject: A new opportunity on the Community Dashboard</p>
     <iframe srcdoc="<!DOCTYPE html>
 <html lang=&quot;en&quot;>
@@ -1002,7 +1153,7 @@
     .pcc-page { background-color: #1E3A2E !important; }
     .pcc-card { background-color: #294D3D !important; }
     .pcc-body, .pcc-body p, .pcc-body div, .pcc-body span, .pcc-body td { color: #FFFCF9 !important; }
-    .pcc-accent { color: #91D2A6 !important; }
+    .pcc-accent { color: #C1F8D3 !important; }
     .pcc-muted, .pcc-muted a { color: rgba(255,252,249,0.6) !important; }
     .pcc-btn { background-color: #FFFCF9 !important; }
     .pcc-btn a { color: #294D3D !important; }
@@ -1011,7 +1162,7 @@
   [data-ogsc] .pcc-page { background-color: #1E3A2E !important; }
   [data-ogsc] .pcc-card { background-color: #294D3D !important; }
   [data-ogsc] .pcc-body, [data-ogsc] .pcc-body p, [data-ogsc] .pcc-body span { color: #FFFCF9 !important; }
-  [data-ogsc] .pcc-accent { color: #91D2A6 !important; }
+  [data-ogsc] .pcc-accent { color: #C1F8D3 !important; }
   [data-ogsc] .pcc-btn { background-color: #FFFCF9 !important; }
   [data-ogsc] .pcc-btn a { color: #294D3D !important; }
 </style>
@@ -1034,7 +1185,7 @@
           <tr>
             <td class=&quot;pcc-card pcc-body&quot; style=&quot;background-color:#294D3D; padding:8px 32px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#FFFCF9;&quot;>
               <p style=&quot;margin:0 0 16px;&quot;>There's a new funding call posted on the dashboard that may be relevant to you.</p>
-       
+     
     <table role=&quot;presentation&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;margin:8px 0 20px;&quot;>
       <tr>
         <td class=&quot;pcc-btn&quot; style=&quot;background-color:#FFFCF9; border-radius:999px;&quot;>
@@ -1042,7 +1193,7 @@
         </td>
       </tr>
     </table>
-       <p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
+     <p style=&quot;margin:24px 0 0; color:rgba(255,252,249,0.75);&quot;>&mdash; Aneesa Talks</p>
             </td>
           </tr>
           <tr>

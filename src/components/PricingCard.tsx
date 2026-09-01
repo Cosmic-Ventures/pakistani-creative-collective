@@ -11,6 +11,7 @@ export function PricingCard({
   monthlyAction,
   annualAction,
   simulateAction,
+  preview = false,
 }: {
   isStripeConfigured: boolean;
   // Read from Stripe by the server component that renders this — never
@@ -19,6 +20,13 @@ export function PricingCard({
   monthlyAction: () => Promise<void>;
   annualAction: () => Promise<void>;
   simulateAction: () => Promise<void>;
+  /**
+   * Admins are shown this page so they can review it before launch, but they
+   * already have full access — the plan toggle and pricing stay live, the
+   * purchase button does not, so a review click can't open a checkout session
+   * or (in mock mode) rewrite their own role.
+   */
+  preview?: boolean;
 }) {
   const [plan, setPlan] = useState<Plan>("annual");
 
@@ -64,14 +72,24 @@ export function PricingCard({
         {plan === "annual" && <p className="text-xs text-brand-brown/50 mt-1">Billed once a year</p>}
       </div>
 
-      <form action={action}>
+      {preview ? (
         <button
-          type="submit"
-          className="w-full bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold py-3 rounded-full transition-colors"
+          type="button"
+          disabled
+          className="w-full bg-brand-green/40 text-brand-cream font-semibold py-3 rounded-full cursor-not-allowed"
         >
           {isStripeConfigured ? `Subscribe ${plan === "monthly" ? "monthly" : "annually"} →` : "Simulate payment (demo)"}
         </button>
-      </form>
+      ) : (
+        <form action={action}>
+          <button
+            type="submit"
+            className="w-full bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold py-3 rounded-full transition-colors"
+          >
+            {isStripeConfigured ? `Subscribe ${plan === "monthly" ? "monthly" : "annually"} →` : "Simulate payment (demo)"}
+          </button>
+        </form>
+      )}
     </div>
   );
 }

@@ -12,7 +12,13 @@ export const metadata: Metadata = { title: "Subscribe" };
 export default async function SubscribePage() {
   const session = await getSession();
   if (!session) redirect("/auth/signup");
-  if (session.role === "PAID" || session.role === "ADMIN") redirect("/directory");
+  // 09/01 round: "can we make the subscription tab visible for admin login at
+  // least". Admins already have access, so subscribing is meaningless for them —
+  // but bouncing them to /directory meant the client could never actually look
+  // at the page she's selling. Admins get it read-only instead; paid members,
+  // who have nothing to review, still get sent back.
+  const isAdminPreview = session.role === "ADMIN";
+  if (session.role === "PAID") redirect("/directory");
 
   const user = await db.user.findUnique({ where: { id: session.userId } });
   if (!user) redirect("/auth/signin");
@@ -31,6 +37,13 @@ export default async function SubscribePage() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-3xl">
+        {isAdminPreview && (
+          <div className="text-xs text-amber-800 bg-amber-50 border border-amber-300 rounded-lg px-4 py-2.5 mb-6 max-w-md mx-auto text-center">
+            <strong>Admin preview.</strong> This is what a signed-in visitor without a
+            subscription sees. Your account already has full access, so the subscribe
+            button is disabled here.
+          </div>
+        )}
         <div className="text-center mb-8">
           <h1 className="font-heading font-bold text-2xl text-brand-green mb-2">Subscribe to PCC</h1>
           <p className="text-brand-brown/70 text-sm">
@@ -45,6 +58,7 @@ export default async function SubscribePage() {
           monthlyAction={createCheckoutSession.bind(null, "monthly")}
           annualAction={createCheckoutSession.bind(null, "annual")}
           simulateAction={simulatePayment}
+          preview={isAdminPreview}
         />
 
         {!isStripeConfigured && (

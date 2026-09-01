@@ -10,6 +10,7 @@ const NAV = [
   { href: "/admin/contact-requests", label: "Contact Requests" },
   { href: "/admin/feature-requests", label: "Feature Requests" },
   { href: "/admin/community", label: "Community" },
+  { href: "/admin/emails", label: "Email Templates" },
   { href: "/admin/analytics", label: "Analytics" },
 ];
 

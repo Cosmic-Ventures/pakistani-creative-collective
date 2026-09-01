@@ -63,6 +63,55 @@ All creatives, posts, and applications currently in the site are **sample data**
 
 ---
 
+## September 1 round
+
+**Edit the email wording yourself — Admin → Email Templates**
+- Every automatic email that goes to an applicant or member is now editable from the admin panel:
+  the subject line, the preview line inboxes show beside it, and the body. There's a live preview
+  beside the editor that updates as you type, and a "Send me a test" button that mails the template
+  to your own address so you can see how it lands in a real inbox.
+- Personal details go in as `{{firstName}}`-style variables — the ones each email can use are
+  listed under the editor and inserted automatically when it sends. Anything not on that list is
+  refused when you save, so a typo can't go out to a member as literal `{{frstName}}` text.
+- Formatting is deliberately simple: a blank line starts a new paragraph, a line like
+  `[View your profile →](https://…)` becomes a button, and lines starting `- Label: value` become
+  labelled rows. The logo, the green card and the "— Aneesa Talks" sign-off are added for you, so
+  an edited email always looks like the others.
+- "Restore original" puts any template back to the wording that shipped.
+- Not editable, on purpose: the notifications that come to *your* inbox (a new application, a new
+  contact request, a post awaiting review) — those are summaries for your own triage. The
+  Community announcement email is still written fresh each time on the Community tab.
+
+**Approval email rewritten**
+- It now says the applicant has been approved and that they'll be the first to know when the
+  directory and subscriptions go live — no links to pages that are still private. When you're ready
+  to open those up, the profile link and the subscribe link are both available as variables in the
+  template editor, so you can add the buttons back yourself without a code change.
+
+**Forgotten password**
+- "Forgot your password?" is on the sign-in page. It emails a link that lasts an hour and works
+  once; using it, or asking for a new one, cancels any earlier link. The page says the same thing
+  whether or not the address has an account, so it can't be used to find out who's a member.
+- If someone was locked out by repeated wrong guesses, completing a reset clears that too.
+
+**Subscription tab visible to you**
+- The Subscribe tab now shows in the header when you're signed in as admin, and the page opens
+  instead of bouncing you to the directory. It's marked as an admin preview and the purchase button
+  is switched off, since your account already has full access.
+
+**Application form — clearer about what needs fixing**
+- Submitting with something missing no longer just shows a list: the form jumps to the first
+  problem, outlines every affected field in red with a short explanation underneath it, and marks
+  the steps that still need attention with a red dot. The list above the submit button is still
+  there, and each item jumps straight to its field.
+- Email addresses are now checked for shape too, so a typo like `sara@gmail` is caught on the form
+  rather than by the server after submitting.
+- The whole apply-and-submit path was re-tested end to end: a complete application (including the
+  headshot upload) submits, lands in the database with every field intact, and reaches the success
+  page.
+
+---
+
 ## Page-by-page tour
 
 ### Home
@@ -172,6 +221,13 @@ Stripe redirects all use; `aneesatalks.com` is verified in Resend, so mail is de
 
 ### Blocking — must happen before the public launch
 
+**0. Apply the September 1 database migration.** The email-template editor and the password-reset
+flow each need a new table (`EmailTemplate`, `PasswordResetToken`). The migration is written and
+committed, but has **not** been run against the live Supabase database — deploying the code without
+it will make Admin → Email Templates and the reset links error out. Run `npx prisma migrate deploy`
+with `DIRECT_URL` pointing at the session pooler (see AGENTS.md). It only adds tables; nothing
+existing is touched, and emails keep sending on their default wording until the table exists.
+
 **1. Stripe: sandbox → live.** The site runs on Stripe **test** keys today; no real card is ever
 charged. Switching over is more than swapping a key:
 
@@ -211,8 +267,7 @@ jurisdiction that Aneesa Talks LLC is established in.
 
 - **Email verification on signup** — requested in the 7/23 round and still not built. Without it,
   anyone can register any address, and the enrollment form is a link-anyone-can-open form.
-- **Password reset.** There's no self-serve recovery, so a forgotten password currently means a
-  manual database change. Worth building before there are real members.
+- ~~**Password reset.**~~ Built in the September 1 round — see above.
 - **Bot protection on the public forms.** Sign-in is now rate limited (10 failed attempts locks an
   account for 15 minutes), but the enrollment and contact-request forms have no CAPTCHA or
   submission throttle, and the enrollment link is designed to be forwarded around.

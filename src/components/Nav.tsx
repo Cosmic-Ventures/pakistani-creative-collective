@@ -72,11 +72,11 @@ export default async function Nav() {
           <Link href="/request" className="text-brand-cream/80 hover:text-brand-cream transition-colors hidden sm:inline">
             Hire Talent
           </Link>
-          {/* Subscribe sits alongside the other tabs (client-requested), but is
-              hidden from members who already have access — /subscribe bounces
-              PAID and ADMIN users straight back to the directory, so showing it
-              to them would be a link to nowhere. */}
-          {!isMember && (
+          {/* Subscribe sits alongside the other tabs (client-requested). Hidden
+              from paid members, who have nothing to buy — but shown to admins
+              (09/01 round: "can we make the subscription tab visible for admin
+              login at least"), who get the page as a read-only preview. */}
+          {(!isMember || isAdmin) && (
             <Link href="/subscribe" className="text-brand-cream/80 hover:text-brand-cream transition-colors">
               Subscribe
             </Link>

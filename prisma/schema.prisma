@@ -110,6 +110,41 @@ model User {
   creative        Creative?
   bookmarks       Bookmark[]
   enrollmentDraft EnrollmentDraft?
+  passwordResets  PasswordResetToken[]
+}
+
+/// The client's edited copy for one transactional email.
+///
+/// Only ever holds *overrides*: a template she hasn't touched has no row here
+/// and renders from the defaults in src/lib/email-templates.ts, so copy fixes
+/// shipped in code keep applying until the day she edits that template herself.
+/// Deleting the row is exactly what "reset to the original wording" does.
+model EmailTemplate {
+  key       String   @id // matches a key in EMAIL_TEMPLATES
+  subject   String
+  preheader String // the grey preview line mail clients show beside the subject
+  body      String   @db.Text
+  updatedAt DateTime @updatedAt
+  updatedBy String? // email of the admin who last saved it
+
+  createdAt DateTime @default(now())
+}
+
+/// A single-use password-reset link.
+///
+/// Stores a SHA-256 hash of the token, never the token itself — the raw value
+/// exists only in the email we send. A leaked database backup therefore can't be
+/// turned into working reset links, the same reasoning as passwordHash.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 /// A partially-completed enrollment application, saved by a signed-in user so
