@@ -82,17 +82,23 @@ export async function createPost(_prev: PostResult | null, formData: FormData): 
     }
   }
 
-  await db.post.create({
-    data: {
-      creativeId: member.creative.id,
-      category: d.category,
-      title: d.title,
-      body: d.body,
-      region: d.region || undefined,
-      expiresAt: deadline,
-      link: normalizePostLink(d.link) ?? undefined,
-    },
-  });
+  try {
+    await db.post.create({
+      data: {
+        creativeId: member.creative.id,
+        category: d.category,
+        title: d.title,
+        body: d.body,
+        region: d.region || undefined,
+        expiresAt: deadline,
+        link: normalizePostLink(d.link) ?? undefined,
+      },
+    });
+  } catch (error) {
+    // A failed write must read as a message, never as a button that did nothing.
+    console.error("[community-post] rejected: database write failed", error);
+    return { error: "Something went wrong saving your post — nothing you typed has been lost. Please try again." };
+  }
 
   await sendNewCommunityPostNotification(
     `${member.creative.firstName} ${member.creative.lastName}`,

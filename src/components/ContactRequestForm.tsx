@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import Image from "next/image";
 import { submitContactRequest, type ContactRequestResult } from "@/lib/contact-request-action";
 import { EXPERIENCE_LEVELS, REQUEST_TYPES, TIMELINES } from "@/lib/contact-request-constants";
+import { withSubmitFallback } from "@/lib/submit-fallback";
 
 const inputCls =
   "w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm";
@@ -20,7 +21,20 @@ export default function ContactRequestForm({ creativeId }: { creativeId: string 
   // session inside the action — a bound argument round-trips through the
   // browser, so it can never be trusted to say who is asking.
   const action = submitContactRequest.bind(null, creativeId);
-  const [state, formAction, pending] = useActionState<ContactRequestResult | null, FormData>(action, null);
+  // A rejected call would leave `state` untouched and show no banner at all —
+  // see withSubmitFallback.
+  const [state, formAction, pending] = useActionState<ContactRequestResult | null, FormData>(
+    withSubmitFallback<ContactRequestResult | null>(
+      action,
+      {
+        error:
+          "We couldn't reach the server to send your request — nothing you typed has been lost. " +
+          "Check your connection and try again.",
+      },
+      "contact-request"
+    ),
+    null
+  );
 
   // Controlled by local state so values survive a failed submission — see
   // the identical fix (and root-cause explanation) in EnrollForm.tsx.

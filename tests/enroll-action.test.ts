@@ -437,3 +437,52 @@ describe("reportEnrollmentBlockers", () => {
     warn.mockRestore();
   });
 });
+
+// The applicant must never see a click that does nothing. Before this, an
+// unexpected throw *outside* the try/catch guarding the insert — uniqueSlug
+// queries the database first — rejected the whole action, so useActionState
+// never received a result and the form rendered no banner at all.
+describe("enrollAction never fails silently", () => {
+  it("returns a readable message when the slug lookup throws (database down)", async () => {
+    dbMock.creative.findMany.mockRejectedValueOnce(new Error("connection pool timeout"));
+    const result = await enrollAction(null, formData({
+      firstName: "Sara",
+      lastName: "Khan",
+      email: "sara@example.com",
+      headshotLink: "https://example.com/headshot.jpg",
+      bio: LONG_BIO,
+      experienceLevel: "Established (5-8 years)",
+    }));
+    expect(result).toEqual({ error: expect.stringMatching(/went wrong/i) });
+    expect(result).toEqual({ error: expect.stringContaining("pcc@aneesatalks.com") });
+    expect(dbMock.creative.create).not.toHaveBeenCalled();
+  });
+
+  it("returns a readable message when the insert throws", async () => {
+    dbMock.creative.findMany.mockResolvedValue([]);
+    dbMock.creative.create.mockRejectedValueOnce(new Error("unique constraint"));
+    const result = await enrollAction(null, formData({
+      firstName: "Sara",
+      lastName: "Khan",
+      email: "sara@example.com",
+      headshotLink: "https://example.com/headshot.jpg",
+      bio: LONG_BIO,
+      experienceLevel: "Established (5-8 years)",
+    }));
+    expect(result).toEqual({ error: expect.stringMatching(/went wrong/i) });
+  });
+
+  it("never returns undefined or null — there is always something to show", async () => {
+    dbMock.creative.findMany.mockRejectedValueOnce(new Error("boom"));
+    const result = await enrollAction(null, formData({
+      firstName: "Sara",
+      lastName: "Khan",
+      email: "sara@example.com",
+      headshotLink: "https://example.com/headshot.jpg",
+      bio: LONG_BIO,
+      experienceLevel: "Established (5-8 years)",
+    }));
+    expect(result).toBeTruthy();
+    expect("error" in result && typeof result.error === "string" && result.error.length > 20).toBe(true);
+  });
+});

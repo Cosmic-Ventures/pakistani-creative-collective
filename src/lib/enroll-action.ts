@@ -149,10 +149,44 @@ export async function reportEnrollmentBlockers(fields: string[]): Promise<void> 
   );
 }
 
+/**
+ * The applicant must never see a click that does nothing.
+ *
+ * Every early return below already carries a human-readable message, but an
+ * *unexpected* throw had no such guarantee: `uniqueSlug` queries the database
+ * outside the try/catch that guards the insert, so a slow pool or a brief
+ * outage rejected the whole Server Action. `useActionState` then never receives
+ * a result, the form renders no banner, and the applicant is left staring at a
+ * button that did nothing — the exact failure this form has already been
+ * bitten by twice (AGENTS.md gotchas #17 and #21).
+ *
+ * So the real work happens in `attemptEnrollment`, which only ever returns a
+ * message or null, and this wrapper turns anything it failed to anticipate into
+ * a message too. `redirect()` stays outside the try: it signals success by
+ * throwing, and catching that would turn a saved application into an error.
+ */
 export async function enrollAction(
   _prev: EnrollResult | null,
   formData: FormData
 ): Promise<EnrollResult> {
+  let failure: EnrollResult | null;
+  try {
+    failure = await attemptEnrollment(formData);
+  } catch (error) {
+    console.error("[enroll] rejected: unexpected failure", error);
+    return {
+      error:
+        "Something went wrong on our side and your application wasn't saved — nothing you typed has been lost. " +
+        "Please try again in a moment, and email pcc@aneesatalks.com if it keeps happening.",
+    };
+  }
+  if (failure) return failure;
+
+  redirect("/enroll/success");
+}
+
+/** Returns a message to show the applicant, or null once the application is saved. */
+async function attemptEnrollment(formData: FormData): Promise<EnrollResult | null> {
   // The page itself already redirects anonymous visitors to sign in
   // (app/enroll/page.tsx, backed by proxy.ts at the edge), but this action is
   // a POST endpoint reachable on its own — this is the check that actually
@@ -308,9 +342,10 @@ export async function enrollAction(
     experienceLevel: shortExperienceLevel(d.experienceLevel),
   }).catch(console.error);
 
-  // The application is filed, so any saved draft is spent. Must happen before
-  // redirect(), which throws to unwind the action.
+  // The application is filed, so any saved draft is spent.
   await discardEnrollmentDraft().catch(console.error);
 
-  redirect("/enroll/success");
+  // Saved. The caller redirects — doing it here would throw through the
+  // wrapper's catch and be reported to the applicant as a failure.
+  return null;
 }

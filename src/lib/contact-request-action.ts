@@ -64,23 +64,34 @@ export async function submitContactRequest(
 
   const d = parsed.data;
 
-  const req = await db.contactRequest.create({
-    data: {
-      userId: session.userId,
-      creativeId,
-      requesterName: d.requesterName,
-      requesterEmail: d.requesterEmail,
-      company: d.company,
-      requesterRole: d.requesterRole,
-      portfolioLink: d.portfolioLink,
-      experienceLevel: d.experienceLevel,
-      requestType: d.requestType,
-      requestTypeOther: d.requestType === "Other" ? d.requestTypeOther : undefined,
-      message: d.message,
-      timeline: d.timeline,
-    },
-    include: { creative: { select: { firstName: true, lastName: true, email: true } } },
-  });
+  let req;
+  try {
+    req = await db.contactRequest.create({
+      data: {
+        userId: session.userId,
+        creativeId,
+        requesterName: d.requesterName,
+        requesterEmail: d.requesterEmail,
+        company: d.company,
+        requesterRole: d.requesterRole,
+        portfolioLink: d.portfolioLink,
+        experienceLevel: d.experienceLevel,
+        requestType: d.requestType,
+        requestTypeOther: d.requestType === "Other" ? d.requestTypeOther : undefined,
+        message: d.message,
+        timeline: d.timeline,
+      },
+      include: { creative: { select: { firstName: true, lastName: true, email: true } } },
+    });
+  } catch (error) {
+    // Never let a database problem surface as a button that does nothing.
+    console.error("[contact-request] rejected: database write failed", error);
+    return {
+      error:
+        "Something went wrong sending your request — nothing you typed has been lost. " +
+        "Please try again in a moment, and email pcc@aneesatalks.com if it keeps happening.",
+    };
+  }
 
   await sendContactRequestNotification(
     `${req.creative.firstName} ${req.creative.lastName}`,

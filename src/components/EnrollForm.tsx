@@ -8,6 +8,7 @@ import {
   type EnrollResult,
 } from "@/lib/enroll-action";
 import { saveEnrollmentDraft, discardEnrollmentDraft } from "@/lib/enroll-draft-actions";
+import { withSubmitFallback } from "@/lib/submit-fallback";
 import { HeadshotUpload } from "@/components/HeadshotUpload";
 import { EXPERIENCE_LEVELS, EXPERIENCE_TIERS } from "@/lib/experience-levels";
 import {
@@ -501,7 +502,23 @@ export default function EnrollForm({
   draftSavedAt = null,
   canSaveProgress = false,
 }: EnrollFormProps) {
-  const [state, formAction, pending] = useActionState<EnrollResult | null, FormData>(enrollAction, null);
+  // Last line of defence against a submit that appears to do nothing: if the
+  // call rejects before any result comes back (connection dropped, body over the
+  // limit, anything unforeseen), useActionState would leave `state` untouched
+  // and the form would render no banner at all. See withSubmitFallback.
+  const [state, formAction, pending] = useActionState<EnrollResult | null, FormData>(
+    withSubmitFallback<EnrollResult | null>(
+      enrollAction,
+      {
+        error:
+          "We couldn't reach the server to submit your application — nothing you typed has been lost. " +
+          "Check your connection and press Submit again. If your headshot is very large, try a smaller photo. " +
+          "Email pcc@aneesatalks.com if it keeps happening.",
+      },
+      "enroll"
+    ),
+    null
+  );
 
   const d = asRecord(initialDraft);
   const draftValues = asRecord(d.values) as Values;
