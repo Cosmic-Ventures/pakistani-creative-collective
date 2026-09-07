@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { dbMock, redirectMock, createSessionMock, deleteSessionMock } = vi.hoisted(() => ({
+const { dbMock, redirectMock, createSessionMock, deleteSessionMock, revalidatePathMock } = vi.hoisted(() => ({
+  revalidatePathMock: vi.fn(),
   dbMock: { user: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn() } },
   redirectMock: vi.fn(),
   createSessionMock: vi.fn(),
@@ -8,6 +9,7 @@ const { dbMock, redirectMock, createSessionMock, deleteSessionMock } = vi.hoiste
 }));
 vi.mock("@/lib/db", () => ({ db: dbMock }));
 vi.mock("next/navigation", () => ({ redirect: redirectMock }));
+vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
 vi.mock("@/lib/session", () => ({
   createSession: createSessionMock,
   deleteSession: deleteSessionMock,
@@ -194,5 +196,33 @@ describe("loginAction hardening", () => {
       expect.objectContaining({ data: { failedLoginAttempts: 0, lockedUntil: null } })
     );
     expect(createSessionMock).toHaveBeenCalled();
+  });
+});
+
+// Nav is a server component in the root layout, so a session change has to drop
+// the cached layout or the header keeps the old auth state — you sign in and it
+// still says "Sign in", which then bounces you off the auth page. Regression
+// test for that, since nothing else would catch it.
+describe("session changes refresh the cached layout", () => {
+  it("revalidates the layout on login", async () => {
+    const bcrypt = (await import("bcryptjs")).default;
+    dbMock.user.findUnique.mockResolvedValue({
+      id: "u1", email: "a@b.co", passwordHash: await bcrypt.hash("Password123!", 10),
+      role: "PAID", name: "A", failedLoginAttempts: 0, lockedUntil: null,
+    });
+    await loginAction(null, formData({ email: "a@b.co", password: "Password123!" }));
+    expect(revalidatePathMock).toHaveBeenCalledWith("/", "layout");
+  });
+
+  it("revalidates the layout on logout", async () => {
+    await logoutAction();
+    expect(revalidatePathMock).toHaveBeenCalledWith("/", "layout");
+  });
+
+  it("revalidates the layout on signup", async () => {
+    dbMock.user.findUnique.mockResolvedValue(null);
+    dbMock.user.create.mockResolvedValue({ id: "u2", email: "n@b.co", role: "UNPAID", name: "N" });
+    await signupAction(null, formData({ name: "New Person", email: "n@b.co", password: "Password123!" }));
+    expect(revalidatePathMock).toHaveBeenCalledWith("/", "layout");
   });
 });

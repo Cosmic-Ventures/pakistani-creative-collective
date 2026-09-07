@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { dbMock, redirectMock, getSessionMock, createSessionMock, stripeMock } = vi.hoisted(() => ({
+const { dbMock, redirectMock, getSessionMock, createSessionMock, stripeMock, revalidatePathMock } = vi.hoisted(() => ({
+  revalidatePathMock: vi.fn(),
   dbMock: { user: { findUnique: vi.fn(), update: vi.fn() } },
   redirectMock: vi.fn(),
   getSessionMock: vi.fn(),
@@ -13,6 +14,7 @@ const { dbMock, redirectMock, getSessionMock, createSessionMock, stripeMock } = 
 }));
 vi.mock("@/lib/db", () => ({ db: dbMock }));
 vi.mock("next/navigation", () => ({ redirect: redirectMock }));
+vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
 vi.mock("@/lib/session", () => ({
   getSession: getSessionMock,
   createSession: createSessionMock,
