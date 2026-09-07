@@ -1,13 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { dbMock, sendContactRequestNotificationMock } = vi.hoisted(() => ({
-  dbMock: { contactRequest: { create: vi.fn() } },
+const { dbMock, sendContactRequestNotificationMock, getSessionMock } = vi.hoisted(() => ({
+  dbMock: {
+    contactRequest: { create: vi.fn() },
+    creative: { findFirst: vi.fn() },
+  },
   sendContactRequestNotificationMock: vi.fn(async () => {}),
+  getSessionMock: vi.fn(),
 }));
 vi.mock("@/lib/db", () => ({ db: dbMock }));
 vi.mock("@/lib/email", () => ({
   sendContactRequestNotification: sendContactRequestNotificationMock,
 }));
+vi.mock("@/lib/session", () => ({ getSession: getSessionMock }));
 
 import { submitContactRequest } from "@/lib/contact-request-action";
 
@@ -32,6 +37,47 @@ const VALID_FIELDS = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // A signed-in paid member contacting an approved creative — the happy path
+  // the validation tests below are about.
+  getSessionMock.mockResolvedValue({ userId: "user-1", email: "jordan@studio.com", role: "PAID" });
+  dbMock.creative.findFirst.mockResolvedValue({ id: "creative-1" });
+});
+
+describe("submitContactRequest authorization", () => {
+  it("refuses an anonymous caller even with a valid body", async () => {
+    getSessionMock.mockResolvedValue(null);
+    const result = await submitContactRequest("creative-1", null, formData(VALID_FIELDS));
+    expect(result).toEqual({ error: expect.stringContaining("sign-in") });
+    expect(dbMock.contactRequest.create).not.toHaveBeenCalled();
+  });
+
+  it("refuses an unpaid member", async () => {
+    getSessionMock.mockResolvedValue({ userId: "user-9", email: "free@demo.test", role: "UNPAID" });
+    const result = await submitContactRequest("creative-1", null, formData(VALID_FIELDS));
+    expect(result).toEqual({ error: expect.stringContaining("paid membership") });
+    expect(dbMock.contactRequest.create).not.toHaveBeenCalled();
+  });
+
+  it("refuses a creative who isn't approved/published", async () => {
+    dbMock.creative.findFirst.mockResolvedValue(null);
+    const result = await submitContactRequest("creative-pending", null, formData(VALID_FIELDS));
+    expect(result).toEqual({ error: expect.stringContaining("isn't available") });
+    expect(dbMock.contactRequest.create).not.toHaveBeenCalled();
+  });
+
+  it("attributes the request to the session, not to a caller-supplied id", async () => {
+    getSessionMock.mockResolvedValue({ userId: "real-user", email: "jordan@studio.com", role: "PAID" });
+    dbMock.contactRequest.create.mockResolvedValue({
+      creative: { firstName: "Sara", lastName: "Khan", email: "sara@example.com" },
+    });
+
+    // "userId" in the body is exactly what an attacker would try to set.
+    await submitContactRequest("creative-1", null, formData({ ...VALID_FIELDS, userId: "victim-user" }));
+
+    expect(dbMock.contactRequest.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ userId: "real-user" }) })
+    );
+  });
 });
 
 describe("submitContactRequest", () => {
@@ -39,8 +85,6 @@ describe("submitContactRequest", () => {
     const { consentAccurate: _consentAccurate, ...withoutConsent } = VALID_FIELDS;
     const result = await submitContactRequest(
       "creative-1",
-      "user-1",
-      "sara-khan",
       null,
       formData(withoutConsent)
     );
@@ -51,8 +95,6 @@ describe("submitContactRequest", () => {
   it("rejects a message that's too short", async () => {
     const result = await submitContactRequest(
       "creative-1",
-      "user-1",
-      "sara-khan",
       null,
       formData({ ...VALID_FIELDS, message: "too short" })
     );
@@ -66,8 +108,6 @@ describe("submitContactRequest", () => {
 
     const result = await submitContactRequest(
       "creative-1",
-      "user-1",
-      "sara-khan",
       null,
       formData(VALID_FIELDS)
     );
@@ -100,8 +140,6 @@ describe("submitContactRequest", () => {
 
     await submitContactRequest(
       "creative-1",
-      "user-1",
-      "sara-khan",
       null,
       formData({ ...VALID_FIELDS, requestType: "Other", requestTypeOther: "Podcast feature" })
     );

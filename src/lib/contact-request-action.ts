@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { db } from "./db";
+import { getSession } from "./session";
 import { sendContactRequestNotification } from "./email";
 import { EXPERIENCE_LEVELS, REQUEST_TYPES, TIMELINES } from "./contact-request-constants";
 
@@ -25,11 +26,38 @@ export type ContactRequestResult = { error: string } | { success: true };
 
 export async function submitContactRequest(
   creativeId: string,
-  userId: string,
-  creativeSlug: string,
   _prev: ContactRequestResult | null,
   formData: FormData
 ): Promise<ContactRequestResult> {
+  // The request page already redirects anonymous and unpaid visitors, but a
+  // Server Action is an ordinary POST endpoint reachable on its own — being
+  // rendered on a gated page is not by itself protection (see the note on
+  // `requireAdmin` in session.ts). This is the check that actually holds.
+  //
+  // `userId` used to be a bound argument passed down from the page. Bound
+  // arguments travel to the browser and come back with the request, so that
+  // made the requester's identity attacker-controlled: anyone could file a
+  // contact request attributed to any account. It comes from the session now
+  // and is never accepted from the caller.
+  const session = await getSession();
+  if (!session) {
+    return { error: "Your sign-in has expired — sign in again and resubmit." };
+  }
+  if (session.role !== "PAID" && session.role !== "ADMIN") {
+    return { error: "Contact requests are available with a paid membership." };
+  }
+
+  // Only listed, approved creatives are contactable. Without this the id — also
+  // a bound argument — could name a pending or rejected applicant who was never
+  // published.
+  const target = await db.creative.findFirst({
+    where: { id: creativeId, status: "APPROVED" },
+    select: { id: true },
+  });
+  if (!target) {
+    return { error: "That creative isn't available for contact requests." };
+  }
+
   const parsed = Schema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -38,7 +66,7 @@ export async function submitContactRequest(
 
   const req = await db.contactRequest.create({
     data: {
-      userId,
+      userId: session.userId,
       creativeId,
       requesterName: d.requesterName,
       requesterEmail: d.requesterEmail,

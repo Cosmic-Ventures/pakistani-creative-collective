@@ -24,8 +24,30 @@ function toEmbedUrl(link: string): string | null {
   return null;
 }
 
+/**
+ * Turns whatever a creative typed into a link that actually resolves.
+ *
+ * These fields are free text (the enrollment form deliberately avoids
+ * `type="url"` — see AGENTS.md gotcha #21), so all of these turn up in real
+ * applications: "@sara", "sara", "instagram.com/sara", "www.instagram.com/sara",
+ * "https://instagram.com/sara".
+ *
+ * `prefix` is the platform's profile root, applied only to a bare handle. The
+ * earlier version applied it whenever the value didn't start with "http", which
+ * turned "instagram.com/sara" into
+ * "https://instagram.com/instagram.com/sara" — a dead link, and a plausible
+ * thing to type. Anything that already names a host gets just a scheme.
+ */
 function normalizeUrl(href: string, prefix = "https://"): string {
-  return href.startsWith("http") ? href : `${prefix}${href.replace(/^@/, "")}`;
+  const value = href.trim();
+  // Already absolute — checked as a real scheme, so a handle that merely begins
+  // with the letters "http" isn't mistaken for one.
+  if (/^https?:\/\//i.test(value)) return value;
+
+  const handle = value.replace(/^@/, "");
+  // A dot before any slash means they gave a hostname, not a handle.
+  const looksLikeHost = /^[^/]+\.[a-z]{2,}(?:[/:?#]|$)/i.test(handle);
+  return looksLikeHost ? `https://${handle}` : `${prefix}${handle}`;
 }
 
 function truncateWords(text: string, max: number): string {

@@ -16,18 +16,34 @@ function toSlug(first: string, last: string): string {
   return base || "creative";
 }
 
+/**
+ * The shortest free slug for this name.
+ *
+ * `startsWith` is a prefix match, so the candidate set includes unrelated
+ * names that merely begin the same way: an existing "ali-khanna" made a new
+ * Ali Khan land on "ali-khan-1" even though "ali-khan" was free, and an
+ * existing "ali-khan-2020" pushed the next one to "ali-khan-2021". The rows
+ * are still fetched by prefix (that's the only indexable way to ask), but only
+ * the ones that are genuinely `base` or `base-<n>` are allowed to consume a
+ * number.
+ */
 async function uniqueSlug(first: string, last: string): Promise<string> {
   const base = toSlug(first, last);
-  const exists = await db.creative.findMany({
+  const candidates = await db.creative.findMany({
     where: { slug: { startsWith: base } },
     select: { slug: true },
   });
-  if (!exists.length) return base;
-  const suffixes = exists.map((e) => {
-    const m = e.slug.match(/-(\d+)$/);
-    return m ? parseInt(m[1]) : 0;
-  });
-  return `${base}-${Math.max(...suffixes) + 1}`;
+
+  const taken = new Set(candidates.map((c) => c.slug));
+  if (!taken.has(base)) return base;
+
+  const suffixed = new RegExp(`^${base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-(\\d+)$`);
+  const used = candidates
+    .map((c) => c.slug.match(suffixed))
+    .filter((m): m is RegExpMatchArray => m !== null)
+    .map((m) => parseInt(m[1], 10));
+
+  return `${base}-${(used.length ? Math.max(...used) : 0) + 1}`;
 }
 
 function wordCount(text: string): number {
@@ -264,7 +280,7 @@ export async function enrollAction(
         promoConsent: d.consentPromo === "on",
         roles: allRoles,
         mediums: allMediums,
-          preferredProjectTypes,
+        preferredProjectTypes,
         workSamples: workSamples.length > 0 ? workSamples : undefined,
       },
     });

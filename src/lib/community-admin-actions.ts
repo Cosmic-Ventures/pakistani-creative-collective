@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "./db";
 import { requireAdmin } from "./session";
 import { sendPostDecisionEmail, sendCommentRemovedEmail, sendBulkCommunityNotification } from "./email";
-import { COMMENT_REMOVAL_FLAG_THRESHOLD } from "./community-constants";
+import { COMMENT_REMOVAL_FLAG_THRESHOLD, normalizePostLink } from "./community-constants";
 
 // ── Posts ──────────────────────────────────────────────────────────────────
 
@@ -36,7 +36,12 @@ export async function editPost(
   data: { title?: string; body?: string; region?: string; link?: string }
 ) {
   await requireAdmin();
-  await db.post.update({ where: { id: postId }, data });
+  // Same scheme check as createPost — an admin editing a post shouldn't be the
+  // one path that can put an unchecked URL back into the feed.
+  await db.post.update({
+    where: { id: postId },
+    data: { ...data, ...(data.link === undefined ? {} : { link: normalizePostLink(data.link) }) },
+  });
   revalidatePath("/admin/community");
   revalidatePath("/community");
 }

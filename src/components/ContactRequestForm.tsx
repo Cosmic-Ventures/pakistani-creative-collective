@@ -15,16 +15,11 @@ const textareaCls = `${inputCls} resize-none`;
 const optionId = (group: string, value: string) =>
   `${group}-${value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
 
-export default function ContactRequestForm({
-  creativeId,
-  creativeSlug,
-  userId,
-}: {
-  creativeId: string;
-  creativeSlug: string;
-  userId: string;
-}) {
-  const action = submitContactRequest.bind(null, creativeId, userId, creativeSlug);
+export default function ContactRequestForm({ creativeId }: { creativeId: string }) {
+  // Only the creative's id is bound. The requester's identity is read from the
+  // session inside the action — a bound argument round-trips through the
+  // browser, so it can never be trusted to say who is asking.
+  const action = submitContactRequest.bind(null, creativeId);
   const [state, formAction, pending] = useActionState<ContactRequestResult | null, FormData>(action, null);
 
   // Controlled by local state so values survive a failed submission — see

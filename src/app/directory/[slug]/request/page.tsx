@@ -35,7 +35,7 @@ export default async function ContactRequestPage({
       <p className="text-brand-brown/70 text-sm mb-8">
         This request will be reviewed by Aneesa Talks and forwarded to the creative. They decide whether to connect.
       </p>
-      <ContactRequestForm creativeId={creative.id} creativeSlug={slug} userId={session.userId} />
+      <ContactRequestForm creativeId={creative.id} />
     </div>
   );
 }
