@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { GATE_COOKIE, gateToken } from "./site-gate";
+import { safeRedirectPath } from "./safe-redirect";
 
 export type GateResult = { error: string } | undefined;
 
@@ -25,8 +26,9 @@ export async function unlockSite(_prev: GateResult, formData: FormData): Promise
     path: "/",
   });
 
-  const next = (formData.get("next") as string) ?? "/enroll";
   // Only ever redirect within this site — an attacker-supplied `next` must not
-  // be able to bounce someone off to another domain.
-  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/enroll");
+  // be able to bounce someone off to another domain. `safeRedirectPath` also
+  // keeps the query string, which is what carries a password-reset token
+  // through the gate.
+  redirect(safeRedirectPath(formData.get("next"), "/enroll"));
 }

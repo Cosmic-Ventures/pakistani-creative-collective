@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "./db";
 import { PasswordSchema } from "./password-rules";
 import { createSession, deleteSession } from "./session";
+import { safeRedirectPath } from "./safe-redirect";
 
 const SignupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -21,15 +22,6 @@ const LoginSchema = z.object({
 });
 
 export type ActionResult = { error: string } | { success: true };
-
-// Only a same-origin path is a safe redirect target — "next" comes off the
-// query string of a page anyone can link to, so a value like
-// "https://evil.example" or the protocol-relative "//evil.example" must fall
-// back to the default rather than be honored.
-function safeNext(value: FormDataEntryValue | null): string | null {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return null;
-  return value;
-}
 
 const MAX_FAILED_ATTEMPTS = 10;
 const LOCKOUT_MINUTES = 15;
@@ -73,7 +65,7 @@ export async function signupAction(
   });
 
   await createSession({ userId: user.id, email: user.email, role: user.role, name: user.name });
-  redirect(safeNext(formData.get("next")) ?? "/directory");
+  redirect(safeRedirectPath(formData.get("next"), "/directory"));
 }
 
 export async function loginAction(
@@ -133,7 +125,7 @@ export async function loginAction(
   }
 
   await createSession({ userId: user.id, email: user.email, role: user.role, name: user.name });
-  redirect(safeNext(formData.get("next")) ?? "/directory");
+  redirect(safeRedirectPath(formData.get("next"), "/directory"));
 }
 
 export async function logoutAction() {

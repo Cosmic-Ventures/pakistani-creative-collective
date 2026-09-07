@@ -32,7 +32,11 @@ const SIGNED_IN_ROUTES = ["/admin", "/account", "/enroll", "/join"];
 const AUTH_ROUTES = ["/auth/signin", "/auth/signup"];
 
 export async function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const { pathname, search } = req.nextUrl;
+  // Every `next` we hand out must carry the query string, not just the path. A
+  // password-reset link is `/auth/reset?token=…`; storing only the pathname sent
+  // the user back from the gate with no token and an "expired link" message.
+  const returnTo = `${pathname}${search}`;
   const token = req.cookies.get(SESSION_COOKIE)?.value;
 
   let signedIn = false;
@@ -59,7 +63,7 @@ export async function proxy(req: NextRequest) {
       // hits the gate from the homepage lands back on it after entering the
       // password, instead of being bounced to /enroll by gate-actions.ts's
       // default.
-      url.searchParams.set("next", pathname);
+      url.searchParams.set("next", returnTo);
       return NextResponse.redirect(url);
     }
 
@@ -74,14 +78,32 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  // Redirect logged-in users away from auth pages
+  // Redirect logged-in users away from auth pages.
+  //
+  // This used to always send them to /directory, which pre-launch sits behind
+  // the curtain: a signed-in non-admin was bounced /auth/signin → /directory →
+  // /enroll (three hops), and an admin landed squarely on the member directory
+  // — which is what the client saw as "clicking Sign in takes me to the member
+  // directory", and not where sign-in should lead before launch. While the gate
+  // is up the homepage is the neutral landing both roles can actually reach
+  // (it's prelaunch-allowed); after launch the directory is the point of
+  // signing in.
+  //
+  // Deliberately NOT honouring `?next=` here, tempting as it is. This rule sees
+  // only the JWT, while every page re-reads the role from the database
+  // (getSession returns null if the user row is gone or the database is
+  // unreachable). When the two disagree — a deleted account with a live cookie,
+  // or a database blip — the page bounces to /auth/signin?next=/admin and
+  // honouring that `next` would send them straight back to /admin, forever.
+  // A fixed destination cannot loop. `next` still does its real job in
+  // loginAction, after an actual sign-in.
   if (AUTH_ROUTES.some((r) => pathname.startsWith(r)) && signedIn) {
-    return NextResponse.redirect(new URL("/directory", req.url));
+    return NextResponse.redirect(new URL(gateEnabled() ? "/" : "/directory", req.url));
   }
 
   // Bounce anonymous visitors to sign-in. Role is enforced past this point.
   if (SIGNED_IN_ROUTES.some((r) => pathname.startsWith(r)) && !signedIn) {
-    return NextResponse.redirect(new URL("/auth/signin?next=" + encodeURIComponent(pathname), req.url));
+    return NextResponse.redirect(new URL("/auth/signin?next=" + encodeURIComponent(returnTo), req.url));
   }
 
   return NextResponse.next();
