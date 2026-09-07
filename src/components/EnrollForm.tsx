@@ -833,7 +833,22 @@ export default function EnrollForm({
             values={values}
             update={update}
           />
-          <TextField name="website" label="Website / Portfolio URL" type="url" placeholder="https://…" values={values} update={update} />
+          {/* Deliberately `type="text"`, not `url`: this field lives on a
+              non-final step that's CSS-hidden (`.hidden`, not unmounted —
+              gotcha #10) once the applicant reaches Review. A `type="url"`
+              input whose value fails the browser's native URL syntax check
+              (e.g. "www.site.com" with no scheme) can't be focused to show
+              that error while its step is hidden, so the browser just
+              refuses to submit the form at all — silently, with no request
+              sent and nothing for either the client checklist or the server
+              logs to catch. This is what "I filled out the whole
+              application and Submit does nothing" turned out to be
+              (09/06: two applicants, both with an unscheduled `www.…`
+              website, both stuck on a fully-valid-looking draft that never
+              submitted). Loose free text plus server-side normalization
+              (enroll-action.ts) is the same pattern already used for imdb/
+              instagram/linkedin/vimeo below. */}
+          <TextField name="website" label="Website / Portfolio URL" placeholder="https://…" values={values} update={update} />
           <div className="grid grid-cols-2 gap-4">
             <TextField name="imdb" label="IMDb" placeholder="IMDb URL or nm…" values={values} update={update} />
             <TextField name="instagram" label="Instagram" placeholder="@handle or URL" values={values} update={update} />
@@ -865,7 +880,10 @@ export default function EnrollForm({
                 />
                 <input type="hidden" name={`ws${n}RoleOther`} value={wsRoleOther[n] ?? ""} />
               </Field>
-              <TextField name={`ws${n}Link`} label="Link" type="url" placeholder="https://…" values={values} update={update} />
+              {/* `type="text"`, not `url` — same silent-submit hazard as the
+                  Website field above: this lives on a hidden step by the
+                  time the applicant reaches Review. */}
+              <TextField name={`ws${n}Link`} label="Link" placeholder="https://…" values={values} update={update} />
             </div>
           ))}
         </Section>

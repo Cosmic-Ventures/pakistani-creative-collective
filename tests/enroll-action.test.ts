@@ -347,6 +347,61 @@ describe("enrollAction", () => {
     );
   });
 
+  // 09/06: two applicants filled out the entire application, including a
+  // website like "www.example.com" with no scheme, and Submit silently did
+  // nothing — no request ever reached this action (nothing in the server
+  // logs), because the field was still `type="url"` at the time and browser
+  // constraint validation refuses to submit an invalid, unfocusable control
+  // sitting on a CSS-hidden step (gotcha #10's steps-stay-mounted pattern).
+  // The field is plain text now, so the value always reaches here — this
+  // pins the other half of the fix: a schemeless value must still resolve to
+  // a real absolute URL wherever it's rendered as an <a href>, not the bare
+  // domain (which would render as a broken relative link).
+  it("adds a scheme to a website and work-sample link that arrive without one", async () => {
+    dbMock.creative.create.mockResolvedValue({});
+
+    await enrollAction(
+      null,
+      formData({
+        firstName: "Ahmed",
+        lastName: "Khan",
+        email: "ahmed@example.com",
+        headshotLink: "data:image/jpeg;base64,AAAA",
+        bio: LONG_BIO,
+        experienceLevel: "Accomplished Professional (7-12 years / 15+ projects)",
+        website: "www.example.com",
+        ws1Title: "Night Bus",
+        ws1Link: "vimeo.com/12345",
+      })
+    );
+
+    const { data } = dbMock.creative.create.mock.calls[0][0];
+    expect(data.website).toBe("https://www.example.com");
+    expect(data.workSamples[0].link).toBe("https://vimeo.com/12345");
+  });
+
+  // A link that already has a scheme (including a non-http one) must pass
+  // through unchanged rather than getting a second "https://" prefixed.
+  it("leaves a website that already has a scheme untouched", async () => {
+    dbMock.creative.create.mockResolvedValue({});
+
+    await enrollAction(
+      null,
+      formData({
+        firstName: "Sara",
+        lastName: "Khan",
+        email: "sara@example.com",
+        headshotLink: "data:image/jpeg;base64,AAAA",
+        bio: LONG_BIO,
+        experienceLevel: "Established Creative (4-7 years / 10+ projects)",
+        website: "http://example.com",
+      })
+    );
+
+    const { data } = dbMock.creative.create.mock.calls[0][0];
+    expect(data.website).toBe("http://example.com");
+  });
+
   it("appends a numeric suffix when the slug is already taken", async () => {
     dbMock.creative.findMany.mockResolvedValue([{ slug: "sara-khan" }, { slug: "sara-khan-2" }]);
     dbMock.creative.create.mockResolvedValue({});

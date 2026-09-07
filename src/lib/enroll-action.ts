@@ -35,6 +35,19 @@ function wordCount(text: string): number {
 }
 
 /**
+ * Website and work-sample link fields are plain text now, not `type="url"`
+ * (see EnrollForm.tsx for why), so a bare "www.site.com" with no scheme is
+ * expected and common. Every place that renders these as an `<a href>` (the
+ * admin applications list, the public profile page) treats the stored string
+ * as an absolute URL, so a schemeless value would silently render as a
+ * broken relative link — add the scheme once, here, rather than at every
+ * render site.
+ */
+function ensureScheme(value: string): string {
+  return value && !/^[a-z][a-z0-9+.-]*:\/\//i.test(value) ? `https://${value}` : value;
+}
+
+/**
  * Server-side mirror of the form's own required-field rules. Only essentials are
  * enforced (08/08 client round): portfolio URL, availability, references and all
  * three work samples are optional, so an emerging creative with none of them can
@@ -167,7 +180,7 @@ export async function enrollAction(
         medium: formData.get(`ws${n}Medium`) as string,
         year: formData.get(`ws${n}Year`) as string,
         role: [...roleSelect, roleOther.trim()].filter(Boolean).join(", "),
-        link: formData.get(`ws${n}Link`) as string,
+        link: ensureScheme(((formData.get(`ws${n}Link`) as string) ?? "").trim()),
       };
     })
     .filter((ws) => ws.title);
@@ -201,6 +214,10 @@ export async function enrollAction(
     const trimmed = v?.trim();
     return trimmed ? trimmed : undefined;
   };
+  const optUrl = (v?: string) => {
+    const trimmed = opt(v);
+    return trimmed ? ensureScheme(trimmed) : undefined;
+  };
 
   try {
     await db.creative.create({
@@ -221,7 +238,7 @@ export async function enrollAction(
         pccGoals: opt(d.pccGoals),
         experienceLevel: shortExperienceLevel(d.experienceLevel),
         notableAchievements: opt(d.notableAchievements),
-        website: opt(d.website),
+        website: optUrl(d.website),
         imdb: opt(d.imdb),
         instagram: opt(d.instagram),
         linkedin: opt(d.linkedin),
