@@ -672,7 +672,21 @@ export default function EnrollForm({
   const stepClass = (index: number) => (index === step ? "" : "hidden");
 
   return (
-    <form action={formAction} className="bg-white rounded-3xl p-6 sm:p-10">
+    // noValidate: the website/link fix above turned out to be one instance of
+    // a structural problem, not the only one. `type="email"` (email, step 0),
+    // `type="number"` (yearsExperience/completedProjects, step 2), and the
+    // availability date pickers' `min={today}` (step 2, recomputed on every
+    // render, so a date picked before midnight can retroactively violate it)
+    // are all native browser constraints living on steps that are hidden —
+    // not unmounted — once the applicant reaches Review. A hidden, invalid,
+    // unfocusable control makes the browser silently refuse to submit the
+    // whole form; that's the entire "Submit does nothing" bug, and it isn't
+    // specific to URLs. `problems` above is already the sole real gate
+    // (required-ness, email format, bio length, consents), so native
+    // constraint validation adds nothing here except this landmine — for
+    // whichever field happens to carry one next. Disable it for the form,
+    // not field by field.
+    <form action={formAction} noValidate className="bg-white rounded-3xl p-6 sm:p-10">
       {lastError && (
         <div
           id="enroll-server-error"
