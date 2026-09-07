@@ -281,9 +281,11 @@ charged. Switching over is more than swapping a key:
   account at cutover, and re-grant paid access by hand to anyone who genuinely subscribed. Test-mode
   subscriptions do not transfer.
 
-**2. Remove the demo accounts.** `free@demo.test`, `paid@demo.test` and `admin@demo.test` all still
-exist with the password `password123` — and that password is written down in this document. The admin
-one opens the whole admin panel. Delete them (or rotate the passwords) before the site is public.
+**2. Remove the demo accounts.** `free@demo.test` and `paid@demo.test` still exist with the password
+`password123` — and that password is written down in this document. Delete them (or rotate the
+passwords) before the site is public. ~~`admin@demo.test`~~ was deleted on 09/07; the admin login is
+now `admin@aneesatalks.com` (already linked to Aneesa's own creative profile), with its password set
+via the "Forgot your password?" link on the sign-in page rather than a shared plaintext one.
 
 **3. Clear the sample data.** 5 sample creatives, 6 community posts and 2 contact requests are demo
 content for review, not real members.
