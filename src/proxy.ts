@@ -29,7 +29,6 @@ function sessionKey(): Uint8Array {
 // Routes that require *a* signed-in user. Which role they need is decided
 // server-side, against the database, by the page or action itself.
 const SIGNED_IN_ROUTES = ["/admin", "/account", "/enroll", "/join"];
-const AUTH_ROUTES = ["/auth/signin", "/auth/signup"];
 
 export async function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
@@ -78,28 +77,22 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  // Redirect logged-in users away from auth pages.
+  // NOTE: there is deliberately no "already signed in, bounce away from the auth
+  // pages" rule here any more, and it must not be reintroduced at the edge.
   //
-  // This used to always send them to /directory, which pre-launch sits behind
-  // the curtain: a signed-in non-admin was bounced /auth/signin → /directory →
-  // /enroll (three hops), and an admin landed squarely on the member directory
-  // — which is what the client saw as "clicking Sign in takes me to the member
-  // directory", and not where sign-in should lead before launch. While the gate
-  // is up the homepage is the neutral landing both roles can actually reach
-  // (it's prelaunch-allowed); after launch the directory is the point of
-  // signing in.
+  // This runs where the database is unreachable, so the only thing it can check
+  // is the JWT's signature. `getSession` — which every page and action uses —
+  // additionally requires the user row to still exist. The two therefore
+  // disagree whenever a cookie is valid but the account is gone (or the database
+  // is briefly unavailable), and the disagreement locked people out: the edge
+  // bounced them off /auth/signin while every page rendered them as signed out,
+  // so the header offered "Sign in", clicking it went nowhere, and the only
+  // escape was clearing cookies. Reported as "works in incognito, glitches in my
+  // own browser".
   //
-  // Deliberately NOT honouring `?next=` here, tempting as it is. This rule sees
-  // only the JWT, while every page re-reads the role from the database
-  // (getSession returns null if the user row is gone or the database is
-  // unreachable). When the two disagree — a deleted account with a live cookie,
-  // or a database blip — the page bounces to /auth/signin?next=/admin and
-  // honouring that `next` would send them straight back to /admin, forever.
-  // A fixed destination cannot loop. `next` still does its real job in
-  // loginAction, after an actual sign-in.
-  if (AUTH_ROUTES.some((r) => pathname.startsWith(r)) && signedIn) {
-    return NextResponse.redirect(new URL(gateEnabled() ? "/" : "/directory", req.url));
-  }
+  // The redirect now lives on the auth pages themselves (src/app/auth/*/page.tsx),
+  // which resolve the session against the database and so can never contradict
+  // the header they are rendered next to.
 
   // Bounce anonymous visitors to sign-in. Role is enforced past this point.
   if (SIGNED_IN_ROUTES.some((r) => pathname.startsWith(r)) && !signedIn) {

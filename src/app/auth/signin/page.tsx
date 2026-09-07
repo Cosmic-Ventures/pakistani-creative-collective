@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import AuthForm from "@/components/AuthForm";
 import { loginAction } from "@/lib/auth-actions";
+import { getSession } from "@/lib/session";
+import { gateEnabled } from "@/lib/site-gate";
+import { signedInLanding } from "@/lib/safe-redirect";
 
 export const metadata: Metadata = { title: "Sign In" };
 
@@ -11,6 +15,14 @@ export default async function SigninPage({
   searchParams: Promise<{ next?: string; reset?: string }>;
 }) {
   const { next, reset } = await searchParams;
+
+  // Resolved against the database, the same way the header is, so the two can
+  // never contradict each other. This used to live in proxy.ts, where only the
+  // JWT is visible — a cookie whose account no longer exists was treated as
+  // signed in there and signed out everywhere else, which made this page
+  // unreachable and left people unable to sign in at all.
+  const session = await getSession();
+  if (session) redirect(signedInLanding(next, gateEnabled()));
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">

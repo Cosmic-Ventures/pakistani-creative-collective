@@ -59,22 +59,44 @@ export async function createSession(payload: SessionPayload) {
 // promotions, cancellations) apply immediately instead of after re-login.
 // Cookie mutation is not allowed during server-component render, so the
 // stale cookie is left alone — reading the DB here makes it not matter.
+// Nothing at the edge can do this check (proxy.ts has no database), which is why
+// the auth pages, not proxy.ts, decide whether a visitor is already signed in.
 // cache() memoizes per request: layout + page + actions share one query.
 export const getSession = cache(async (): Promise<SessionPayload | null> => {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;
 
+  let jwt: SessionPayload;
   try {
     const { payload } = await jwtVerify(token, sessionKey());
-    const jwt = payload as unknown as SessionPayload;
+    jwt = payload as unknown as SessionPayload;
+  } catch {
+    // Bad signature or expired — genuinely not signed in, and not noteworthy.
+    return null;
+  }
+
+  try {
     const user = await db.user.findUnique({
       where: { id: jwt.userId },
       select: { role: true, name: true },
     });
-    if (!user) return null;
+    if (!user) {
+      // Valid cookie, no account: deleted user, or a token minted against a
+      // different database. Worth a line — it is indistinguishable from a
+      // healthy signed-out visitor in the rendered page, so without this the
+      // only symptom is a member insisting they can't sign in.
+      console.error(`[session] valid token for a user that no longer exists: ${jwt.userId}`);
+      return null;
+    }
     return { ...jwt, role: user.role, name: user.name ?? jwt.name };
-  } catch {
+  } catch (error) {
+    // Previously this shared a bare `catch { return null }` with the signature
+    // check, so a database problem was indistinguishable from being logged out —
+    // it signed everyone out silently and produced no 5xx, meaning it left no
+    // trace in the logs at all. Still fails closed (authorization must not open
+    // up when the database is unreachable), but it says so now.
+    console.error("[session] could not resolve the session — database unreachable?", error);
     return null;
   }
 });

@@ -46,3 +46,17 @@ export function safeRedirectPath(value: unknown, fallback: string): string {
 
   return `${resolved.pathname}${resolved.search}${resolved.hash}`;
 }
+
+/**
+ * Where a genuinely signed-in visitor should land instead of an auth page.
+ *
+ * Called only from the auth pages, which resolve the session against the
+ * database — so unlike the old edge rule this can safely honour `next`: the
+ * destination's own guard agrees with this one, and cannot bounce back here.
+ *
+ * While the gate is up the homepage is the neutral landing both roles can reach
+ * (it's prelaunch-allowed); after launch the directory is the point of signing in.
+ */
+export function signedInLanding(next: unknown, gateIsUp: boolean): string {
+  return safeRedirectPath(next, gateIsUp ? "/" : "/directory");
+}
