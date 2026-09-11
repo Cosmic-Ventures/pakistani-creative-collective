@@ -272,6 +272,13 @@ async function attemptEnrollment(formData: FormData): Promise<EnrollResult | nul
   try {
     await db.creative.create({
       data: {
+        // Link the listing to the account that submitted it. The form requires a
+        // sign-in and the session is already resolved above, but this was never
+        // set — so every applicant ended up with `userId` null and no way to edit
+        // their own profile afterwards (getOwnCreative/updateOwnProfile resolve
+        // the member's listing through exactly this column). The client has to
+        // link people by hand without it.
+        userId: session.userId,
         slug,
         firstName: d.firstName,
         lastName: d.lastName,

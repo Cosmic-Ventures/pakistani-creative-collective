@@ -486,3 +486,29 @@ describe("enrollAction never fails silently", () => {
     expect("error" in result && typeof result.error === "string" && result.error.length > 20).toBe(true);
   });
 });
+
+// The form requires a sign-in, so the listing should belong to the account that
+// submitted it. This was never set, leaving every applicant with userId null and
+// therefore unable to edit their own profile — getOwnCreative and
+// updateOwnProfile both resolve the member's listing through that column, so the
+// client had to link people by hand.
+describe("enrollAction links the listing to the submitting account", () => {
+  it("stores the session's userId on the new creative", async () => {
+    dbMock.creative.findMany.mockResolvedValue([]);
+    dbMock.creative.create.mockResolvedValue({});
+    await enrollAction(
+      null,
+      formData({
+        firstName: "Sara",
+        lastName: "Khan",
+        email: "sara@example.com",
+        headshotLink: "https://example.com/headshot.jpg",
+        bio: LONG_BIO,
+        experienceLevel: "Established (5-8 years)",
+      })
+    );
+    expect(dbMock.creative.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ userId: SIGNED_IN_SESSION.userId }) })
+    );
+  });
+});
