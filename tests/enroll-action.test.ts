@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const { dbMock, redirectMock, sendEnrollmentNotificationMock, discardEnrollmentDraftMock, getSessionMock } = vi.hoisted(() => ({
-  dbMock: { creative: { findMany: vi.fn(), create: vi.fn() } },
+  dbMock: { creative: { findMany: vi.fn(), findUnique: vi.fn(), create: vi.fn() } },
   redirectMock: vi.fn(),
   sendEnrollmentNotificationMock: vi.fn(async () => {}),
   discardEnrollmentDraftMock: vi.fn(async () => {}),
@@ -31,6 +31,7 @@ function formData(fields: Record<string, string | string[]>) {
 beforeEach(() => {
   vi.clearAllMocks();
   dbMock.creative.findMany.mockResolvedValue([]);
+  dbMock.creative.findUnique.mockResolvedValue(null);
   getSessionMock.mockResolvedValue(SIGNED_IN_SESSION);
 });
 
@@ -54,6 +55,25 @@ describe("enrollAction", () => {
     // applicant is told their sign-in is the problem and that nothing was
     // written, not the wording, which is copy we tune.
     expect(result).toEqual({ error: expect.stringMatching(/sign.?in/i) });
+    expect(dbMock.creative.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects a second application from an account that already has one, without touching the DB", async () => {
+    dbMock.creative.findUnique.mockResolvedValue({ status: "PENDING" });
+
+    const result = await enrollAction(
+      null,
+      formData({
+        firstName: "Sara",
+        lastName: "Khan",
+        email: "sara@example.com",
+        headshotLink: "https://example.com/headshot.jpg",
+        bio: LONG_BIO,
+        experienceLevel: "Established (5–8 years)",
+      })
+    );
+
+    expect(result).toEqual({ error: expect.stringMatching(/already has an application/i) });
     expect(dbMock.creative.create).not.toHaveBeenCalled();
   });
 
@@ -163,6 +183,7 @@ describe("enrollAction", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           slug: "sara-khan",
+          userId: "user-1",
           firstName: "Sara",
           lastName: "Khan",
           location: "Los Angeles, CA",

@@ -142,6 +142,22 @@ export async function enrollAction(
     };
   }
 
+  // Every applicant is signed in to reach this action, so the new listing
+  // should always be linked to their account (Creative.userId is unique) —
+  // without this, the admin Users tab and the member's own "My Profile" tab
+  // both silently show no linked profile even after approval. A user who
+  // already has one (any status — pending, approved, even rejected) is
+  // blocked here rather than left to create a second, unlinked row: they
+  // should edit their existing listing instead once it's approved.
+  const existingCreative = await db.creative.findUnique({ where: { userId: session.userId } });
+  if (existingCreative) {
+    console.error("[enroll] rejected: account already has a linked application");
+    return {
+      error:
+        "This account already has an application on file. If it's approved, edit it from My Account → My Profile; if it's still pending or was declined, email pcc@aneesatalks.com rather than submitting a second one.",
+    };
+  }
+
   // Multi-value fields
   const roles = formData.getAll("roles") as string[];
   const mediums = formData.getAll("mediums") as string[];
@@ -206,6 +222,7 @@ export async function enrollAction(
     await db.creative.create({
       data: {
         slug,
+        userId: session.userId,
         firstName: d.firstName,
         lastName: d.lastName,
         pronouns: opt(d.pronouns),
