@@ -16,7 +16,9 @@ import {
 import {
   defaultContent,
   getTemplateDef,
+  MASS_EMAIL_DEF,
   renderTemplate,
+  sampleValues,
   type TemplateContent,
 } from "./email-templates";
 
@@ -264,6 +266,37 @@ export async function sendFeatureNotification(firstName: string, email: string, 
     firstName,
     profileUrl: `${appUrl()}/directory/${slug}`,
   });
+}
+
+/**
+ * The admin panel's Mass Email tool: one composed message, sent as its own
+ * individual Resend call per recipient (never one To/Cc line — recipients
+ * shouldn't see each other's addresses) so each lands with their own
+ * {{firstName}} filled in. Returns how many actually went out, since a
+ * partial failure shouldn't look identical to a full send.
+ */
+export async function sendMassEmail(
+  recipients: { email: string; firstName: string }[],
+  content: TemplateContent
+): Promise<number> {
+  if (!process.env.RESEND_API_KEY || recipients.length === 0) return 0;
+  const resend = getResend();
+  if (!resend) return 0;
+
+  const results = await Promise.allSettled(
+    recipients.map((r) => {
+      const { subject, html } = renderTemplate(MASS_EMAIL_DEF, content, { firstName: r.firstName });
+      return resend.emails.send({ from: FROM, to: r.email, subject, html });
+    })
+  );
+  return results.filter((r) => r.status === "fulfilled").length;
+}
+
+/** Same render path as a real mass send, sent only to the admin previewing it. */
+export async function sendMassEmailTest(to: string, content: TemplateContent) {
+  if (!process.env.RESEND_API_KEY) return;
+  const { subject, html } = renderTemplate(MASS_EMAIL_DEF, content, sampleValues(MASS_EMAIL_DEF));
+  await getResend()?.emails.send({ from: FROM, to, subject: `[Test] ${subject}`, html });
 }
 
 /** How long a password-reset link stays usable. Mirrored in the email copy. */

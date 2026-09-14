@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin/feature-requests", label: "Feature Requests" },
   { href: "/admin/community", label: "Community" },
   { href: "/admin/emails", label: "Email Templates" },
+  { href: "/admin/mass-email", label: "Mass Email" },
   { href: "/admin/analytics", label: "Analytics" },
 ];
 

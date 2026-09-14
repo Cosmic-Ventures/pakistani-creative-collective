@@ -260,6 +260,25 @@ export const GLOBAL_VARIABLES: TemplateVariable[] = [
   { name: "siteUrl", description: "The PCC website address", sample: "https://pcc.aneesatalks.com", kind: "url" },
 ];
 
+/**
+ * Not a saved template — there's nothing in EMAIL_TEMPLATES or the
+ * EmailTemplate table for it. This is the shared shape the admin panel's
+ * one-off Mass Email composer renders against: whatever she types in that
+ * form is the "content", substituted through the exact same markup and
+ * escaping rules as every other email. `firstName` is the only per-recipient
+ * variable, because it's the one thing every mass-email audience (users,
+ * applicants, or both) reliably has.
+ */
+export const MASS_EMAIL_DEF: EmailTemplateDef = {
+  key: "mass-email",
+  name: "Mass email",
+  description: "A one-off email composed and sent to a chosen set of recipients from the admin panel.",
+  subject: "",
+  preheader: "",
+  body: "",
+  variables: [{ name: "firstName", description: "Recipient's first name", sample: "Sara" }],
+};
+
 export const TEMPLATE_BY_KEY: Record<string, EmailTemplateDef> = Object.fromEntries(
   EMAIL_TEMPLATES.map((t) => [t.key, t])
 );
