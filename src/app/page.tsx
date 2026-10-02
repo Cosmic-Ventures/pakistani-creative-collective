@@ -1,41 +1,38 @@
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/components/Logo";
+import AccessComparison from "@/components/AccessComparison";
 import { db } from "@/lib/db";
 import { EXPERIENCE_TIERS } from "@/lib/experience-levels";
-import { getDisplayPrices, type DisplayPrices } from "@/lib/stripe";
+import { getDisplayPrices } from "@/lib/stripe";
 
-// Built per-render rather than as a module constant: the "Get Connected"
-// paragraph quotes both prices, and those are read from Stripe so the copy can't
-// drift from what checkout actually charges.
-const buildHowItWorks = (prices: DisplayPrices) => [
+// 10/02 round: "remove any information that is redundant to what has previously
+// been articulated as you scroll" — each fact lives in exactly one place. Pricing
+// and what each tier includes are covered once, in Free vs. Member Access below.
+const HOW_IT_WORKS = [
   {
     title: "Apply to Join",
     body: [
-      "The PCC is open to Pakistani creatives working in film, music, fashion, art, and media, wherever you're based. The application takes about 10–15 minutes and covers your background, creative work, experience, rates, skills, and the kinds of collaborators you're hoping to meet.",
-      "Every application is reviewed individually, and because the directory is curated, not every application will be accepted. Creating a profile is free and always will be.",
+      "Open to Pakistani creatives in film, music, fashion, art, and media, wherever you're based. The application takes 10–15 minutes and every one is reviewed individually. Creating a profile is free.",
     ],
   },
   {
     title: "Get Connected",
     body: [
-      "Pakistani creatives are doing incredible work around the world, but there has never been a place to find one another. The PCC brings that community together by strengthening our collective digital footprint.",
-      `Once your profile is approved, it becomes part of a directory where creatives across all mediums can discover Pakistani creatives for jobs, commissions, and collaborations. Anyone can browse basic profiles. Search filters, full profiles, community dashboard access, and connection requests are available through a paid subscription of ${prices.monthly} per month / ${prices.annual} per year.`,
+      "Approved profiles join a searchable directory, so people can find Pakistani talent for jobs, commissions, and collaborations, instead of relying on personal networks.",
     ],
   },
   {
     title: "Collaborate and Create",
     body: [
-      "Profiles are designed to help people find the right collaborators based on their work, experience, and interests. Whether someone is building a crew, hiring an editor, or looking for a designer, they can search across disciplines instead of relying on personal networks.",
-      "The PCC also highlights members through ongoing features and promotional opportunities.",
+      "Building a crew, hiring an editor, looking for a designer: search across disciplines to find the right fit. Members are also highlighted through ongoing features.",
     ],
   },
   {
     title: "Privacy & Security",
     body: [
-      "Your email address and phone number are never made public, and members can't contact each other directly through the platform.",
-      "Connection requests are sent through Aneesa Talks first, and you choose whether to respond. You can update or remove your profile at any time.",
-      "Applications are reviewed with the safety of the community in mind. Credible reports of misconduct may result in a profile being removed from the directory.",
+      "Your email and phone number are never public, and members can't contact each other directly. Requests go through Aneesa Talks first, and you choose whether to respond.",
+      "You can edit or remove your profile at any time. Credible reports of misconduct may result in removal.",
     ],
   },
 ];
@@ -56,28 +53,8 @@ const HOMEPAGE_CTAS = {
   viewFullProfile: false,
 };
 
-const FREE_ACCESS = [
-  "Creative's name",
-  "Role",
-  "Location",
-  "Bio (200 words max)",
-  "Search and filter by role and location",
-];
-
-const MEMBER_ACCESS = [
-  "Full public creative profile, including headshot",
-  "Work samples and notable achievements",
-  "Languages spoken and current availability",
-  "Preferred project types and past collaborators",
-  "Rate range, if the creative chooses to share it",
-  "Search and filter by experience level, medium, availability, language, and project type, in addition to role and location",
-  "Ability to submit a contact request through Aneesa Talks",
-  "Access to the community dashboard to post and respond to member updates, job postings, and more",
-];
-
 export default async function Home() {
   const prices = await getDisplayPrices();
-  const howItWorks = buildHowItWorks(prices);
 
   const featured = await db.creative.findUnique({
     where: { slug: "aneesa-khan" },
@@ -90,8 +67,19 @@ export default async function Home() {
       roles: true,
       experienceLevel: true,
       bio: true,
+      education: true,
+      availability: true,
+      languages: true,
+      mediums: true,
+      workSamples: true,
     },
   });
+
+  const spotlightSamples = (
+    (featured?.workSamples as { title?: string; role?: string; medium?: string; year?: string }[] | null) ?? []
+  )
+    .filter((ws) => ws.title)
+    .slice(0, 2) as { title: string; role?: string; medium?: string; year?: string }[];
 
   return (
     <div className="bg-brand-green">
@@ -144,12 +132,12 @@ export default async function Home() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
         <h2 className="font-heading font-bold text-2xl text-brand-cream mb-10">How it works</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {howItWorks.map(({ title, body }) => (
+          {HOW_IT_WORKS.map(({ title, body }) => (
             <div
               key={title}
               className="bg-white rounded-xl p-6 shadow-sm"
             >
-              <h3 className="font-heading font-bold text-black mb-3">{title}</h3>
+              <h3 className="font-bold text-black mb-3">{title}</h3>
               {body.map((paragraph) => (
                 <p key={paragraph} className="text-black/70 text-sm leading-relaxed mb-3 last:mb-0">
                   {paragraph}
@@ -196,93 +184,88 @@ export default async function Home() {
 
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
         <h2 className="font-heading font-bold text-2xl text-brand-cream mb-2">Free vs. Member Access</h2>
-        <p className="text-brand-cream/70 mb-10 text-sm max-w-2xl">
-          Every creative is listed in the database for free. Seeing full profiles and contacting
-          creatives requires a membership.
+        <p className="text-brand-cream/70 mb-8 text-sm max-w-2xl">
+          Every creative is listed for free. Membership is {prices.monthly}/month or {prices.annual}/year
+          and covers running the platform, reviewing applications, and handling requests so contact
+          details stay private.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-white border border-brand-green/15 rounded-2xl p-6 sm:p-8">
-            <h3 className="font-heading font-bold text-black mb-4">Free Access</h3>
-            <ul className="space-y-3">
-              {FREE_ACCESS.map((item) => (
-                <li key={item} className="flex gap-2.5 text-sm text-black/80">
-                  <span className="text-black shrink-0">—</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="bg-brand-mint rounded-2xl p-6 sm:p-8">
-            <h3 className="font-heading font-bold text-black mb-4">Member Access</h3>
-            <ul className="space-y-3">
-              {MEMBER_ACCESS.map((item) => (
-                <li key={item} className="flex gap-2.5 text-sm text-black/90">
-                  <span className="text-black shrink-0">—</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <div className="mt-6 bg-white border border-brand-green/15 rounded-2xl p-6 sm:p-8">
-          <p className="font-heading font-bold text-black mb-2">Why Become a Member?</p>
-          <p className="text-black/70 text-sm leading-relaxed mb-3">
-            Joining the Pakistani Creative Collective is free, and it always will be. A membership
-            gives you access to the platform&apos;s full features, including advanced search,
-            community dashboard access, full profiles, and connection requests.
-          </p>
-          <p className="text-black/70 text-sm leading-relaxed">
-            Membership fees cover the cost of running the platform, reviewing applications, and
-            managing connection requests so members&apos; contact information stays private.
-            Keeping the directory active and up to date takes ongoing work, and memberships make
-            that possible.
-          </p>
-        </div>
+        <AccessComparison />
 
         {featured && (
-          <div className="mt-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand-cream/60 mb-3">
-              This month&apos;s spotlight — what a member profile looks like
+          <div className="mt-12">
+            <h3 className="font-heading font-bold text-xl text-brand-cream mb-2">This month&apos;s spotlight</h3>
+            <p className="text-brand-cream/70 text-sm max-w-2xl mb-5">
+              This is a full member profile, exactly what subscribers see for every creative in the
+              directory.
             </p>
-            <div className="bg-brand-green border border-brand-cream/15 rounded-3xl p-6 sm:p-8 grid gap-5 lg:grid-cols-3">
-              <div className="bg-brand-cream rounded-2xl p-6 lg:col-span-1">
-                {/* Client-supplied spotlight portrait (08/08 round). Bundled as a
-                    static asset rather than read from featured.headshot so the
-                    spotlight shows the approved photo regardless of what's stored
-                    on the directory record. */}
-                <Image
-                  src={SPOTLIGHT_HEADSHOT}
-                  alt={`${featured.firstName} ${featured.lastName}`}
-                  width={800}
-                  height={1200}
-                  className="w-20 h-20 rounded-2xl object-cover object-top mb-4"
-                />
-                <h3 className="font-heading font-bold text-2xl text-black leading-none">
-                  {featured.firstName} {featured.lastName}
-                </h3>
-                {featured.pronouns && <p className="text-xs text-black/60 mt-1.5">{featured.pronouns}</p>}
-                <div className="flex flex-wrap gap-1.5 mt-4">
-                  {featured.location && (
-                    <span className="text-[11px] uppercase font-semibold bg-brand-mint text-black px-2.5 py-1 rounded-full">
-                      {featured.location}
-                    </span>
+            <div className="grid gap-4 lg:grid-cols-2 items-start">
+              <div className="flex flex-col gap-4">
+                <div className="bg-brand-green border border-brand-cream/15 rounded-3xl p-6 sm:p-7 text-brand-cream">
+                  {/* Client-supplied spotlight portrait (08/08 round). Bundled as a
+                      static asset rather than read from featured.headshot so the
+                      spotlight shows the approved photo regardless of what's stored
+                      on the directory record. */}
+                  <Image
+                    src={SPOTLIGHT_HEADSHOT}
+                    alt={`${featured.firstName} ${featured.lastName}`}
+                    width={800}
+                    height={1200}
+                    className="w-24 h-24 rounded-2xl object-cover object-top mb-4"
+                  />
+                  <h4 className="font-bold text-2xl leading-tight">
+                    {featured.firstName} {featured.lastName}
+                  </h4>
+                  {featured.pronouns && <p className="text-sm text-brand-cream/60 mt-1">{featured.pronouns}</p>}
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {featured.location && (
+                      <span className="text-[11px] uppercase font-semibold bg-brand-mint text-brand-green px-2.5 py-1 rounded-full">
+                        {featured.location}
+                      </span>
+                    )}
+                    {featured.roles.map((r) => (
+                      <span key={r} className="text-[11px] uppercase font-semibold bg-brand-mint text-brand-green px-2.5 py-1 rounded-full">
+                        {r}
+                      </span>
+                    ))}
+                    {featured.experienceLevel && (
+                      <span className="text-[11px] uppercase font-semibold bg-brand-cream text-brand-green px-2.5 py-1 rounded-full">
+                        {featured.experienceLevel}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-brand-cream space-y-4 px-1 text-sm">
+                  {featured.education && (
+                    <div><p className="font-bold">Education</p><p className="text-brand-cream/80">{featured.education}</p></div>
                   )}
-                  {featured.experienceLevel && (
-                    <span className="text-[11px] uppercase font-semibold bg-brand-green text-brand-cream px-2.5 py-1 rounded-full">
-                      {featured.experienceLevel}
-                    </span>
+                  {featured.availability && (
+                    <div><p className="font-bold">Availability</p><p className="text-brand-cream/80">{featured.availability}</p></div>
+                  )}
+                  {featured.languages.length > 0 && (
+                    <div><p className="font-bold">Languages</p><p className="text-brand-cream/80">{featured.languages.join(", ")}</p></div>
+                  )}
+                  {featured.mediums.length > 0 && (
+                    <div><p className="font-bold">Medium(s)</p><p className="text-brand-cream/80">{featured.mediums.join(", ")}</p></div>
                   )}
                 </div>
               </div>
-              <div className="bg-brand-mint/90 rounded-2xl p-6 lg:col-span-2 flex flex-col justify-center">
-                {featured.roles.length > 0 && (
-                  <p className="text-black font-semibold text-sm mb-2">{featured.roles.join(" · ")}</p>
-                )}
-                <p className="text-black/80 text-sm leading-relaxed line-clamp-5">{featured.bio}</p>
+              <div className="flex flex-col gap-4">
+                <div className="bg-brand-mint rounded-3xl p-6 sm:p-7 text-brand-green">
+                  <p className="font-bold mb-2">Biography</p>
+                  <p className="text-sm leading-relaxed text-brand-green/90">{featured.bio}</p>
+                </div>
+                {spotlightSamples.map((ws, i) => (
+                  <div key={i} className="bg-brand-green border border-brand-cream/15 rounded-3xl p-5 text-brand-cream">
+                    <p className="font-bold leading-snug">{ws.title}</p>
+                    {[ws.role, ws.medium, ws.year].some(Boolean) && (
+                      <p className="text-sm text-brand-cream/70">{[ws.role, ws.medium, ws.year].filter(Boolean).join(" · ")}</p>
+                    )}
+                  </div>
+                ))}
                 {HOMEPAGE_CTAS.viewFullProfile && (
                   <Link
                     href={`/directory/${featured.slug}`}
-                    className="inline-block mt-4 text-black font-semibold text-sm underline underline-offset-2 hover:no-underline w-fit"
+                    className="text-brand-cream font-semibold text-sm underline underline-offset-2 hover:no-underline w-fit"
                   >
                     View full profile →
                   </Link>
@@ -297,7 +280,7 @@ export default async function Home() {
         <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
           <div className="bg-white text-black rounded-2xl p-8 sm:p-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
-              <h2 className="font-heading font-bold text-xl mb-2 text-black">
+              <h2 className="font-bold text-xl mb-2 text-black">
                 Looking to hire Pakistani creative talent?
               </h2>
               <p className="text-black/70 text-sm max-w-lg">

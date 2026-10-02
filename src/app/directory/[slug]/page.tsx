@@ -6,23 +6,9 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { toggleProfileBookmark } from "@/lib/bookmark-actions";
 import { getDisplayPrices } from "@/lib/stripe";
+import WorkSamplesCarousel from "@/components/WorkSamplesCarousel";
 
 export const dynamic = "force-dynamic";
-
-function formatRoleLine(roles: string[]): string {
-  if (roles.length === 0) return "";
-  if (roles.length === 1) return roles[0];
-  if (roles.length === 2) return `${roles[0]} & ${roles[1]}`;
-  return `${roles.slice(0, -1).join(", ")}, & ${roles[roles.length - 1]}`;
-}
-
-function toEmbedUrl(link: string): string | null {
-  const yt = link.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
-  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
-  const vimeo = link.match(/vimeo\.com\/(\d+)/);
-  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
-  return null;
-}
 
 /**
  * Turns whatever a creative typed into a link that actually resolves.
@@ -38,6 +24,8 @@ function toEmbedUrl(link: string): string | null {
  * "https://instagram.com/instagram.com/sara" — a dead link, and a plausible
  * thing to type. Anything that already names a host gets just a scheme.
  */
+=======
+>>>>>>> a8fabcb (Apply 10/02 feedback: profile layout, directory cards, access comparison, pricing)
 function normalizeUrl(href: string, prefix = "https://"): string {
   const value = href.trim();
   // Already absolute — checked as a real scheme, so a handle that merely begins
@@ -49,6 +37,13 @@ function normalizeUrl(href: string, prefix = "https://"): string {
   const looksLikeHost = /^[^/]+\.[a-z]{2,}(?:[/:?#]|$)/i.test(handle);
   return looksLikeHost ? `https://${handle}` : `${prefix}${handle}`;
 }
+
+function youTubeThumbnail(link: string): string | undefined {
+  const yt = link.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+  return yt ? `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg` : undefined;
+}
+
+type Social = { href: string; kind: "globe" | "instagram" | "linkedin" | "imdb" | "play" };
 
 function truncateWords(text: string, max: number): string {
   const words = text.trim().split(/\s+/);
@@ -99,14 +94,21 @@ export default async function MemberPage({
   const workSamples = (creative.workSamples as
     | { title?: string; role?: string; link?: string; medium?: string; year?: string }[]
     | null) ?? [];
-  const [primarySample, ...otherSamples] = workSamples;
 
   const fullName = `${creative.firstName} ${creative.lastName}`;
   const subtitle = [creative.pronouns].filter(Boolean).join(" ");
   const bio = showFull ? creative.bio : truncateWords(creative.bio, 200);
-  const hasSocialLinks = Boolean(
-    headlineLink || creative.instagram || creative.linkedin || creative.imdb || creative.vimeo
-  );
+  const socials: Social[] = [
+    ...(headlineLink ? [{ href: normalizeUrl(headlineLink), kind: "globe" as const }] : []),
+    ...(creative.instagram
+      ? [{ href: normalizeUrl(creative.instagram, "https://instagram.com/"), kind: "instagram" as const }]
+      : []),
+    ...(creative.linkedin
+      ? [{ href: normalizeUrl(creative.linkedin, "https://linkedin.com/in/"), kind: "linkedin" as const }]
+      : []),
+    ...(creative.imdb ? [{ href: normalizeUrl(creative.imdb), kind: "imdb" as const }] : []),
+    ...(creative.vimeo ? [{ href: normalizeUrl(creative.vimeo), kind: "play" as const }] : []),
+  ];
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)] bg-brand-green print-area">
@@ -160,14 +162,23 @@ export default async function MemberPage({
                 roles={creative.roles}
                 experienceLevel={creative.experienceLevel}
                 headlineLink={headlineLink}
-                showRolesAsPills
+                socials={socials}
               />
-              <BiographyCard bio={bio} />
 
-              {/* Contact CTA and more-samples live in the left column, not after
-                  the whole grid — client feedback (08/28 round): stacking them
-                  below the taller right column left a gap under Biography that
-                  had nothing to do with either column's real height. */}
+              {/* Education / availability / languages / medium sit under the
+                  identity card; Biography moved to the right column so it reads
+                  beside the card (client feedback 10/02). */}
+              <div className="text-brand-cream space-y-5 px-1">
+                {creative.education && <Detail label="Education" value={creative.education} />}
+                {creative.availability && <Detail label="Availability" value={creative.availability} />}
+                {creative.languages.length > 0 && (
+                  <Detail label="Languages" value={creative.languages.join(", ")} />
+                )}
+                {creative.mediums.length > 0 && (
+                  <Detail label="Medium(s)" value={creative.mediums.join(", ")} />
+                )}
+              </div>
+
               {session && (
                 <div className="bg-brand-mint rounded-3xl p-7 print:hidden">
                   <p className="text-brand-green mb-3 text-sm">
@@ -182,82 +193,28 @@ export default async function MemberPage({
                   </Link>
                 </div>
               )}
-
-              {otherSamples.length > 0 && (
-                <div className="bg-brand-green border border-brand-cream/10 rounded-3xl p-7">
-                  <p className="font-heading font-bold text-brand-cream text-lg mb-3">
-                    More Work Samples
-                  </p>
-                  <div className="space-y-2">
-                    {otherSamples.map((ws, i) => (
-                      <div key={i} className="flex items-start justify-between gap-2 text-sm">
-                        <div>
-                          <span className="text-brand-cream">{ws.title}</span>
-                          {ws.role && <span className="text-brand-cream/60"> · {ws.role}</span>}
-                          {ws.medium && <span className="text-brand-cream/60"> · {ws.medium}</span>}
-                          {ws.year && <span className="text-brand-cream/60"> · {ws.year}</span>}
-                        </div>
-                        {ws.link && (
-                          <a
-                            href={ws.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-brand-cream hover:text-brand-cream/70 shrink-0"
-                          >
-                            ↗
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
-            <div className="flex flex-col gap-6">
-              {/* Details + primary work sample — stacked one after another on
-                  green, not split into two side-by-side columns. A second empty
-                  column (no primary sample) used to reserve a whole blank grid
-                  track, and "Connect" rendered even with zero links — both read
-                  as dead space; both are gone now that this is a single flow. */}
-              <div className="text-brand-cream space-y-5">
-                {creative.education && <Detail label="Education" value={creative.education} />}
-                {creative.availability && <Detail label="Availability" value={creative.availability} />}
-                {creative.languages.length > 0 && (
-                  <Detail label="Languages" value={creative.languages.join(", ")} />
-                )}
-                {creative.mediums.length > 0 && (
-                  <Detail label="Medium(s)" value={creative.mediums.join(", ")} />
-                )}
-                {hasSocialLinks && (
-                  <div>
-                    <p className="font-heading font-bold text-lg tracking-wide mb-2">Connect</p>
-                    <div className="flex flex-wrap gap-2">
-                      {headlineLink && <SocialIcon href={normalizeUrl(headlineLink)} kind="globe" />}
-                      {creative.instagram && (
-                        <SocialIcon href={normalizeUrl(creative.instagram, "https://instagram.com/")} kind="instagram" />
-                      )}
-                      {creative.linkedin && (
-                        <SocialIcon href={normalizeUrl(creative.linkedin, "https://linkedin.com/in/")} kind="linkedin" />
-                      )}
-                      {creative.imdb && <SocialIcon href={normalizeUrl(creative.imdb)} kind="imdb" />}
-                      {creative.vimeo && <SocialIcon href={normalizeUrl(creative.vimeo)} kind="play" />}
-                    </div>
-                  </div>
-                )}
-                {primarySample && (
-                  <>
-                    <Detail
-                      label="Primary Work Sample"
-                      value={[primarySample.title, primarySample.medium, primarySample.year]
-                        .filter(Boolean)
-                        .join(", ")}
-                    />
-                    {primarySample.role && <Detail label="Role(s)" value={primarySample.role} />}
-                    {primarySample.link && <ProjectEmbed link={primarySample.link} />}
-                  </>
-                )}
-              </div>
+            <div className="flex flex-col gap-6 min-w-0">
+              <BiographyCard bio={bio} />
+
+              {workSamples.length > 0 && (
+                <div>
+                  <p className="font-heading font-bold text-brand-cream text-lg tracking-wide mb-3 px-1">
+                    Work Samples
+                  </p>
+                  <WorkSamplesCarousel
+                    samples={workSamples.map((ws) => ({
+                      title: ws.title ?? "",
+                      role: ws.role,
+                      medium: ws.medium,
+                      year: ws.year,
+                      link: ws.link ? normalizeUrl(ws.link) : undefined,
+                      thumbnail: ws.link ? youTubeThumbnail(ws.link) : undefined,
+                    }))}
+                  />
+                </div>
+              )}
 
               {(creative.rateStructure ||
                 creative.collaborationPreferences ||
@@ -329,12 +286,12 @@ export default async function MemberPage({
             <IdentityCard
               fullName={fullName}
               subtitle={subtitle}
-              headshot={null}
+              headshot={creative.headshot}
               location={creative.location}
               roles={creative.roles}
               experienceLevel={creative.experienceLevel}
               headlineLink={headlineLink}
-              showRolesAsPills={false}
+              socials={[]}
               className="lg:col-span-2"
             />
             <BiographyCard bio={bio} className="lg:col-span-3" />
@@ -371,7 +328,7 @@ function IdentityCard({
   roles,
   experienceLevel,
   headlineLink,
-  showRolesAsPills,
+  socials,
   className = "",
 }: {
   fullName: string;
@@ -381,7 +338,7 @@ function IdentityCard({
   roles: string[];
   experienceLevel: string | null;
   headlineLink: string | null;
-  showRolesAsPills: boolean;
+  socials: Social[];
   className?: string;
 }) {
   const initials = fullName
@@ -391,21 +348,18 @@ function IdentityCard({
     .join("");
   return (
     <div className={`bg-brand-green border border-brand-cream/10 rounded-3xl p-7 sm:p-8 ${className}`}>
-      {/* Free profiles don't include a headshot slot at all (not just a hidden one) —
-          per the client's Free Access spec, a photo is a member-tier field. */}
-      {showRolesAsPills &&
-        (headshot ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={headshot}
-            alt={fullName}
-            className="w-28 h-28 rounded-2xl object-cover mb-5"
-          />
-        ) : (
-          <div className="w-20 h-20 rounded-2xl bg-brand-mint/40 flex items-center justify-center text-brand-green font-heading font-bold text-2xl mb-5">
-            {initials}
-          </div>
-        ))}
+      {headshot ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={headshot}
+          alt={fullName}
+          className="w-28 h-28 rounded-2xl object-cover mb-5"
+        />
+      ) : (
+        <div className="w-20 h-20 rounded-2xl bg-brand-mint/40 flex items-center justify-center text-brand-green font-heading font-bold text-2xl mb-5">
+          {initials}
+        </div>
+      )}
       <h1 className="font-heading font-bold text-3xl sm:text-4xl text-brand-cream leading-[0.95] tracking-tight">
         {fullName}
       </h1>
@@ -417,20 +371,14 @@ function IdentityCard({
             {location}
           </span>
         )}
-        {showRolesAsPills
-          ? roles.map((r) => (
-              <span
-                key={r}
-                className="text-xs uppercase font-semibold bg-brand-mint text-brand-green px-3 py-1 rounded-full"
-              >
-                {r}
-              </span>
-            ))
-          : roles.length > 0 && (
-              <span className="text-xs uppercase font-semibold bg-brand-cream text-brand-green px-3 py-1 rounded-full">
-                {formatRoleLine(roles)}
-              </span>
-            )}
+        {roles.map((r) => (
+          <span
+            key={r}
+            className="text-xs uppercase font-semibold bg-brand-mint text-brand-green px-3 py-1 rounded-full"
+          >
+            {r}
+          </span>
+        ))}
         {experienceLevel && (
           <span className="text-xs uppercase font-semibold bg-brand-cream text-brand-green px-3 py-1 rounded-full">
             {experienceLevel}
@@ -447,6 +395,14 @@ function IdentityCard({
         >
           <GlobeGlyph /> {headlineLink.replace(/^https?:\/\//, "")}
         </a>
+      )}
+
+      {socials.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-4">
+          {socials.map((s) => (
+            <SocialIcon key={s.kind} href={s.href} kind={s.kind} />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -481,38 +437,6 @@ function WfhRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ProjectEmbed({ link }: { link: string }) {
-  const embed = toEmbedUrl(link);
-  return (
-    <div>
-      <p className="font-heading font-bold text-lg tracking-wide mb-2">Project Link</p>
-      {embed ? (
-        <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-          <iframe
-            src={embed}
-            title="Work sample"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="w-full h-full"
-          />
-        </div>
-      ) : (
-        <a
-          href={normalizeUrl(link)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex aspect-video w-full items-center justify-center rounded-xl bg-black text-brand-cream/80 hover:text-brand-cream"
-        >
-          <span className="inline-flex items-center gap-2 text-sm">
-            <span className="grid place-items-center w-10 h-10 rounded-full bg-red-600 text-white">▶</span>
-            View Project ↗
-          </span>
-        </a>
-      )}
-    </div>
-  );
-}
-
 function GlobeGlyph() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -522,7 +446,7 @@ function GlobeGlyph() {
   );
 }
 
-function SocialIcon({ href, kind }: { href: string; kind: "globe" | "instagram" | "linkedin" | "imdb" | "play" }) {
+function SocialIcon({ href, kind }: Social) {
   const glyph: Record<typeof kind, React.ReactNode> = {
     globe: <GlobeGlyph />,
     instagram: (

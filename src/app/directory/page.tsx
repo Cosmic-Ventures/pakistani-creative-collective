@@ -32,6 +32,8 @@ export default async function DirectoryPage() {
       // mediums is filterable by everyone (free tier filters by medium + location only);
       // the rest stay paid-gated.
       mediums: true,
+      // Photos are visible to everyone (10/02 round).
+      headshot: true,
       ...(isPaid
         ? {
             languages: true,
@@ -40,7 +42,6 @@ export default async function DirectoryPage() {
             rateStructure: true,
             rateRange: true,
             ratePublic: true,
-            headshot: true,
           }
         : {}),
     },
@@ -70,8 +71,8 @@ export default async function DirectoryPage() {
           <div className="text-2xl">🔒</div>
           <div className="text-sm text-brand-brown/80">
             <span className="text-brand-green font-semibold">You&apos;re browsing in preview mode.</span>{" "}
-            You can see each creative&apos;s name, role, experience level, location, and bio. Subscribe to
-            unlock headshots, search & filter, work samples, and contact requests.
+            You can see each creative&apos;s photo, name, role, location, and bio, and filter by role,
+            medium, and location. Subscribe to unlock full profiles, advanced search, and contact requests.
           </div>
         </div>
       )}
