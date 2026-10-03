@@ -11,6 +11,7 @@ import {
   CATEGORIES_REQUIRING_REGION,
   POST_BODY_MAX_WORDS,
   COMMENT_MAX_WORDS,
+  normalizePostLink,
 } from "./community-constants";
 
 const POST_CATEGORIES = ["RECENT_WORK", "SEEKING_FUNDING", "SEEKING_COLLABORATORS", "AVAILABLE_FOR_WORK"] as const;
@@ -70,17 +71,34 @@ export async function createPost(_prev: PostResult | null, formData: FormData): 
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const d = parsed.data;
 
-  await db.post.create({
-    data: {
-      creativeId: member.creative.id,
-      category: d.category,
-      title: d.title,
-      body: d.body,
-      region: d.region || undefined,
-      expiresAt: d.expiresAt ? new Date(d.expiresAt) : undefined,
-      link: d.link || undefined,
-    },
-  });
+  // `expiresAt` is a free-form string off the wire, so `new Date(...)` can yield
+  // an Invalid Date. Passing that to Prisma throws, which surfaces to the member
+  // as a submit that does nothing — say what's wrong instead.
+  let deadline: Date | undefined;
+  if (d.expiresAt) {
+    deadline = new Date(d.expiresAt);
+    if (Number.isNaN(deadline.getTime())) {
+      return { error: "That duration/deadline isn't a valid date." };
+    }
+  }
+
+  try {
+    await db.post.create({
+      data: {
+        creativeId: member.creative.id,
+        category: d.category,
+        title: d.title,
+        body: d.body,
+        region: d.region || undefined,
+        expiresAt: deadline,
+        link: normalizePostLink(d.link) ?? undefined,
+      },
+    });
+  } catch (error) {
+    // A failed write must read as a message, never as a button that did nothing.
+    console.error("[community-post] rejected: database write failed", error);
+    return { error: "Something went wrong saving your post — nothing you typed has been lost. Please try again." };
+  }
 
   await sendNewCommunityPostNotification(
     `${member.creative.firstName} ${member.creative.lastName}`,

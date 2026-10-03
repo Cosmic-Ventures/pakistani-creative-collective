@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { db } from "./db";
 import { getSession, createSession } from "./session";
 import { stripe, PRICE_MONTHLY, PRICE_ANNUAL } from "./stripe";
@@ -54,6 +55,10 @@ export async function simulatePayment() {
     data: { role: "PAID", subStatus: "active" },
   });
   await createSession({ ...session, role: "PAID" });
+  // The role change adds the Community/Account tabs, so the cached root layout
+  // has to be dropped or the nav keeps showing the unpaid one (see
+  // refreshLayout in auth-actions.ts).
+  revalidatePath("/", "layout");
   redirect("/subscribe/success?mock=1");
 }
 

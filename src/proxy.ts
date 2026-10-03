@@ -29,10 +29,13 @@ function sessionKey(): Uint8Array {
 // Routes that require *a* signed-in user. Which role they need is decided
 // server-side, against the database, by the page or action itself.
 const SIGNED_IN_ROUTES = ["/admin", "/account", "/enroll", "/join"];
-const AUTH_ROUTES = ["/auth/signin", "/auth/signup"];
 
 export async function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const { pathname, search } = req.nextUrl;
+  // Every `next` we hand out must carry the query string, not just the path. A
+  // password-reset link is `/auth/reset?token=…`; storing only the pathname sent
+  // the user back from the gate with no token and an "expired link" message.
+  const returnTo = `${pathname}${search}`;
   const token = req.cookies.get(SESSION_COOKIE)?.value;
 
   let signedIn = false;
@@ -59,7 +62,7 @@ export async function proxy(req: NextRequest) {
       // hits the gate from the homepage lands back on it after entering the
       // password, instead of being bounced to /enroll by gate-actions.ts's
       // default.
-      url.searchParams.set("next", pathname);
+      url.searchParams.set("next", returnTo);
       return NextResponse.redirect(url);
     }
 
@@ -74,14 +77,26 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  // Redirect logged-in users away from auth pages
-  if (AUTH_ROUTES.some((r) => pathname.startsWith(r)) && signedIn) {
-    return NextResponse.redirect(new URL("/directory", req.url));
-  }
+  // NOTE: there is deliberately no "already signed in, bounce away from the auth
+  // pages" rule here any more, and it must not be reintroduced at the edge.
+  //
+  // This runs where the database is unreachable, so the only thing it can check
+  // is the JWT's signature. `getSession` — which every page and action uses —
+  // additionally requires the user row to still exist. The two therefore
+  // disagree whenever a cookie is valid but the account is gone (or the database
+  // is briefly unavailable), and the disagreement locked people out: the edge
+  // bounced them off /auth/signin while every page rendered them as signed out,
+  // so the header offered "Sign in", clicking it went nowhere, and the only
+  // escape was clearing cookies. Reported as "works in incognito, glitches in my
+  // own browser".
+  //
+  // The redirect now lives on the auth pages themselves (src/app/auth/*/page.tsx),
+  // which resolve the session against the database and so can never contradict
+  // the header they are rendered next to.
 
   // Bounce anonymous visitors to sign-in. Role is enforced past this point.
   if (SIGNED_IN_ROUTES.some((r) => pathname.startsWith(r)) && !signedIn) {
-    return NextResponse.redirect(new URL("/auth/signin?next=" + encodeURIComponent(pathname), req.url));
+    return NextResponse.redirect(new URL("/auth/signin?next=" + encodeURIComponent(returnTo), req.url));
   }
 
   return NextResponse.next();

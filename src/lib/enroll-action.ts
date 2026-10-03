@@ -16,22 +16,51 @@ function toSlug(first: string, last: string): string {
   return base || "creative";
 }
 
+/**
+ * The shortest free slug for this name.
+ *
+ * `startsWith` is a prefix match, so the candidate set includes unrelated
+ * names that merely begin the same way: an existing "ali-khanna" made a new
+ * Ali Khan land on "ali-khan-1" even though "ali-khan" was free, and an
+ * existing "ali-khan-2020" pushed the next one to "ali-khan-2021". The rows
+ * are still fetched by prefix (that's the only indexable way to ask), but only
+ * the ones that are genuinely `base` or `base-<n>` are allowed to consume a
+ * number.
+ */
 async function uniqueSlug(first: string, last: string): Promise<string> {
   const base = toSlug(first, last);
-  const exists = await db.creative.findMany({
+  const candidates = await db.creative.findMany({
     where: { slug: { startsWith: base } },
     select: { slug: true },
   });
-  if (!exists.length) return base;
-  const suffixes = exists.map((e) => {
-    const m = e.slug.match(/-(\d+)$/);
-    return m ? parseInt(m[1]) : 0;
-  });
-  return `${base}-${Math.max(...suffixes) + 1}`;
+
+  const taken = new Set(candidates.map((c) => c.slug));
+  if (!taken.has(base)) return base;
+
+  const suffixed = new RegExp(`^${base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-(\\d+)$`);
+  const used = candidates
+    .map((c) => c.slug.match(suffixed))
+    .filter((m): m is RegExpMatchArray => m !== null)
+    .map((m) => parseInt(m[1], 10));
+
+  return `${base}-${(used.length ? Math.max(...used) : 0) + 1}`;
 }
 
 function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+/**
+ * Website and work-sample link fields are plain text now, not `type="url"`
+ * (see EnrollForm.tsx for why), so a bare "www.site.com" with no scheme is
+ * expected and common. Every place that renders these as an `<a href>` (the
+ * admin applications list, the public profile page) treats the stored string
+ * as an absolute URL, so a schemeless value would silently render as a
+ * broken relative link — add the scheme once, here, rather than at every
+ * render site.
+ */
+function ensureScheme(value: string): string {
+  return value && !/^[a-z][a-z0-9+.-]*:\/\//i.test(value) ? `https://${value}` : value;
 }
 
 /**
@@ -120,10 +149,44 @@ export async function reportEnrollmentBlockers(fields: string[]): Promise<void> 
   );
 }
 
+/**
+ * The applicant must never see a click that does nothing.
+ *
+ * Every early return below already carries a human-readable message, but an
+ * *unexpected* throw had no such guarantee: `uniqueSlug` queries the database
+ * outside the try/catch that guards the insert, so a slow pool or a brief
+ * outage rejected the whole Server Action. `useActionState` then never receives
+ * a result, the form renders no banner, and the applicant is left staring at a
+ * button that did nothing — the exact failure this form has already been
+ * bitten by twice (AGENTS.md gotchas #17 and #21).
+ *
+ * So the real work happens in `attemptEnrollment`, which only ever returns a
+ * message or null, and this wrapper turns anything it failed to anticipate into
+ * a message too. `redirect()` stays outside the try: it signals success by
+ * throwing, and catching that would turn a saved application into an error.
+ */
 export async function enrollAction(
   _prev: EnrollResult | null,
   formData: FormData
 ): Promise<EnrollResult> {
+  let failure: EnrollResult | null;
+  try {
+    failure = await attemptEnrollment(formData);
+  } catch (error) {
+    console.error("[enroll] rejected: unexpected failure", error);
+    return {
+      error:
+        "Something went wrong on our side and your application wasn't saved — nothing you typed has been lost. " +
+        "Please try again in a moment, and email pcc@aneesatalks.com if it keeps happening.",
+    };
+  }
+  if (failure) return failure;
+
+  redirect("/enroll/success");
+}
+
+/** Returns a message to show the applicant, or null once the application is saved. */
+async function attemptEnrollment(formData: FormData): Promise<EnrollResult | null> {
   // The page itself already redirects anonymous visitors to sign in
   // (app/enroll/page.tsx, backed by proxy.ts at the edge), but this action is
   // a POST endpoint reachable on its own — this is the check that actually
@@ -183,7 +246,7 @@ export async function enrollAction(
         medium: formData.get(`ws${n}Medium`) as string,
         year: formData.get(`ws${n}Year`) as string,
         role: [...roleSelect, roleOther.trim()].filter(Boolean).join(", "),
-        link: formData.get(`ws${n}Link`) as string,
+        link: ensureScheme(((formData.get(`ws${n}Link`) as string) ?? "").trim()),
       };
     })
     .filter((ws) => ws.title);
@@ -217,6 +280,10 @@ export async function enrollAction(
     const trimmed = v?.trim();
     return trimmed ? trimmed : undefined;
   };
+  const optUrl = (v?: string) => {
+    const trimmed = opt(v);
+    return trimmed ? ensureScheme(trimmed) : undefined;
+  };
 
   try {
     await db.creative.create({
@@ -238,7 +305,7 @@ export async function enrollAction(
         pccGoals: opt(d.pccGoals),
         experienceLevel: shortExperienceLevel(d.experienceLevel),
         notableAchievements: opt(d.notableAchievements),
-        website: opt(d.website),
+        website: optUrl(d.website),
         imdb: opt(d.imdb),
         instagram: opt(d.instagram),
         linkedin: opt(d.linkedin),
@@ -264,7 +331,7 @@ export async function enrollAction(
         promoConsent: d.consentPromo === "on",
         roles: allRoles,
         mediums: allMediums,
-          preferredProjectTypes,
+        preferredProjectTypes,
         workSamples: workSamples.length > 0 ? workSamples : undefined,
       },
     });
@@ -292,9 +359,10 @@ export async function enrollAction(
     experienceLevel: shortExperienceLevel(d.experienceLevel),
   }).catch(console.error);
 
-  // The application is filed, so any saved draft is spent. Must happen before
-  // redirect(), which throws to unwind the action.
+  // The application is filed, so any saved draft is spent.
   await discardEnrollmentDraft().catch(console.error);
 
-  redirect("/enroll/success");
+  // Saved. The caller redirects — doing it here would throw through the
+  // wrapper's catch and be reported to the applicant as a failure.
+  return null;
 }

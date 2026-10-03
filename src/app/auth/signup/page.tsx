@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import AuthForm from "@/components/AuthForm";
 import { signupAction } from "@/lib/auth-actions";
+import { getSession } from "@/lib/session";
+import { gateEnabled } from "@/lib/site-gate";
+import { signedInLanding } from "@/lib/safe-redirect";
 
 export const metadata: Metadata = { title: "Create Account" };
 
@@ -11,6 +15,10 @@ export default async function SignupPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next } = await searchParams;
+
+  // Same database-backed check as the sign-in page — see the note there.
+  const session = await getSession();
+  if (session) redirect(signedInLanding(next, gateEnabled()));
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">

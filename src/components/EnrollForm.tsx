@@ -8,6 +8,7 @@ import {
   type EnrollResult,
 } from "@/lib/enroll-action";
 import { saveEnrollmentDraft, discardEnrollmentDraft } from "@/lib/enroll-draft-actions";
+import { withSubmitFallback } from "@/lib/submit-fallback";
 import { HeadshotUpload } from "@/components/HeadshotUpload";
 import { EXPERIENCE_LEVELS, EXPERIENCE_TIERS } from "@/lib/experience-levels";
 import {
@@ -501,7 +502,23 @@ export default function EnrollForm({
   draftSavedAt = null,
   canSaveProgress = false,
 }: EnrollFormProps) {
-  const [state, formAction, pending] = useActionState<EnrollResult | null, FormData>(enrollAction, null);
+  // Last line of defence against a submit that appears to do nothing: if the
+  // call rejects before any result comes back (connection dropped, body over the
+  // limit, anything unforeseen), useActionState would leave `state` untouched
+  // and the form would render no banner at all. See withSubmitFallback.
+  const [state, formAction, pending] = useActionState<EnrollResult | null, FormData>(
+    withSubmitFallback<EnrollResult | null>(
+      enrollAction,
+      {
+        error:
+          "We couldn't reach the server to submit your application — nothing you typed has been lost. " +
+          "Check your connection and press Submit again. If your headshot is very large, try a smaller photo. " +
+          "Email pcc@aneesatalks.com if it keeps happening.",
+      },
+      "enroll"
+    ),
+    null
+  );
 
   const d = asRecord(initialDraft);
   const draftValues = asRecord(d.values) as Values;
@@ -672,7 +689,21 @@ export default function EnrollForm({
   const stepClass = (index: number) => (index === step ? "" : "hidden");
 
   return (
-    <form action={formAction} className="bg-white rounded-3xl p-6 sm:p-10">
+    // noValidate: the website/link fix above turned out to be one instance of
+    // a structural problem, not the only one. `type="email"` (email, step 0),
+    // `type="number"` (yearsExperience/completedProjects, step 2), and the
+    // availability date pickers' `min={today}` (step 2, recomputed on every
+    // render, so a date picked before midnight can retroactively violate it)
+    // are all native browser constraints living on steps that are hidden —
+    // not unmounted — once the applicant reaches Review. A hidden, invalid,
+    // unfocusable control makes the browser silently refuse to submit the
+    // whole form; that's the entire "Submit does nothing" bug, and it isn't
+    // specific to URLs. `problems` above is already the sole real gate
+    // (required-ness, email format, bio length, consents), so native
+    // constraint validation adds nothing here except this landmine — for
+    // whichever field happens to carry one next. Disable it for the form,
+    // not field by field.
+    <form action={formAction} noValidate className="bg-white rounded-3xl p-6 sm:p-10">
       {lastError && (
         <div
           id="enroll-server-error"
@@ -833,7 +864,22 @@ export default function EnrollForm({
             values={values}
             update={update}
           />
-          <TextField name="website" label="Website / Portfolio URL" type="url" placeholder="https://…" values={values} update={update} />
+          {/* Deliberately `type="text"`, not `url`: this field lives on a
+              non-final step that's CSS-hidden (`.hidden`, not unmounted —
+              gotcha #10) once the applicant reaches Review. A `type="url"`
+              input whose value fails the browser's native URL syntax check
+              (e.g. "www.site.com" with no scheme) can't be focused to show
+              that error while its step is hidden, so the browser just
+              refuses to submit the form at all — silently, with no request
+              sent and nothing for either the client checklist or the server
+              logs to catch. This is what "I filled out the whole
+              application and Submit does nothing" turned out to be
+              (09/06: two applicants, both with an unscheduled `www.…`
+              website, both stuck on a fully-valid-looking draft that never
+              submitted). Loose free text plus server-side normalization
+              (enroll-action.ts) is the same pattern already used for imdb/
+              instagram/linkedin/vimeo below. */}
+          <TextField name="website" label="Website / Portfolio URL" placeholder="https://…" values={values} update={update} />
           <div className="grid grid-cols-2 gap-4">
             <TextField name="imdb" label="IMDb" placeholder="IMDb URL or nm…" values={values} update={update} />
             <TextField name="instagram" label="Instagram" placeholder="@handle or URL" values={values} update={update} />
@@ -865,7 +911,10 @@ export default function EnrollForm({
                 />
                 <input type="hidden" name={`ws${n}RoleOther`} value={wsRoleOther[n] ?? ""} />
               </Field>
-              <TextField name={`ws${n}Link`} label="Link" type="url" placeholder="https://…" values={values} update={update} />
+              {/* `type="text"`, not `url` — same silent-submit hazard as the
+                  Website field above: this lives on a hidden step by the
+                  time the applicant reaches Review. */}
+              <TextField name={`ws${n}Link`} label="Link" placeholder="https://…" values={values} update={update} />
             </div>
           ))}
         </Section>

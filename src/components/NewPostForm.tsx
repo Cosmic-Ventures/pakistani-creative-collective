@@ -10,13 +10,21 @@ import {
   POST_BODY_MAX_WORDS,
 } from "@/lib/community-constants";
 import type { PostCategory } from "@prisma/client";
+import { withSubmitFallback } from "@/lib/submit-fallback";
 
 const CATEGORIES = Object.keys(POST_CATEGORY_LABELS) as PostCategory[];
 const inputCls = "w-full bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown text-sm focus:outline-none focus:border-brand-green";
 
 export default function NewPostForm() {
   const [open, setOpen] = useState(false);
-  const [state, formAction, pending] = useActionState<PostResult | null, FormData>(createPost, null);
+  const [state, formAction, pending] = useActionState<PostResult | null, FormData>(
+    withSubmitFallback<PostResult | null>(
+      createPost,
+      { error: "We couldn't reach the server to post this — check your connection and try again." },
+      "community-post"
+    ),
+    null
+  );
   const [category, setCategory] = useState<PostCategory | "">("");
   const [body, setBody] = useState("");
 
