@@ -41,71 +41,67 @@ function MemberCard({ member, isPaid }: { member: Member; isPaid: boolean }) {
   return (
     <Link
       href={`/directory/${member.slug}`}
-      className={`group block bg-white border rounded-xl p-5 hover:border-brand-green/60 hover:shadow-md transition-all ${
-        active ? "border-brand-mint" : "border-brand-green/10"
+      className={`group block bg-brand-green text-brand-cream border rounded-xl p-5 hover:border-brand-mint hover:shadow-md transition-all ${
+        active ? "border-brand-mint" : "border-brand-cream/10"
       }`}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        {isPaid && member.headshot ? (
+        {member.headshot ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={member.headshot}
             alt={name}
-            className="w-10 h-10 rounded-full object-cover border border-brand-green/20 shrink-0"
+            className="w-12 h-12 rounded-full object-cover border border-brand-cream/20 shrink-0"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-brand-mint/30 border border-brand-mint flex items-center justify-center text-brand-green font-semibold text-sm shrink-0">
+          <div className="w-12 h-12 rounded-full bg-brand-mint/30 border border-brand-mint flex items-center justify-center text-brand-cream font-semibold text-sm shrink-0">
             {initials}
           </div>
         )}
         <div className="flex flex-col items-end gap-1">
           {active && (
-            <span className="text-xs bg-brand-mint/30 border border-brand-mint text-brand-green px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-brand-mint text-brand-green px-2 py-0.5 rounded-full">
               Featured
             </span>
           )}
           {isPaid && member.availability && (
-            <span className="text-xs text-brand-brown/50">{member.availability}</span>
+            <span className="text-xs text-brand-cream/60">{member.availability}</span>
           )}
         </div>
       </div>
 
-      <h3 className="font-semibold text-brand-green group-hover:text-brand-green/70 transition-colors leading-tight">
+      <h3 className="font-semibold text-brand-cream leading-tight">
         {name}
         {member.pronouns && (
-          <span className="ml-2 text-xs text-brand-brown/50 font-normal">({member.pronouns})</span>
+          <span className="ml-2 text-xs text-brand-cream/60 font-normal">({member.pronouns})</span>
         )}
       </h3>
 
-      {member.location && <p className="text-xs text-brand-brown/50 mt-0.5">{member.location}</p>}
+      {member.location && <p className="text-xs text-brand-cream/60 mt-0.5">{member.location}</p>}
 
       {member.roles.length > 0 && (
-        isPaid ? (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {member.roles.slice(0, 3).map((r) => (
-              <span key={r} className="text-xs bg-brand-mint/20 border border-brand-mint/60 text-brand-green px-2 py-0.5 rounded-full">
-                {r}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-brand-brown/70 mt-1">{member.roles.join(", ")}</p>
-        )
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {member.roles.slice(0, 3).map((r) => (
+            <span key={r} className="text-xs bg-brand-mint text-brand-green px-2 py-0.5 rounded-full">
+              {r}
+            </span>
+          ))}
+        </div>
       )}
 
       {isPaid && member.mediums && member.mediums.length > 0 && (
-        <p className="text-xs text-brand-brown/50 mt-1.5">{member.mediums.slice(0, 2).join(", ")}</p>
+        <p className="text-xs text-brand-cream/60 mt-1.5">{member.mediums.slice(0, 2).join(", ")}</p>
       )}
 
       {!isPaid && (
-        <p className="text-sm text-brand-brown/60 mt-2 line-clamp-2">{member.bio}</p>
+        <p className="text-sm text-brand-cream/80 mt-2 line-clamp-2">{member.bio}</p>
       )}
 
       {member.experienceLevel && (
-        <span className="inline-block mt-3 text-xs bg-brand-green/5 border border-brand-green/20 text-brand-green/80 px-2 py-0.5 rounded">
+        <span className="inline-block mt-3 text-xs bg-brand-cream/10 border border-brand-cream/20 text-brand-cream px-2 py-0.5 rounded">
           {member.experienceLevel}
         </span>
       )}
-
     </Link>
   );
 }
@@ -125,11 +121,10 @@ export default function DirectoryClient({
   const [mediumFilter, setMediumFilter] = useState("");
 
   const roles = useMemo(() => {
-    if (!isPaid) return [];
     const set = new Set<string>();
     members.forEach((m) => m.roles?.forEach((r) => r && set.add(r)));
     return Array.from(set).sort();
-  }, [members, isPaid]);
+  }, [members]);
 
   const locations = useMemo(() => {
     const set = new Set<string>();
@@ -166,10 +161,10 @@ export default function DirectoryClient({
     const q = query.toLowerCase();
     return members.filter((m) => {
       const name = `${m.firstName} ${m.lastName}`.toLowerCase();
-      if (q && !name.includes(q) && !m.roles?.join(" ").toLowerCase().includes(q)) return false;
+      if (isPaid && q && !name.includes(q) && !m.roles?.join(" ").toLowerCase().includes(q)) return false;
       if (mediumFilter && !m.mediums?.includes(mediumFilter)) return false;
       if (locationFilter && m.location !== locationFilter) return false;
-      if (isPaid && roleFilter && !m.roles?.includes(roleFilter)) return false;
+      if (roleFilter && !m.roles?.includes(roleFilter)) return false;
       if (isPaid && levelFilter && m.experienceLevel !== levelFilter) return false;
       if (isPaid && availFilter && m.availability !== availFilter) return false;
       return true;
@@ -180,17 +175,23 @@ export default function DirectoryClient({
 
   return (
     <div>
-      {/* Medium + location: available to everyone. Profession (role), experience
-          level, and work-for-hire (availability) are member-only filters, per the
-          Free vs. Member Access comparison. */}
+      {/* Role, medium, and location: available to everyone (10/02 round).
+          Name/keyword search, experience level, and work-for-hire availability
+          are member-only filters. */}
       <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-6">
-        <input
-          type="search"
-          placeholder="Search by name or role…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 min-w-[200px] bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm"
-        />
+        {isPaid && (
+          <input
+            type="search"
+            placeholder="Search by name or role…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="flex-1 min-w-[200px] bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown placeholder-brand-brown/40 focus:outline-none focus:border-brand-green text-sm"
+          />
+        )}
+        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className={selectCls}>
+          <option value="">All Roles</option>
+          {roles.map((r) => <option key={r} value={r}>{r}</option>)}
+        </select>
         <select value={mediumFilter} onChange={(e) => setMediumFilter(e.target.value)} className={selectCls}>
           <option value="">All Mediums</option>
           {mediums.map((m) => <option key={m} value={m}>{m}</option>)}
@@ -202,10 +203,6 @@ export default function DirectoryClient({
 
         {isPaid && (
           <>
-            <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className={selectCls}>
-              <option value="">All Professions</option>
-              {roles.map((r) => <option key={r} value={r}>{r}</option>)}
-            </select>
             <select value={levelFilter} onChange={(e) => setLevelFilter(e.target.value)} className={selectCls}>
               <option value="">All Experience Levels</option>
               {levels.map((l) => <option key={l} value={l}>{l}</option>)}

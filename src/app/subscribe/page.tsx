@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { isStripeConfigured, getDisplayPrices } from "@/lib/stripe";
 import { createCheckoutSession, simulatePayment } from "@/lib/subscribe-actions";
 import { PricingCard } from "@/components/PricingCard";
+import AccessComparison from "@/components/AccessComparison";
 
 export const metadata: Metadata = { title: "Subscribe" };
 
@@ -25,15 +26,6 @@ export default async function SubscribePage() {
 
   const prices = await getDisplayPrices();
 
-  const features = [
-    "Full creative profiles including headshots",
-    "Search & filter by role, level, availability, language",
-    "Submit contact requests — routed through Aneesa Talks",
-    "Rate information (where creatives opt in)",
-    "All social and portfolio links",
-    "Access to the private Community Dashboard",
-  ];
-
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-3xl">
@@ -47,7 +39,7 @@ export default async function SubscribePage() {
         <div className="text-center mb-8">
           <h1 className="font-heading font-bold text-2xl text-brand-green mb-2">Subscribe to PCC</h1>
           <p className="text-brand-brown/70 text-sm">
-            Unlock full profiles, search & filter, and contact requests. Pick monthly or yearly
+            Unlock full profiles, advanced search, and contact requests. Pick monthly or yearly
             billing — access is identical either way.
           </p>
         </div>
@@ -67,15 +59,9 @@ export default async function SubscribePage() {
           </div>
         )}
 
-        <div className="bg-brand-green/5 border border-brand-green/10 rounded-2xl p-6 max-w-md mx-auto mb-6">
-          <p className="text-sm font-semibold text-brand-green mb-3">What&apos;s included</p>
-          <ul className="space-y-2 text-sm text-brand-brown/80">
-            {features.map((f) => (
-              <li key={f} className="flex items-start gap-2">
-                <span className="text-brand-green shrink-0">✓</span> {f}
-              </li>
-            ))}
-          </ul>
+        <div className="mb-6">
+          <p className="text-sm font-semibold text-brand-green mb-3 text-center">What&apos;s included</p>
+          <AccessComparison />
         </div>
 
         <p className="text-center text-xs text-brand-brown/40">

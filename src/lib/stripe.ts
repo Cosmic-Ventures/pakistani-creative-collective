@@ -45,8 +45,8 @@ export type DisplayPrices = {
  * Stripe Prices so a degraded render doesn't advertise something different.
  */
 export const FALLBACK_PRICES: DisplayPrices = {
-  monthly: "$7.99",
-  annual: "$80",
+  monthly: "$5.99",
+  annual: "$60",
   annualSavingPercent: 17,
 };
 
