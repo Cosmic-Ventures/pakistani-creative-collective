@@ -24,8 +24,6 @@ export const dynamic = "force-dynamic";
  * "https://instagram.com/instagram.com/sara" — a dead link, and a plausible
  * thing to type. Anything that already names a host gets just a scheme.
  */
-=======
->>>>>>> a8fabcb (Apply 10/02 feedback: profile layout, directory cards, access comparison, pricing)
 function normalizeUrl(href: string, prefix = "https://"): string {
   const value = href.trim();
   // Already absolute — checked as a real scheme, so a handle that merely begins
