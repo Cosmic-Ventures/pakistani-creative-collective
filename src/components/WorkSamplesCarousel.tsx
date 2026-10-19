@@ -11,6 +11,16 @@ export type WorkSample = {
   thumbnail?: string;
 };
 
+/** Short, readable label for a link: just the site's hostname, e.g. "youtube.com". */
+function linkLabel(link: string): string {
+  try {
+    const host = new URL(link).hostname.replace(/^www\./, "");
+    return host === "youtu.be" ? "youtube.com" : host;
+  } catch {
+    return link.replace(/^https?:\/\/(www\.)?/, "").replace(/[/?#].*$/, "");
+  }
+}
+
 /** One compact resume-style card per work sample; swipe (or use the arrows) when there are several. */
 export default function WorkSamplesCarousel({ samples }: { samples: WorkSample[] }) {
   const track = useRef<HTMLDivElement>(null);
@@ -47,9 +57,9 @@ export default function WorkSamplesCarousel({ samples }: { samples: WorkSample[]
                     href={ws.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm underline decoration-brand-cream/40 underline-offset-2 hover:decoration-brand-cream break-all mt-1"
+                    className="text-sm underline decoration-brand-cream/40 underline-offset-2 hover:decoration-brand-cream mt-1"
                   >
-                    {ws.link.replace(/^https?:\/\/(www\.)?/, "").replace(/\?.*$/, "")} ↗
+                    {linkLabel(ws.link)} ↗
                   </a>
                 )}
               </div>
