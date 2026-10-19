@@ -11,13 +11,11 @@ export type WorkSample = {
   thumbnail?: string;
 };
 
-/** Short, readable label for a link: "Watch on YouTube", or just the site's hostname. */
+/** Short, readable label for a link: just the site's hostname, e.g. "youtube.com". */
 function linkLabel(link: string): string {
   try {
     const host = new URL(link).hostname.replace(/^www\./, "");
-    if (host === "youtube.com" || host === "youtu.be" || host === "m.youtube.com") return "Watch on YouTube";
-    if (host === "vimeo.com") return "Watch on Vimeo";
-    return host;
+    return host === "youtu.be" ? "youtube.com" : host;
   } catch {
     return link.replace(/^https?:\/\/(www\.)?/, "").replace(/[/?#].*$/, "");
   }
