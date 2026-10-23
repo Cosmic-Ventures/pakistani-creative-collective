@@ -3,6 +3,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import type { UserRole } from "@prisma/client";
 import { db } from "./db";
+import { trialActive } from "./trial-access";
 
 const SESSION_COOKIE = "pcc_session";
 
@@ -35,6 +36,8 @@ type SessionPayload = {
   email: string;
   role: UserRole;
   name?: string | null;
+  /** True when PAID is only the founding-member trial, not a real subscription. */
+  trial?: boolean;
 };
 
 export async function createSession(payload: SessionPayload) {
@@ -79,7 +82,7 @@ export const getSession = cache(async (): Promise<SessionPayload | null> => {
   try {
     const user = await db.user.findUnique({
       where: { id: jwt.userId },
-      select: { role: true, name: true },
+      select: { role: true, name: true, creative: { select: { status: true } } },
     });
     if (!user) {
       // Valid cookie, no account: deleted user, or a token minted against a
@@ -88,6 +91,11 @@ export const getSession = cache(async (): Promise<SessionPayload | null> => {
       // only symptom is a member insisting they can't sign in.
       console.error(`[session] valid token for a user that no longer exists: ${jwt.userId}`);
       return null;
+    }
+    // Founding-member trial (see trial-access.ts): an approved, linked creative
+    // reads as PAID everywhere that checks the session until the trial ends.
+    if (user.role === "UNPAID" && user.creative?.status === "APPROVED" && trialActive()) {
+      return { ...jwt, role: "PAID", name: user.name ?? jwt.name, trial: true };
     }
     return { ...jwt, role: user.role, name: user.name ?? jwt.name };
   } catch (error) {

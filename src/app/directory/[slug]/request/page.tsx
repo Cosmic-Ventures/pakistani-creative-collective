@@ -20,7 +20,7 @@ export default async function ContactRequestPage({
 
   const creative = await db.creative.findUnique({
     where: { slug, status: "APPROVED" },
-    select: { id: true, firstName: true, lastName: true },
+    select: { id: true, firstName: true, lastName: true, collaborationPreferences: true },
   });
   if (!creative) notFound();
 
@@ -35,7 +35,11 @@ export default async function ContactRequestPage({
       <p className="text-brand-brown/70 text-sm mb-8">
         This request will be reviewed by Aneesa Talks and forwarded to the creative. They decide whether to connect.
       </p>
-      <ContactRequestForm creativeId={creative.id} />
+      <ContactRequestForm
+        creativeId={creative.id}
+        firstName={creative.firstName}
+        openTo={creative.collaborationPreferences}
+      />
     </div>
   );
 }

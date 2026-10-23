@@ -29,7 +29,7 @@ export default async function ContactRequestsPage({
       where: activeStatus === "ALL" ? undefined : { status: activeStatus as never },
       orderBy: { createdAt: "desc" },
       include: {
-        creative: { select: { firstName: true, lastName: true, slug: true } },
+        creative: { select: { firstName: true, lastName: true, slug: true, collaborationPreferences: true } },
         user: { select: { name: true, email: true } },
       },
     }),
@@ -69,6 +69,11 @@ export default async function ContactRequestsPage({
                   From: {r.requesterName} ({r.requesterEmail}){r.company && ` · ${r.company}`}
                 </p>
                 <p className="text-xs text-stone-600">{new Date(r.createdAt).toLocaleDateString()}</p>
+                {!r.creative.collaborationPreferences?.trim() && (
+                  <p className="text-xs text-amber-400 mt-1">
+                    No Work For Hire preferences set: email the creative to confirm they want this connection.
+                  </p>
+                )}
               </div>
               <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLORS[r.status]}`}>
                 {r.status}

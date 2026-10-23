@@ -1,5 +1,7 @@
+import { randomUUID } from "node:crypto";
 import { Resend } from "resend";
 import { db } from "./db";
+import { isMissingSchemaError } from "./db-availability";
 import { getDisplayPrices } from "./stripe";
 import {
   adminEmailShell,
@@ -7,6 +9,7 @@ import {
   ctaButton,
   detailRow,
   emailShell,
+  escapeHtml,
   escapeMultiline,
   linkRow,
   paragraph,
@@ -32,6 +35,61 @@ function getResend() {
 }
 
 const FROM = "PCC <noreply@aneesatalks.com>";
+
+type Outgoing = {
+  to: string | string[];
+  subject: string;
+  html: string;
+  replyTo?: string;
+  /** What this email is: a template key, "mass-email", "support", … — shown in the admin's sent-mail log. */
+  kind: string;
+  /** Groups the individual sends of one mass email so the admin can see them as one. */
+  batchId?: string;
+};
+
+/**
+ * The one place an email leaves the app. Records every attempt in EmailLog so the
+ * admin panel can show exactly what went out (client, 10/22: "I want to see all
+ * emails that get sent out"). Logging is best-effort: the table may not exist yet
+ * on the live database, and a failed log must never turn a delivered email — or a
+ * failed one — into a different outcome.
+ */
+async function deliver(msg: Outgoing): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) return false;
+  let ok = false;
+  let error: string | null = null;
+  try {
+    const res = await resend.emails.send({
+      from: FROM,
+      to: msg.to,
+      subject: msg.subject,
+      html: msg.html,
+      ...(msg.replyTo ? { replyTo: msg.replyTo } : {}),
+    });
+    ok = !res?.error;
+    error = res?.error ? String(res.error.message ?? res.error) : null;
+  } catch (e) {
+    error = e instanceof Error ? e.message : String(e);
+  }
+  try {
+    await db.emailLog.create({
+      data: {
+        kind: msg.kind,
+        batchId: msg.batchId,
+        to: Array.isArray(msg.to) ? msg.to.join(", ") : msg.to,
+        subject: msg.subject,
+        html: msg.html,
+        status: ok ? "sent" : "failed",
+        error,
+      },
+    });
+  } catch (e) {
+    if (!isMissingSchemaError(e)) console.error("[email] could not record the send in EmailLog", e);
+  }
+  if (!ok) console.error(`[email] send failed (${msg.kind}): ${error}`);
+  return ok;
+}
 
 // Every operational notification (new application, contact request, community
 // post awaiting review) lands here. Client-specified 08/08 round: this is the
@@ -89,7 +147,7 @@ export async function renderStoredTemplate(
 async function sendTemplate(key: string, to: string, values: Record<string, string>) {
   if (!process.env.RESEND_API_KEY) return;
   const { subject, html } = await renderStoredTemplate(key, values);
-  await getResend()?.emails.send({ from: FROM, to, subject, html });
+  await deliver({ to, subject, html, kind: key });
 }
 
 /**
@@ -100,7 +158,7 @@ async function sendTemplate(key: string, to: string, values: Record<string, stri
 export async function sendTemplatePreview(key: string, to: string, values: Record<string, string>) {
   if (!process.env.RESEND_API_KEY) return;
   const { subject, html } = await renderStoredTemplate(key, values);
-  await getResend()?.emails.send({ from: FROM, to, subject: `[Test] ${subject}`, html });
+  await deliver({ to, subject: `[Test] ${subject}`, html, kind: `test:${key}` });
 }
 
 /**
@@ -127,8 +185,8 @@ export async function sendEnrollmentNotification(applicant: EnrollmentSummary) {
   // Enough to judge an application from the inbox without opening the admin
   // panel — the client asked for the bio and portfolio link in particular
   // (08/08 round), since those are what verifying someone's experience turns on.
-  await getResend()?.emails.send({
-    from: FROM,
+  await deliver({
+    kind: "admin:new-application",
     to: ADMIN_EMAIL,
     subject: `New PCC Application: ${firstName} ${lastName}`,
     html: adminEmailShell(
@@ -153,17 +211,26 @@ export async function sendContactRequestNotification(
   requestType: string,
   message: string,
   timeline: string,
-  adminRequestUrl: string
+  adminRequestUrl: string,
+  needsConfirmation = false
 ) {
   if (!process.env.RESEND_API_KEY) return;
 
-  await getResend()?.emails.send({
-    from: FROM,
+  await deliver({
+    kind: "admin:contact-request",
     to: ADMIN_EMAIL,
-    subject: `New Contact Request for ${creativeName}`,
+    subject: `${needsConfirmation ? "[Confirm interest] " : ""}New Contact Request for ${creativeName}`,
     html: adminEmailShell(
       "New Contact Request",
-      `${detailRow("Creative", creativeName)}
+      `${
+        needsConfirmation
+          ? paragraph(
+              `<strong>${escapeHtml(creativeName)} hasn't set any Work For Hire preferences.</strong> ` +
+                "Please email them to ask whether they'd like to be connected with this person before forwarding the request."
+            )
+          : ""
+      }
+       ${detailRow("Creative", creativeName)}
        ${detailRow("From", requesterName)}
        ${detailRow("Request type", requestType)}
        ${detailRow("Timeline", timeline)}
@@ -217,8 +284,8 @@ export async function sendRejectionEmail(firstName: string, email: string) {
 export async function sendNewCommunityPostNotification(creativeName: string, title: string, category: string) {
   if (!process.env.RESEND_API_KEY) return;
 
-  await getResend()?.emails.send({
-    from: FROM,
+  await deliver({
+    kind: "admin:community-post",
     to: ADMIN_EMAIL,
     subject: `New Community Post for review: ${title}`,
     html: adminEmailShell(
@@ -256,7 +323,7 @@ export async function sendBulkCommunityNotification(recipients: string[], subjec
 
   await Promise.all(
     recipients.map((to) =>
-      getResend()?.emails.send({ from: FROM, to, subject, html })
+      deliver({ to, subject, html, kind: "community-bulk" })
     )
   );
 }
@@ -280,23 +347,22 @@ export async function sendMassEmail(
   content: TemplateContent
 ): Promise<number> {
   if (!process.env.RESEND_API_KEY || recipients.length === 0) return 0;
-  const resend = getResend();
-  if (!resend) return 0;
+  const batchId = randomUUID();
 
-  const results = await Promise.allSettled(
+  const results = await Promise.all(
     recipients.map((r) => {
       const { subject, html } = renderTemplate(MASS_EMAIL_DEF, content, { firstName: r.firstName });
-      return resend.emails.send({ from: FROM, to: r.email, subject, html });
+      return deliver({ to: r.email, subject, html, kind: "mass-email", batchId });
     })
   );
-  return results.filter((r) => r.status === "fulfilled").length;
+  return results.filter(Boolean).length;
 }
 
 /** Same render path as a real mass send, sent only to the admin previewing it. */
 export async function sendMassEmailTest(to: string, content: TemplateContent) {
   if (!process.env.RESEND_API_KEY) return;
   const { subject, html } = renderTemplate(MASS_EMAIL_DEF, content, sampleValues(MASS_EMAIL_DEF));
-  await getResend()?.emails.send({ from: FROM, to, subject: `[Test] ${subject}`, html });
+  await deliver({ to, subject: `[Test] ${subject}`, html, kind: "test:mass-email" });
 }
 
 /** How long a password-reset link stays usable. Mirrored in the email copy. */
@@ -307,5 +373,38 @@ export async function sendPasswordResetEmail(firstName: string, email: string, r
     firstName,
     resetUrl,
     expiryHours: String(PASSWORD_RESET_EXPIRY_HOURS),
+  });
+}
+
+/**
+ * A member's Customer Support message. One email to the PCC inbox and every
+ * admin, with Reply-To set to the member — so any admin hitting reply starts the
+ * thread with them directly and the PCC inbox keeps a copy of all of it. Admins
+ * are told about each other deliberately (they're one team); members are never
+ * exposed to the list.
+ */
+export async function sendSupportRequest(input: {
+  fromName: string;
+  fromEmail: string;
+  kind: string;
+  subject: string;
+  message: string;
+  adminEmails: string[];
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  const to = [...new Set([ADMIN_EMAIL, ...input.adminEmails].map((e) => e.trim().toLowerCase()))];
+  return deliver({
+    kind: "support",
+    to,
+    replyTo: input.fromEmail,
+    subject: `[PCC Support] ${input.kind}: ${input.subject}`,
+    html: adminEmailShell(
+      "Customer Support",
+      `${detailRow("From", `${input.fromName} <${input.fromEmail}>`)}
+       ${detailRow("Type", input.kind)}
+       ${detailRow("Subject", input.subject)}
+       ${detailRow("Message", input.message)}
+       ${paragraph("Reply to this email to respond to the member directly.")}`
+    ),
   });
 }

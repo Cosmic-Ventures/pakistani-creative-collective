@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import CommunityFeed from "@/components/CommunityFeed";
+import SpotlightProfile from "@/components/SpotlightProfile";
 import NewPostForm from "@/components/NewPostForm";
 
 export const metadata: Metadata = { title: "Community" };
@@ -20,6 +21,28 @@ export default async function CommunityPage() {
     select: { postId: true },
   });
   const bookmarkedPostIds = myBookmarks.map((b) => b.postId).filter((id): id is string => !!id);
+
+  // This month's spotlight: everyone currently featured, else the founder's profile.
+  const spotlightSelect = {
+    slug: true, firstName: true, lastName: true, pronouns: true, headshot: true,
+    location: true, roles: true, experienceLevel: true, bio: true, education: true,
+    availability: true, languages: true, mediums: true, workSamples: true,
+    collaborationPreferences: true, rateStructure: true, rateRange: true,
+    ratePublic: true, travel: true,
+  } as const;
+  const featuredNow = await db.creative.findMany({
+    where: {
+      status: "APPROVED",
+      featured: true,
+      OR: [{ featuredUntil: null }, { featuredUntil: { gt: new Date() } }],
+    },
+    orderBy: { updatedAt: "asc" },
+    take: 4,
+    select: spotlightSelect,
+  });
+  const spotlights = featuredNow.length
+    ? featuredNow
+    : await db.creative.findMany({ where: { slug: "aneesa-khan", status: "APPROVED" }, select: spotlightSelect });
 
   const posts = await db.post.findMany({
     where: {
@@ -39,11 +62,20 @@ export default async function CommunityPage() {
   });
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+      <div className="max-w-3xl">
       <h1 className="font-heading font-bold text-3xl text-brand-green mb-2">Community Dashboard</h1>
       <p className="text-brand-brown/70 mb-8">
         Recent work, funding needs, collaborators, and availability — shared by PCC members.
       </p>
+
+      </div>
+
+      {spotlights.map((c) => (
+        <SpotlightProfile key={c.slug} c={c} />
+      ))}
+
+      <div className="max-w-3xl">
 
       {myCreative ? (
         <NewPostForm />
@@ -55,6 +87,7 @@ export default async function CommunityPage() {
       )}
 
       <CommunityFeed posts={posts} myCreativeId={myCreative?.id ?? null} bookmarkedPostIds={bookmarkedPostIds} />
+      </div>
     </div>
   );
 }

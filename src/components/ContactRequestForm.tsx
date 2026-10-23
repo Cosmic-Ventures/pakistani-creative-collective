@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import Image from "next/image";
 import { submitContactRequest, type ContactRequestResult } from "@/lib/contact-request-action";
 import { EXPERIENCE_LEVELS, REQUEST_TYPES, TIMELINES } from "@/lib/contact-request-constants";
+import { preferenceMessage, requesterMeetsPreference } from "@/lib/collaboration-match";
 import { withSubmitFallback } from "@/lib/submit-fallback";
 
 const inputCls =
@@ -16,7 +17,15 @@ const textareaCls = `${inputCls} resize-none`;
 const optionId = (group: string, value: string) =>
   `${group}-${value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
 
-export default function ContactRequestForm({ creativeId }: { creativeId: string }) {
+export default function ContactRequestForm({
+  creativeId,
+  firstName,
+  openTo,
+}: {
+  creativeId: string;
+  firstName: string;
+  openTo: string | null;
+}) {
   // Only the creative's id is bound. The requester's identity is read from the
   // session inside the action — a bound argument round-trips through the
   // browser, so it can never be trusted to say who is asking.
@@ -52,6 +61,9 @@ export default function ContactRequestForm({ creativeId }: { creativeId: string 
   const [consentRouting, setConsentRouting] = useState(false);
   const [consentDiscretion, setConsentDiscretion] = useState(false);
 
+  // The server re-checks; this just tells them before they write the message.
+  const levelBlocked = experienceLevel !== "" && !requesterMeetsPreference(openTo, experienceLevel);
+
   if (state && "success" in state) {
     return (
       <div className="bg-brand-mint text-brand-green rounded-3xl p-10 sm:p-12 text-center">
@@ -59,7 +71,9 @@ export default function ContactRequestForm({ creativeId }: { creativeId: string 
           Your request has been submitted.
         </p>
         <p className="text-brand-green/80 italic mb-8">
-          You&apos;ll be notified for further communications.
+          {state.needsConfirmation
+            ? `${firstName} hasn't said whether they're open to work for hire, so our team will check with them first and let you know.`
+            : "You'll be notified for further communications."}
         </p>
         <Image
           src="/brand/aneesa-talks-logo.png"
@@ -133,6 +147,11 @@ export default function ContactRequestForm({ creativeId }: { creativeId: string 
             </label>
           ))}
         </div>
+        {levelBlocked && (
+          <p role="alert" className="mt-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+            {preferenceMessage(firstName, openTo)}
+          </p>
+        )}
       </div>
 
       <div>
@@ -249,7 +268,7 @@ export default function ContactRequestForm({ creativeId }: { creativeId: string 
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || levelBlocked}
         className="w-full bg-brand-green hover:bg-brand-green/90 disabled:opacity-50 text-brand-cream font-semibold py-3 rounded-full transition-colors"
       >
         {pending ? "Submitting…" : "Submit Contact Request"}

@@ -40,7 +40,7 @@ beforeEach(() => {
   // A signed-in paid member contacting an approved creative — the happy path
   // the validation tests below are about.
   getSessionMock.mockResolvedValue({ userId: "user-1", email: "jordan@studio.com", role: "PAID" });
-  dbMock.creative.findFirst.mockResolvedValue({ id: "creative-1" });
+  dbMock.creative.findFirst.mockResolvedValue({ id: "creative-1", firstName: "Sara", collaborationPreferences: "Any level" });
 });
 
 describe("submitContactRequest authorization", () => {
@@ -112,7 +112,7 @@ describe("submitContactRequest", () => {
       formData(VALID_FIELDS)
     );
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, needsConfirmation: false });
     expect(dbMock.contactRequest.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -129,7 +129,32 @@ describe("submitContactRequest", () => {
       "Collaboration Opportunity",
       VALID_FIELDS.message,
       "Within the next month",
-      expect.stringContaining("/admin/contact-requests")
+      expect.stringContaining("/admin/contact-requests"),
+      false
+    );
+  });
+
+  it("refuses a requester whose level the creative isn't open to", async () => {
+    dbMock.creative.findFirst.mockResolvedValue({
+      id: "creative-1",
+      firstName: "Sara",
+      collaborationPreferences: "Emerging Creative",
+    });
+    const result = await submitContactRequest("creative-1", null, formData(VALID_FIELDS));
+    expect(result).toEqual({ error: expect.stringContaining("can't be sent") });
+    expect(dbMock.contactRequest.create).not.toHaveBeenCalled();
+  });
+
+  it("sends a creative with no preferences to the admins, flagged for confirmation", async () => {
+    dbMock.creative.findFirst.mockResolvedValue({ id: "creative-1", firstName: "Sara", collaborationPreferences: null });
+    dbMock.contactRequest.create.mockResolvedValue({
+      creative: { firstName: "Sara", lastName: "Khan", email: "sara@example.com" },
+    });
+    const result = await submitContactRequest("creative-1", null, formData(VALID_FIELDS));
+    expect(result).toEqual({ success: true, needsConfirmation: true });
+    expect(sendContactRequestNotificationMock).toHaveBeenCalledWith(
+      "Sara Khan", "Jordan Lee", "Collaboration Opportunity", VALID_FIELDS.message,
+      "Within the next month", expect.any(String), true
     );
   });
 
@@ -155,7 +180,8 @@ describe("submitContactRequest", () => {
       "Other — Podcast feature",
       expect.anything(),
       expect.anything(),
-      expect.anything()
+      expect.anything(),
+      false
     );
   });
 });

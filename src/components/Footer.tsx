@@ -16,7 +16,10 @@ export default function Footer() {
             Aneesa Talks
           </a>
         </p>
-        <nav className="flex gap-6">
+        <nav className="flex items-center gap-6">
+          <Link href="/about" className="hover:text-brand-green transition-colors">
+            About
+          </Link>
           <Link href="/directory" className="hover:text-brand-green transition-colors">
             Directory
           </Link>
@@ -32,6 +35,19 @@ export default function Footer() {
           <Link href="/terms" className="hover:text-brand-green transition-colors">
             Terms
           </Link>
+          <a
+            href="https://www.instagram.com/pakistanicreativecollective"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+            className="hover:text-brand-green transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+            </svg>
+          </a>
         </nav>
       </div>
     </footer>

@@ -35,6 +35,19 @@ export default async function Nav() {
                 Subscribe
               </Link>
             )}
+            {session && isMember && (
+              <>
+                <Link href="/directory" className="text-brand-cream/80 hover:text-brand-cream transition-colors">
+                  Directory
+                </Link>
+                <Link href="/community" className="text-brand-cream/80 hover:text-brand-cream transition-colors">
+                  Community
+                </Link>
+                <Link href="/account" className="text-brand-cream/80 hover:text-brand-cream transition-colors hidden sm:inline">
+                  Account
+                </Link>
+              </>
+            )}
             {session ? (
               <form action={logoutAction}>
                 <button className="text-brand-cream/50 hover:text-brand-cream transition-colors">

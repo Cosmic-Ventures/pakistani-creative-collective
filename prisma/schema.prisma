@@ -113,6 +113,24 @@ model User {
   passwordResets  PasswordResetToken[]
 }
 
+/// One row per email the app tried to send, with the exact HTML delivered, so the
+/// admin panel can show everything that went out (Admin → Sent Emails) and the
+/// history of past mass emails. Written by `deliver()` in src/lib/email.ts.
+model EmailLog {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  kind      String // template key, "mass-email", "support", "admin:…", "test:…"
+  batchId   String? // shared by every recipient copy of one mass email
+  to        String
+  subject   String
+  html      String   @db.Text
+  status    String // sent | failed
+  error     String?
+
+  @@index([createdAt])
+  @@index([batchId])
+}
+
 /// The client's edited copy for one transactional email.
 ///
 /// Only ever holds *overrides*: a template she hasn't touched has no row here
