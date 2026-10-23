@@ -1,0 +1,16 @@
+name: Scheduled emails
+# Wakes the app every 5 minutes so any email scheduled in Admin → Scheduled Emails
+# goes out within a few minutes of its time. Needs repo secrets APP_URL
+# (e.g. https://pcc.aneesatalks.com) and CRON_SECRET (same value as the Vercel env var).
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl --fail --silent --show-error --max-time 60 -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/webhooks/scheduled-emails"

@@ -113,6 +113,29 @@ model User {
   passwordResets  PasswordResetToken[]
 }
 
+/// A mass email composed ahead of time and sent automatically at `sendAt`.
+/// The audience is a segment id (see mass-email-constants.ts) resolved at send
+/// time, so people approved after it was written are still included.
+/// status: draft | scheduled | sending | sent | cancelled
+model ScheduledEmail {
+  id        String    @id @default(cuid())
+  name      String
+  segmentId String
+  subject   String
+  preheader String    @default("")
+  body      String    @db.Text
+  sendAt    DateTime
+  status    String    @default("draft")
+  sentAt    DateTime?
+  sentCount Int?
+  recipientCount Int?
+  updatedBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([status, sendAt])
+}
+
 /// One row per email the app tried to send, with the exact HTML delivered, so the
 /// admin panel can show everything that went out (Admin → Sent Emails) and the
 /// history of past mass emails. Written by `deliver()` in src/lib/email.ts.

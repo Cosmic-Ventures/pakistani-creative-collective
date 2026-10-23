@@ -12,6 +12,7 @@ const NAV = [
   { href: "/admin/community", label: "Community" },
   { href: "/admin/emails", label: "Email Templates" },
   { href: "/admin/mass-email", label: "Mass Email" },
+  { href: "/admin/scheduled-emails", label: "Scheduled Emails" },
   { href: "/admin/sent-emails", label: "Sent Emails" },
   { href: "/admin/analytics", label: "Analytics" },
 ];
