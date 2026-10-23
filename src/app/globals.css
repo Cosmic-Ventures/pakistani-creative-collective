@@ -56,3 +56,12 @@ button:not(:disabled),
     -webkit-print-color-adjust: exact;
   }
 }
+
+/* Scroll-in reveal used by <Reveal /> (home page). */
+.reveal {
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.reveal-hidden {
+  opacity: 0;
+  transform: translateY(32px);
+}

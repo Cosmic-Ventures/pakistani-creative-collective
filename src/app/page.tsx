@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/components/Logo";
+import Reveal from "@/components/Reveal";
 import AccessComparison from "@/components/AccessComparison";
 import { EXPERIENCE_TIERS } from "@/lib/experience-levels";
 import { getDisplayPrices } from "@/lib/stripe";
@@ -54,8 +55,11 @@ export default async function Home() {
 
   return (
     <div className="bg-brand-green">
-      <section className="relative overflow-hidden bg-brand-green text-brand-cream">
-        {/* Same textured green as every profile page (10/22 round). */}
+      {/* The hero stays pinned while the sections below slide up over it (layering,
+          10/22 round). Only when the screen is tall enough to hold it, so a short
+          window never clips the hero. */}
+      <section className="relative overflow-hidden bg-brand-green text-brand-cream [@media(min-width:768px)_and_(min-height:640px)]:sticky top-0 z-0">
+        {/* Same textured green as every profile page. */}
         <Image
           src="/brand/hero-bg.png"
           alt=""
@@ -63,10 +67,12 @@ export default async function Home() {
           priority
           className="object-cover opacity-70 pointer-events-none select-none"
         />
-        {/* Logo left, message right, centred against each other (10/22 round). */}
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 grid gap-10 md:grid-cols-2 items-center">
-          <Logo variant="light" className="w-full max-w-md md:max-w-none h-auto mx-auto" />
-          <div className="md:pl-8">
+        {/* 4x4 logo on the left, a thin white line, then the message on the right. */}
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 grid md:grid-cols-2 items-stretch">
+          <div className="flex items-center justify-center pb-10 md:pb-0 md:pr-10">
+            <Logo variant="square" className="w-64 sm:w-80 lg:w-96 h-auto" />
+          </div>
+          <div className="flex flex-col justify-center border-t border-brand-cream pt-10 md:border-t-0 md:border-l md:pt-0 md:pl-10 lg:pl-14">
             <h1 className="font-heading font-bold text-4xl sm:text-5xl leading-[1.05]">
               Built for Pakistani creatives to be discovered.
             </h1>
@@ -96,7 +102,12 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+      {/* Everything below covers the hero as it scrolls. Opaque so the pinned hero
+          never shows through; each section is split from the last by a 1px white line. */}
+      <div className="relative z-10 bg-brand-green">
+      <section className="border-t border-brand-cream">
+      <Reveal>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
         <h2 className="font-heading font-bold text-2xl text-brand-cream mb-10">How it works</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {HOW_IT_WORKS.map(({ title, body }) => (
@@ -113,9 +124,12 @@ export default async function Home() {
             </div>
           ))}
         </div>
+      </div>
+      </Reveal>
       </section>
 
-      <section className="border-y border-brand-green/10 bg-brand-mint/15">
+      <section className="border-t border-brand-cream bg-brand-mint/15">
+      <Reveal>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
           {/* White, not black: this band sits on the green page background, where
               black is unreadable (client called it out twice — 08/03 and 08/08). */}
@@ -147,9 +161,12 @@ export default async function Home() {
             ))}
           </div>
         </div>
+      </Reveal>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+      <section className="border-t border-brand-cream">
+      <Reveal>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
         <h2 className="font-heading font-bold text-2xl text-brand-cream mb-2">The Work For Hire Card</h2>
         <p className="text-brand-cream/80 mb-8 text-sm max-w-2xl">
           Every profile has one. If you see it, that creative is open to working and collaborating:
@@ -196,9 +213,13 @@ export default async function Home() {
             </ul>
           </div>
         </div>
+      </div>
+      </Reveal>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+      <section className="border-t border-brand-cream">
+      <Reveal>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
         <h2 className="font-heading font-bold text-2xl text-brand-cream mb-2">Free vs. Member Access</h2>
         <p className="text-brand-cream/70 mb-8 text-sm max-w-2xl">
           Every creative is listed for free. Membership is {prices.monthly}/month or {prices.annual}/year
@@ -206,10 +227,14 @@ export default async function Home() {
           details stay private.
         </p>
         <AccessComparison />
+      </div>
+      </Reveal>
       </section>
 
       {HOMEPAGE_CTAS.submitRequest && (
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+        <section className="border-t border-brand-cream">
+        <Reveal>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
           <div className="bg-white text-black rounded-2xl p-8 sm:p-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
               <h2 className="font-bold text-xl mb-2 text-black">
@@ -227,8 +252,11 @@ export default async function Home() {
               Submit a Request
             </Link>
           </div>
+      </div>
+      </Reveal>
         </section>
       )}
+      </div>
     </div>
   );
 }
