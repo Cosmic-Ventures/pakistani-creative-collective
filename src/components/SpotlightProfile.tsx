@@ -42,16 +42,21 @@ export default function SpotlightProfile({ creatives }: { creatives: SpotlightCr
               <div className="min-w-0">
                 <p className="font-heading font-bold text-xl leading-tight">{name}</p>
                 <div className="flex flex-wrap gap-1.5 mt-2">
-                  {[c.location, ...c.roles.slice(0, 2)].filter(Boolean).map((t) => (
-                    <span key={t} className="text-[11px] uppercase font-semibold bg-brand-mint text-brand-green px-2.5 py-0.5 rounded-full">
-                      {t}
+                  {c.location && (
+                    <span className="text-[11px] uppercase font-semibold bg-[#FFE08A] text-brand-green px-2.5 py-0.5 rounded-full">
+                      {c.location}
                     </span>
-                  ))}
+                  )}
                   {c.experienceLevel && (
                     <span className="text-[11px] uppercase font-semibold bg-brand-cream text-brand-green px-2.5 py-0.5 rounded-full">
                       {c.experienceLevel}
                     </span>
                   )}
+                  {c.roles.slice(0, 2).map((r) => (
+                    <span key={r} className="text-[11px] uppercase font-semibold bg-brand-mint text-brand-green px-2.5 py-0.5 rounded-full">
+                      {r}
+                    </span>
+                  ))}
                 </div>
                 <p className="text-sm text-brand-cream/80 mt-2 line-clamp-2">{c.bio}</p>
                 <p className="text-xs font-semibold underline underline-offset-2 mt-2">View full profile →</p>
