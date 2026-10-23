@@ -48,8 +48,13 @@ export default async function DirectoryPage() {
   });
 
   return (
-    // 10/22 round: white ombre with hints of orange/yellow behind the directory.
-    <div className="bg-gradient-to-b from-white via-[#FFF3D1] to-[#FFD9A8]">
+    // 10/22 round: diagonal ombre, soft yellow in one corner fading to an eggshell
+    // off-white in the opposite one. `fixed` pins the gradient to the viewport so
+    // both corners are visible without scrolling the (long) member list.
+    <div
+      className="bg-fixed"
+      style={{ backgroundImage: "linear-gradient(135deg, #FFE9A6 0%, #FCF3DA 50%, #F5EEDD 100%)" }}
+    >
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
       <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
