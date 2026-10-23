@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import Logo from "@/components/Logo";
 import Reveal from "@/components/Reveal";
+import StackedSection from "@/components/StackedSection";
 import AccessComparison from "@/components/AccessComparison";
 import { EXPERIENCE_TIERS } from "@/lib/experience-levels";
 import { getDisplayPrices } from "@/lib/stripe";
@@ -55,10 +55,9 @@ export default async function Home() {
 
   return (
     <div className="bg-brand-green">
-      {/* The hero stays pinned while the sections below slide up over it (layering,
-          10/22 round). Only when the screen is tall enough to hold it, so a short
-          window never clips the hero. */}
-      <section className="relative overflow-hidden bg-brand-green text-brand-cream [@media(min-width:768px)_and_(min-height:640px)]:sticky top-0 z-0">
+      {/* Every section is a layer: it pins while visible and the next one slides up
+          over it (stacked scroll, 10/22 round). */}
+      <StackedSection layer={0} className="overflow-hidden text-brand-cream">
         {/* Same textured green as every profile page. */}
         <Image
           src="/brand/hero-bg.png"
@@ -69,10 +68,29 @@ export default async function Home() {
         />
         {/* 4x4 logo on the left, a thin white line, then the message on the right. */}
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 grid md:grid-cols-2 items-stretch">
-          <div className="flex items-center justify-center pb-10 md:pb-0 md:pr-10">
-            <Logo variant="square" className="w-64 sm:w-80 lg:w-96 h-auto" />
+          {/* Equal gap either side of the divider (md:px-12 on both columns). The logo
+              file has wide transparent margins, so it is cropped to the lettering
+              (x 120–960, y 250–850 of 1080) — otherwise the lettering would sit much
+              further from the line than the headline does. */}
+          <div className="flex items-center justify-center md:justify-end pb-10 md:pb-0 md:pr-12">
+            <div
+              className="relative w-full max-w-[22rem] md:max-w-[30rem] overflow-hidden"
+              style={{ aspectRatio: "840 / 600" }}
+              role="img"
+              aria-label="Pakistani Creative Collective — created by Aneesa Talks"
+            >
+              <Image
+                src="/brand/logo-square-white.png"
+                alt=""
+                width={1080}
+                height={1080}
+                priority
+                className="absolute max-w-none h-auto"
+                style={{ width: "128.57%", left: "-14.29%", top: "-41.67%" }}
+              />
+            </div>
           </div>
-          <div className="flex flex-col justify-center border-t border-brand-cream pt-10 md:border-t-0 md:border-l md:pt-0 md:pl-10 lg:pl-14">
+          <div className="flex flex-col justify-center border-t border-brand-cream pt-10 md:border-t-0 md:border-l md:pt-0 md:pl-12">
             <h1 className="font-heading font-bold text-4xl sm:text-5xl leading-[1.05]">
               Built for Pakistani creatives to be discovered.
             </h1>
@@ -100,12 +118,9 @@ export default async function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </StackedSection>
 
-      {/* Everything below covers the hero as it scrolls. Opaque so the pinned hero
-          never shows through; each section is split from the last by a 1px white line. */}
-      <div className="relative z-10 bg-brand-green">
-      <section className="border-t border-brand-cream">
+      <StackedSection layer={1} className="border-t border-brand-cream">
       <Reveal>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
         <h2 className="font-heading font-bold text-2xl text-brand-cream mb-10">How it works</h2>
@@ -126,9 +141,10 @@ export default async function Home() {
         </div>
       </div>
       </Reveal>
-      </section>
+      </StackedSection>
 
-      <section className="border-t border-brand-cream bg-brand-mint/15">
+      <StackedSection layer={2} className="border-t border-brand-cream">
+      <div className="bg-brand-mint/15">
       <Reveal>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
           {/* White, not black: this band sits on the green page background, where
@@ -162,9 +178,10 @@ export default async function Home() {
           </div>
         </div>
       </Reveal>
-      </section>
+      </div>
+      </StackedSection>
 
-      <section className="border-t border-brand-cream">
+      <StackedSection layer={3} className="border-t border-brand-cream">
       <Reveal>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
         <h2 className="font-heading font-bold text-2xl text-brand-cream mb-2">The Work For Hire Card</h2>
@@ -215,9 +232,9 @@ export default async function Home() {
         </div>
       </div>
       </Reveal>
-      </section>
+      </StackedSection>
 
-      <section className="border-t border-brand-cream">
+      <StackedSection layer={4} className="border-t border-brand-cream">
       <Reveal>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
         <h2 className="font-heading font-bold text-2xl text-brand-cream mb-2">Free vs. Member Access</h2>
@@ -229,10 +246,10 @@ export default async function Home() {
         <AccessComparison />
       </div>
       </Reveal>
-      </section>
+      </StackedSection>
 
       {HOMEPAGE_CTAS.submitRequest && (
-        <section className="border-t border-brand-cream">
+        <StackedSection layer={5} className="border-t border-brand-cream">
         <Reveal>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
           <div className="bg-white text-black rounded-2xl p-8 sm:p-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
@@ -254,9 +271,8 @@ export default async function Home() {
           </div>
       </div>
       </Reveal>
-        </section>
+        </StackedSection>
       )}
-      </div>
     </div>
   );
 }
