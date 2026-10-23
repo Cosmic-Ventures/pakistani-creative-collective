@@ -16,7 +16,7 @@ export default function Footer() {
             Aneesa Talks
           </a>
         </p>
-        <nav className="flex items-center gap-6">
+        <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
           <Link href="/about" className="hover:text-brand-green transition-colors">
             About
           </Link>

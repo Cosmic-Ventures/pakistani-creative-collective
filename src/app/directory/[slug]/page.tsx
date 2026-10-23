@@ -364,24 +364,30 @@ function IdentityCard({
       </h1>
       {subtitle && <p className="text-sm text-brand-cream/60 mt-2">{subtitle}</p>}
 
-      <div className="flex flex-wrap gap-2 mt-5">
+      {/* Three kinds of tag, three rows, three looks (client, 10/22): where they
+          are (yellow), how experienced (cream), then what they do (mint). */}
+      <div className="flex flex-col items-start gap-2 mt-5">
         {location && (
-          <span className="text-xs uppercase font-semibold bg-brand-mint text-brand-green px-3 py-1 rounded-full">
+          <span className="text-xs uppercase font-semibold bg-[#FFE08A] text-brand-green px-3 py-1 rounded-full">
             {location}
           </span>
         )}
-        {roles.map((r) => (
-          <span
-            key={r}
-            className="text-xs uppercase font-semibold bg-brand-mint text-brand-green px-3 py-1 rounded-full"
-          >
-            {r}
-          </span>
-        ))}
         {experienceLevel && (
           <span className="text-xs uppercase font-semibold bg-brand-cream text-brand-green px-3 py-1 rounded-full">
             {experienceLevel}
           </span>
+        )}
+        {roles.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {roles.map((r) => (
+              <span
+                key={r}
+                className="text-xs uppercase font-semibold bg-brand-mint text-brand-green px-3 py-1 rounded-full"
+              >
+                {r}
+              </span>
+            ))}
+          </div>
         )}
       </div>
 
@@ -397,7 +403,7 @@ function IdentityCard({
       )}
 
       {socials.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-4">
+        <div className="flex flex-wrap gap-3 mt-5">
           {socials.map((s) => (
             <SocialIcon key={s.kind} href={s.href} kind={s.kind} />
           ))}
@@ -460,7 +466,7 @@ function SocialIcon({ href, kind }: Social) {
         <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.3c0-1.26-.02-2.9-1.77-2.9-1.77 0-2.04 1.38-2.04 2.8V21H9z" />
       </svg>
     ),
-    imdb: <span className="text-[10px] font-bold tracking-tight">IMDb</span>,
+    imdb: <span className="text-xs font-bold tracking-tight">IMDb</span>,
     play: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
         <path d="M8 5v14l11-7z" />
@@ -472,7 +478,7 @@ function SocialIcon({ href, kind }: Social) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="grid place-items-center w-9 h-9 rounded-lg bg-brand-cream/15 hover:bg-brand-cream/30 text-brand-cream transition-colors"
+      className="grid place-items-center w-12 h-12 rounded-xl bg-brand-cream/15 hover:bg-brand-cream/30 text-brand-cream transition-colors [&_svg]:w-6 [&_svg]:h-6"
     >
       {glyph[kind]}
     </a>
