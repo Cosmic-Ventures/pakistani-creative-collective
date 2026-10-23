@@ -24,11 +24,8 @@ export default async function CommunityPage() {
 
   // This month's spotlight: everyone currently featured, else the founder's profile.
   const spotlightSelect = {
-    slug: true, firstName: true, lastName: true, pronouns: true, headshot: true,
-    location: true, roles: true, experienceLevel: true, bio: true, education: true,
-    availability: true, languages: true, mediums: true, workSamples: true,
-    collaborationPreferences: true, rateStructure: true, rateRange: true,
-    ratePublic: true, travel: true,
+    slug: true, firstName: true, lastName: true, headshot: true,
+    location: true, roles: true, experienceLevel: true, bio: true,
   } as const;
   const featuredNow = await db.creative.findMany({
     where: {
@@ -62,31 +59,25 @@ export default async function CommunityPage() {
   });
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
-      <div className="max-w-3xl">
-      <h1 className="font-heading font-bold text-3xl text-brand-green mb-2">Community Dashboard</h1>
-      <p className="text-brand-brown/70 mb-8">
-        Recent work, funding needs, collaborators, and availability — shared by PCC members.
-      </p>
-
-      </div>
-
-      {spotlights.map((c) => (
-        <SpotlightProfile key={c.slug} c={c} />
-      ))}
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+      <SpotlightProfile creatives={spotlights} />
 
       <div className="max-w-3xl">
+        <h1 className="font-heading font-bold text-3xl text-brand-green mb-2">Community Dashboard</h1>
+        <p className="text-brand-brown/70 mb-8">
+          Recent work, funding needs, collaborators, and availability — shared by PCC members.
+        </p>
 
-      {myCreative ? (
-        <NewPostForm />
-      ) : (
-        <div className="bg-brand-mint/15 border border-brand-mint/50 rounded-xl px-5 py-4 mb-8 text-sm text-brand-brown/80">
-          Posting is available to listed creatives with a linked account. Contact Aneesa Talks to link your profile
-          if you&apos;re a member of the database.
-        </div>
-      )}
+        {myCreative ? (
+          <NewPostForm />
+        ) : (
+          <div className="bg-brand-mint/15 border border-brand-mint/50 rounded-xl px-5 py-4 mb-8 text-sm text-brand-brown/80">
+            Posting is available to listed creatives with a linked account. Contact Aneesa Talks to link your profile
+            if you&apos;re a member of the database.
+          </div>
+        )}
 
-      <CommunityFeed posts={posts} myCreativeId={myCreative?.id ?? null} bookmarkedPostIds={bookmarkedPostIds} />
+        <CommunityFeed posts={posts} myCreativeId={myCreative?.id ?? null} bookmarkedPostIds={bookmarkedPostIds} />
       </div>
     </div>
   );
