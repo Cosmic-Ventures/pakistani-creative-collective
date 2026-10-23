@@ -65,6 +65,12 @@ const PRELAUNCH_ALLOWED = [
   "/account",
   "/privacy",
   "/terms",
+  // 10/22 round: founding members get temporary premium access to test the
+  // directory, profiles, and Community Dashboard before public launch (Nov 14).
+  // Paid/linked-profile rules are still enforced by the pages themselves.
+  "/about",
+  "/directory",
+  "/community",
 ];
 
 /**

@@ -19,16 +19,34 @@ const STATUSES = ["PENDING", "APPROVED", "REJECTED", "FLAGGED", "INACTIVE", "ALL
 export default async function ApplicationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; promo?: string }>;
 }) {
-  const { status = "PENDING" } = await searchParams;
+  const { status = "PENDING", q: rawQ = "", promo } = await searchParams;
+  const q = rawQ.trim().slice(0, 100);
+  const promoOnly = promo === "1";
+  // Search by name or email; "opted in" narrows to creatives who agreed to be
+  // used in public-launch promo (client, 10/22: "I also want to see who opted in").
+  const extra = {
+    ...(promoOnly ? { promoConsent: true } : {}),
+    ...(q
+      ? {
+          OR: [
+            { firstName: { contains: q, mode: "insensitive" as const } },
+            { lastName: { contains: q, mode: "insensitive" as const } },
+            { email: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+  const qs = (s: string) =>
+    `/admin/applications?status=${s}${q ? `&q=${encodeURIComponent(q)}` : ""}${promoOnly ? "&promo=1" : ""}`;
 
   // Only select the fields the list view actually renders — in particular,
   // never select `headshot` here, a base64 image data URL that can run to
   // hundreds of KB per row and this view never displays (AGENTS.md gotcha #11).
   const [creatives, statusCounts] = await Promise.all([
     db.creative.findMany({
-      where: status === "ALL" ? {} : { status: status as "PENDING" | "APPROVED" | "REJECTED" | "INACTIVE" | "FLAGGED" },
+      where: { ...(status === "ALL" ? {} : { status: status as "PENDING" | "APPROVED" | "REJECTED" | "INACTIVE" | "FLAGGED" }), ...extra },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -62,12 +80,26 @@ export default async function ApplicationsPage({
         <FilterTabs
           tabs={STATUSES.map((s) => ({
             label: s.charAt(0) + s.slice(1).toLowerCase(),
-            href: `/admin/applications?status=${s}`,
+            href: qs(s),
             active: status === s,
             count: s === "ALL" ? totalCount : (countByStatus[s] ?? 0),
           }))}
         />
       </div>
+      <form action="/admin/applications" className="flex gap-2 items-center mb-3 flex-wrap">
+        <input type="hidden" name="status" value={status} />
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Search by name or email"
+          className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-1.5 text-sm text-stone-200 placeholder-stone-600 w-64 focus:outline-none focus:border-stone-500"
+        />
+        <label className="flex items-center gap-1.5 text-sm text-stone-400">
+          <input type="checkbox" name="promo" value="1" defaultChecked={promoOnly} /> Opted in to promo
+        </label>
+        <button className="text-sm bg-stone-700 hover:bg-stone-600 text-white px-4 py-1.5 rounded-lg">Apply</button>
+      </form>
       <div className="mb-6">
         <a
           href={`/api/admin/applications-export?status=${status}`}

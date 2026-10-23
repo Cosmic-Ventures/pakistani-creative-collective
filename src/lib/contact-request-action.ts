@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "./db";
 import { getSession } from "./session";
 import { sendContactRequestNotification } from "./email";
+import { hasNoPreference, preferenceMessage, requesterMeetsPreference } from "./collaboration-match";
 import { EXPERIENCE_LEVELS, REQUEST_TYPES, TIMELINES } from "./contact-request-constants";
 
 const Schema = z.object({
@@ -22,7 +23,9 @@ const Schema = z.object({
   consentDiscretion: z.literal("on", { error: "Please confirm all consent checkboxes" }),
 });
 
-export type ContactRequestResult = { error: string } | { success: true };
+// needsConfirmation: the creative has no Work For Hire preferences, so the request
+// goes to the admins, who ask them whether they'd like to be connected.
+export type ContactRequestResult = { error: string } | { success: true; needsConfirmation?: boolean };
 
 export async function submitContactRequest(
   creativeId: string,
@@ -52,7 +55,7 @@ export async function submitContactRequest(
   // published.
   const target = await db.creative.findFirst({
     where: { id: creativeId, status: "APPROVED" },
-    select: { id: true },
+    select: { id: true, firstName: true, collaborationPreferences: true },
   });
   if (!target) {
     return { error: "That creative isn't available for contact requests." };
@@ -63,6 +66,14 @@ export async function submitContactRequest(
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const d = parsed.data;
+
+  // Only send requests that meet the creative's "Open to working with" setting.
+  // Re-checked here because the form's own warning is advisory.
+  if (!requesterMeetsPreference(target.collaborationPreferences, d.experienceLevel)) {
+    return { error: preferenceMessage(target.firstName, target.collaborationPreferences) };
+  }
+
+  const needsConfirmation = hasNoPreference(target.collaborationPreferences);
 
   let req;
   try {
@@ -99,8 +110,9 @@ export async function submitContactRequest(
     d.requestType === "Other" ? `Other — ${d.requestTypeOther}` : d.requestType,
     d.message,
     d.timeline,
-    `${process.env.NEXT_PUBLIC_APP_URL}/admin/contact-requests`
+    `${process.env.NEXT_PUBLIC_APP_URL}/admin/contact-requests`,
+    needsConfirmation
   ).catch(console.error);
 
-  return { success: true };
+  return { success: true, needsConfirmation };
 }

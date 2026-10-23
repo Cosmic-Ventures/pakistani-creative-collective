@@ -48,6 +48,8 @@ export default async function DirectoryPage() {
   });
 
   return (
+    // 10/22 round: white ombre with hints of orange/yellow behind the directory.
+    <div className="bg-gradient-to-b from-white via-[#FFF3D1] to-[#FFD9A8]">
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
       <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
@@ -78,6 +80,7 @@ export default async function DirectoryPage() {
       )}
 
       <DirectoryClient members={creatives as Parameters<typeof DirectoryClient>[0]["members"]} isPaid={isPaid} />
+    </div>
     </div>
   );
 }

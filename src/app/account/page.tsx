@@ -8,6 +8,8 @@ import { manageSubscriptionPortal, createCheckoutSession, simulatePayment } from
 import { getDisplayPrices, isStripeConfigured } from "@/lib/stripe";
 import { toggleProfileBookmark, togglePostBookmark } from "@/lib/bookmark-actions";
 import { ProfileEditForm } from "@/components/ProfileEditForm";
+import { TRIAL_ENDS_LABEL } from "@/lib/trial-access";
+import SupportForm from "@/components/SupportForm";
 import { PricingCard } from "@/components/PricingCard";
 
 export const metadata: Metadata = { title: "My Account" };
@@ -18,6 +20,7 @@ const ALL_TABS = [
   { id: "subscribe", label: "Subscribe" },
   { id: "bookmarks", label: "Bookmarks" },
   { id: "profile", label: "My Profile" },
+  { id: "support", label: "Customer Support" },
 ] as const;
 
 // Kept in sync with src/app/subscribe/page.tsx's own list — same plan, same copy.
@@ -42,7 +45,8 @@ export default async function AccountPage({
   if (!user) redirect("/auth/signin");
 
   const myCreative = await db.creative.findFirst({ where: { userId: session.userId } });
-  const isPaid = user.role === "PAID" || user.role === "ADMIN";
+  const isPaid = session.role === "PAID" || session.role === "ADMIN";
+  const onTrial = session.trial === true;
   const prices = await getDisplayPrices();
 
   // The Subscribe tab only makes sense for someone who isn't already paid —
@@ -88,13 +92,13 @@ export default async function AccountPage({
                 <dt className="text-brand-brown/50">Access</dt>
                 <dd>
                   <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                    user.role === "PAID"
+                    session.role === "PAID"
                       ? "text-brand-green bg-brand-mint/20 border-brand-mint"
                       : user.role === "ADMIN"
                       ? "text-amber-700 bg-amber-50 border-amber-300"
                       : "text-brand-brown/60 bg-brand-green/5 border-brand-green/15"
                   }`}>
-                    {user.role === "PAID" ? "Paid subscriber" : user.role === "ADMIN" ? "Admin" : "Free"}
+                    {onTrial ? `Founding member · premium until ${TRIAL_ENDS_LABEL}` : user.role === "PAID" ? "Paid subscriber" : user.role === "ADMIN" ? "Admin" : "Free"}
                   </span>
                 </dd>
               </div>
@@ -115,7 +119,7 @@ export default async function AccountPage({
                 </button>
               </form>
             )}
-            {user.role === "UNPAID" && (
+            {user.role === "UNPAID" && !onTrial && (
               <Link
                 href="/account?tab=subscribe"
                 className="text-sm bg-brand-green hover:bg-brand-green/90 text-brand-cream font-semibold px-5 py-2.5 rounded-full transition-colors"
@@ -131,6 +135,8 @@ export default async function AccountPage({
           </div>
         </>
       )}
+
+      {tab === "support" && <SupportForm />}
 
       {tab === "subscribe" && !isPaid && (
         <div>

@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { toggleProfileBookmark } from "@/lib/bookmark-actions";
 import { getDisplayPrices } from "@/lib/stripe";
+import { linkThumbnail } from "@/lib/link-thumbnail";
 import WorkSamplesCarousel from "@/components/WorkSamplesCarousel";
 
 export const dynamic = "force-dynamic";
@@ -34,11 +35,6 @@ function normalizeUrl(href: string, prefix = "https://"): string {
   // A dot before any slash means they gave a hostname, not a handle.
   const looksLikeHost = /^[^/]+\.[a-z]{2,}(?:[/:?#]|$)/i.test(handle);
   return looksLikeHost ? `https://${handle}` : `${prefix}${handle}`;
-}
-
-function youTubeThumbnail(link: string): string | undefined {
-  const yt = link.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
-  return yt ? `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg` : undefined;
 }
 
 type Social = { href: string; kind: "globe" | "instagram" | "linkedin" | "imdb" | "play" };
@@ -92,6 +88,11 @@ export default async function MemberPage({
   const workSamples = (creative.workSamples as
     | { title?: string; role?: string; link?: string; medium?: string; year?: string }[]
     | null) ?? [];
+
+  // Preview images are only shown on the full view, so only pay for the lookups there.
+  const thumbnails = showFull
+    ? await Promise.all(workSamples.map((ws) => linkThumbnail(ws.link ? normalizeUrl(ws.link) : undefined)))
+    : [];
 
   const fullName = `${creative.firstName} ${creative.lastName}`;
   const subtitle = [creative.pronouns].filter(Boolean).join(" ");
@@ -202,13 +203,13 @@ export default async function MemberPage({
                     Work Samples
                   </p>
                   <WorkSamplesCarousel
-                    samples={workSamples.map((ws) => ({
+                    samples={workSamples.map((ws, i) => ({
                       title: ws.title ?? "",
                       role: ws.role,
                       medium: ws.medium,
                       year: ws.year,
                       link: ws.link ? normalizeUrl(ws.link) : undefined,
-                      thumbnail: ws.link ? youTubeThumbnail(ws.link) : undefined,
+                      thumbnail: thumbnails[i],
                     }))}
                   />
                 </div>
