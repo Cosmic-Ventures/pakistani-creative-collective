@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import Logo from "@/components/Logo";
 import AccessComparison from "@/components/AccessComparison";
 import { EXPERIENCE_TIERS } from "@/lib/experience-levels";
@@ -54,34 +55,43 @@ export default async function Home() {
   return (
     <div className="bg-brand-green">
       <section className="relative overflow-hidden bg-brand-green text-brand-cream">
-        {/* 10/22 round: header image removed in favour of a plain brand-green gradient. */}
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-green via-[#1f3d30] to-[#12261d] pointer-events-none" />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32 lg:max-w-6xl">
-          <Logo variant="square" className="h-28 sm:h-36 w-auto mb-8 opacity-95" />
-          <h1 className="font-heading font-bold text-4xl sm:text-6xl leading-[1.05] max-w-2xl">
-            Built for Pakistani creatives to be discovered.
-          </h1>
-          <p className="mt-6 text-lg text-brand-cream/80 max-w-lg leading-relaxed">
-            A curated database of Pakistani talent in film, music, and media —
-            searchable, vetted, and built for sustainable global collaboration.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-4">
-            {HOMEPAGE_CTAS.browseDirectory && (
-              <Link
-                href="/directory"
-                className="bg-brand-cream hover:bg-white text-brand-green font-semibold px-6 py-3 rounded-full transition-colors"
-              >
-                Browse the Directory
-              </Link>
-            )}
-            {HOMEPAGE_CTAS.applyToJoin && (
-              <Link
-                href="/join"
-                className="border border-brand-cream/40 hover:border-brand-cream text-brand-cream font-semibold px-6 py-3 rounded-full transition-colors"
-              >
-                Apply to Join
-              </Link>
-            )}
+        {/* Same textured green as every profile page (10/22 round). */}
+        <Image
+          src="/brand/hero-bg.png"
+          alt=""
+          fill
+          priority
+          className="object-cover opacity-70 pointer-events-none select-none"
+        />
+        {/* Logo left, message right, centred against each other (10/22 round). */}
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 grid gap-10 md:grid-cols-2 items-center">
+          <Logo variant="light" className="w-full max-w-md md:max-w-none h-auto mx-auto" />
+          <div className="md:pl-8">
+            <h1 className="font-heading font-bold text-4xl sm:text-5xl leading-[1.05]">
+              Built for Pakistani creatives to be discovered.
+            </h1>
+            <p className="mt-6 text-lg text-brand-cream/80 max-w-lg leading-relaxed">
+              A curated database of Pakistani talent in film, music, and media —
+              searchable, vetted, and built for sustainable global collaboration.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              {HOMEPAGE_CTAS.browseDirectory && (
+                <Link
+                  href="/directory"
+                  className="bg-brand-cream hover:bg-white text-brand-green font-semibold px-6 py-3 rounded-full transition-colors"
+                >
+                  Browse the Directory
+                </Link>
+              )}
+              {HOMEPAGE_CTAS.applyToJoin && (
+                <Link
+                  href="/join"
+                  className="border border-brand-cream/40 hover:border-brand-cream text-brand-cream font-semibold px-6 py-3 rounded-full transition-colors"
+                >
+                  Apply to Join
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </section>
