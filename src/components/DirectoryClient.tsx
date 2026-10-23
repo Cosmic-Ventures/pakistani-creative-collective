@@ -77,10 +77,20 @@ function MemberCard({ member, isPaid }: { member: Member; isPaid: boolean }) {
         )}
       </h3>
 
-      {member.location && <p className="text-xs text-brand-cream/60 mt-0.5">{member.location}</p>}
+      {/* Same three-tag scheme as the profile page: where (yellow), level (cream), jobs (mint). */}
+      <div className="flex flex-col items-start gap-1.5 mt-2">
+        {member.location && (
+          <span className="text-xs bg-[#FFE08A] text-brand-green px-2 py-0.5 rounded-full">{member.location}</span>
+        )}
+        {member.experienceLevel && (
+          <span className="text-xs bg-brand-cream text-brand-green px-2 py-0.5 rounded-full">
+            {member.experienceLevel}
+          </span>
+        )}
+      </div>
 
       {member.roles.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2">
+        <div className="flex flex-wrap gap-1.5 mt-1.5">
           {member.roles.slice(0, 3).map((r) => (
             <span key={r} className="text-xs bg-brand-mint text-brand-green px-2 py-0.5 rounded-full">
               {r}
@@ -97,11 +107,6 @@ function MemberCard({ member, isPaid }: { member: Member; isPaid: boolean }) {
         <p className="text-sm text-brand-cream/80 mt-2 line-clamp-2">{member.bio}</p>
       )}
 
-      {member.experienceLevel && (
-        <span className="inline-block mt-3 text-xs bg-brand-cream/10 border border-brand-cream/20 text-brand-cream px-2 py-0.5 rounded">
-          {member.experienceLevel}
-        </span>
-      )}
     </Link>
   );
 }
