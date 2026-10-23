@@ -19,7 +19,7 @@ export type SpotlightCreative = {
 export default function SpotlightProfile({ creatives }: { creatives: SpotlightCreative[] }) {
   if (creatives.length === 0) return null;
   return (
-    <section className="mb-8 rounded-3xl bg-brand-green p-4 sm:p-5 text-brand-cream">
+    <section className="mb-8 rounded-3xl bg-brand-green border border-white/70 shadow-xl shadow-black/40 p-4 sm:p-5 text-brand-cream">
       <h2 className="font-heading font-bold text-lg mb-3 px-1">This month&apos;s spotlight</h2>
       <div className={`grid gap-3 ${creatives.length > 1 ? "md:grid-cols-2" : ""}`}>
         {creatives.map((c) => {
@@ -28,7 +28,7 @@ export default function SpotlightProfile({ creatives }: { creatives: SpotlightCr
             <Link
               key={c.slug}
               href={`/directory/${c.slug}`}
-              className="flex gap-4 items-start rounded-2xl border border-brand-cream/15 p-4 hover:border-brand-cream/40 transition-colors"
+              className="flex gap-4 items-start rounded-2xl border border-white/40 p-4 hover:border-white transition-colors"
             >
               {c.headshot ? (
                 // eslint-disable-next-line @next/next/no-img-element

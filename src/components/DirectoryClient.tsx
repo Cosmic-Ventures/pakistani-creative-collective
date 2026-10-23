@@ -41,8 +41,8 @@ function MemberCard({ member, isPaid }: { member: Member; isPaid: boolean }) {
   return (
     <Link
       href={`/directory/${member.slug}`}
-      className={`group block bg-brand-green text-brand-cream border rounded-xl p-5 hover:border-brand-mint hover:shadow-md transition-all ${
-        active ? "border-brand-mint" : "border-brand-cream/10"
+      className={`group block bg-brand-green text-brand-cream border rounded-xl p-5 shadow-lg shadow-black/40 hover:border-brand-mint hover:shadow-xl transition-all ${
+        active ? "border-brand-mint" : "border-white/70"
       }`}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -215,12 +215,12 @@ export default function DirectoryClient({
         )}
       </div>
 
-      <p className="text-brand-brown/60 text-sm mb-5">
+      <p className="text-brand-cream/80 text-sm mb-5">
         {filtered.length} member{filtered.length !== 1 ? "s" : ""} found
       </p>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-20 text-brand-brown/50">No members match your search.</div>
+        <div className="text-center py-20 text-brand-cream/70">No members match your search.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((m) => (
