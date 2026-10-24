@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "./db";
 import { getSession, createSession } from "./session";
-import { stripe, PRICE_MONTHLY, PRICE_ANNUAL } from "./stripe";
+import { stripe, PRICE_MONTHLY, PRICE_ANNUAL, isStripeConfigured } from "./stripe";
 
 /**
  * Nobody who already has access has any business starting a checkout. The
@@ -50,6 +50,10 @@ export async function simulatePayment() {
   // lock themselves out of the admin panel — the one way this demo shortcut can
   // do real damage, and reachable the moment the page renders for them.
   if (!session || alreadyHasAccess(session.role)) return;
+  // Demo-only. Server Actions are plain POST endpoints, and PricingCard is handed
+  // this action even when Stripe is live, so without this check anyone signed in
+  // could call it directly and grant themselves a free paid membership.
+  if (isStripeConfigured) return;
   await db.user.update({
     where: { id: session.userId },
     data: { role: "PAID", subStatus: "active" },

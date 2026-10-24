@@ -50,19 +50,29 @@ type Outgoing = {
 const isRateLimit = (message: string | null) => !!message && /too many requests|rate limit/i.test(message);
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function record(msg: Outgoing, ok: boolean, error: string | null) {
+// Emails whose body is itself a credential. Their content is never stored: anyone
+// who can open Admin → Sent Emails could otherwise use a member's live reset link
+// to take over the account.
+const SECRET_KINDS = new Set(["password-reset"]);
+const REDACTED_HTML =
+  "<p style=\"font-family:sans-serif\">Content not stored: this email contains a one-time sign-in link.</p>";
+
+function logRow(msg: Outgoing, ok: boolean, error: string | null) {
+  return {
+    kind: msg.kind,
+    batchId: msg.batchId,
+    to: Array.isArray(msg.to) ? msg.to.join(", ") : msg.to,
+    subject: msg.subject,
+    html: SECRET_KINDS.has(msg.kind.replace(/^test:/, "")) ? REDACTED_HTML : msg.html,
+    status: ok ? "sent" : "failed",
+    error,
+  };
+}
+
+async function record(rows: ReturnType<typeof logRow>[]) {
+  if (rows.length === 0) return;
   try {
-    await db.emailLog.create({
-      data: {
-        kind: msg.kind,
-        batchId: msg.batchId,
-        to: Array.isArray(msg.to) ? msg.to.join(", ") : msg.to,
-        subject: msg.subject,
-        html: msg.html,
-        status: ok ? "sent" : "failed",
-        error,
-      },
-    });
+    await db.emailLog.createMany({ data: rows });
   } catch (e) {
     if (!isMissingSchemaError(e)) console.error("[email] could not record the send in EmailLog", e);
   }
@@ -127,7 +137,7 @@ async function deliverMany(msgs: Outgoing[]): Promise<{ ok: boolean; error: stri
     await sleep(250);
   }
 
-  await Promise.all(msgs.map((m, i) => record(m, results[i].ok, results[i].error)));
+  await record(msgs.map((m, i) => logRow(m, results[i].ok, results[i].error)));
   return results;
 }
 
@@ -160,7 +170,7 @@ async function deliver(msg: Outgoing): Promise<boolean> {
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
   }
-  await record(msg, ok, error);
+  await record([logRow(msg, ok, error)]);
   if (!ok) console.error(`[email] send failed (${msg.kind}): ${error}`);
   return ok;
 }
