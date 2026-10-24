@@ -176,7 +176,7 @@ export default function DirectoryClient({
     });
   }, [members, query, roleFilter, locationFilter, levelFilter, availFilter, mediumFilter, isPaid]);
 
-  const selectCls = "bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown focus:outline-none focus:border-brand-green text-sm";
+  const selectCls = "w-full sm:w-auto min-w-0 bg-white border border-brand-green/20 rounded-lg px-4 py-2.5 text-brand-brown focus:outline-none focus:border-brand-green text-sm";
 
   return (
     <div>

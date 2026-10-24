@@ -23,6 +23,7 @@ vi.mock("@/lib/stripe", () => ({
   stripe: stripeMock,
   PRICE_MONTHLY: "price_monthly",
   PRICE_ANNUAL: "price_annual",
+  isStripeConfigured: false, // the demo path; the live-Stripe guard is in simulate-payment-guard.test.ts
 }));
 
 import { createCheckoutSession, simulatePayment, manageSubscriptionPortal } from "@/lib/subscribe-actions";

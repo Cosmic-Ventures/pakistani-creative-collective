@@ -57,7 +57,8 @@ async function ogImage(link: string): Promise<string | undefined> {
   if (!src) return undefined;
   try {
     const abs = new URL(src.replace(/&amp;/g, "&"), link);
-    return abs.protocol === "https:" || abs.protocol === "http:" ? abs.toString() : undefined;
+    if (abs.protocol === "http:") abs.protocol = "https:"; // the site is https; http images get blocked
+    return abs.protocol === "https:" ? abs.toString() : undefined;
   } catch {
     return undefined;
   }
