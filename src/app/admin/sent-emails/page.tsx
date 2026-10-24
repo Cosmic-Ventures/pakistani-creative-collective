@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { isMissingSchemaError, MIGRATION_PENDING_MESSAGE } from "@/lib/db-availability";
 import { FilterTabs } from "@/components/admin/FilterTabs";
+import { retryFailedMassEmailAction } from "@/lib/mass-email-actions";
 
 export const metadata: Metadata = { title: "Sent Emails · Admin" };
 export const dynamic = "force-dynamic";
@@ -85,12 +86,23 @@ export default async function SentEmailsPage({
         <button className="text-sm bg-stone-700 hover:bg-stone-600 text-white px-4 py-1.5 rounded-lg">Search</button>
       </form>
       {batch && (
-        <p className="text-xs text-stone-400 mb-4">
-          Showing one mass email.{" "}
-          <Link href="/admin/sent-emails?f=mass" className="text-emerald-500 hover:text-emerald-400">
-            Show all
-          </Link>
-        </p>
+        <div className="text-xs text-stone-400 mb-4 flex items-center gap-4 flex-wrap">
+          <span>
+            Showing one mass email: {emails.filter((e) => e.status === "sent").length} sent,{" "}
+            {emails.filter((e) => e.status === "failed").length} failed.{" "}
+            <Link href="/admin/sent-emails?f=mass" className="text-emerald-500 hover:text-emerald-400">
+              Show all
+            </Link>
+          </span>
+          {emails.some((e) => e.status === "failed") && (
+            <form action={retryFailedMassEmailAction}>
+              <input type="hidden" name="batchId" value={batch} />
+              <button className="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg">
+                Retry the {emails.filter((e) => e.status === "failed").length} that failed
+              </button>
+            </form>
+          )}
+        </div>
       )}
 
       <div className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden">
@@ -120,8 +132,13 @@ export default async function SentEmailsPage({
                 <td className="px-4 py-3 text-xs">
                   {e.status === "sent" ? (
                     <span className="text-emerald-400">Sent</span>
+                  ) : e.status === "retried" ? (
+                    <span className="text-stone-500">Retried</span>
                   ) : (
-                    <span className="text-red-400" title={e.error ?? ""}>Failed</span>
+                    <div>
+                      <span className="text-red-400">Failed</span>
+                      {e.error && <p className="text-[11px] text-red-300/80 max-w-56">{e.error}</p>}
+                    </div>
                   )}
                 </td>
               </tr>

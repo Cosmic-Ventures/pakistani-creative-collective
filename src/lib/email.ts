@@ -47,31 +47,10 @@ type Outgoing = {
   batchId?: string;
 };
 
-/**
- * The one place an email leaves the app. Records every attempt in EmailLog so the
- * admin panel can show exactly what went out (client, 10/22: "I want to see all
- * emails that get sent out"). Logging is best-effort: the table may not exist yet
- * on the live database, and a failed log must never turn a delivered email — or a
- * failed one — into a different outcome.
- */
-async function deliver(msg: Outgoing): Promise<boolean> {
-  const resend = getResend();
-  if (!resend) return false;
-  let ok = false;
-  let error: string | null = null;
-  try {
-    const res = await resend.emails.send({
-      from: FROM,
-      to: msg.to,
-      subject: msg.subject,
-      html: msg.html,
-      ...(msg.replyTo ? { replyTo: msg.replyTo } : {}),
-    });
-    ok = !res?.error;
-    error = res?.error ? String(res.error.message ?? res.error) : null;
-  } catch (e) {
-    error = e instanceof Error ? e.message : String(e);
-  }
+const isRateLimit = (message: string | null) => !!message && /too many requests|rate limit/i.test(message);
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function record(msg: Outgoing, ok: boolean, error: string | null) {
   try {
     await db.emailLog.create({
       data: {
@@ -87,6 +66,101 @@ async function deliver(msg: Outgoing): Promise<boolean> {
   } catch (e) {
     if (!isMissingSchemaError(e)) console.error("[email] could not record the send in EmailLog", e);
   }
+}
+
+/**
+ * Sends many emails without tripping Resend's rate limit (10 requests/second):
+ * one batch request carries up to 100 emails, and a rate-limited request is retried
+ * after a pause. Every email is logged individually, with the real reason if it
+ * failed. Returns one result per message, in order.
+ *
+ * (The first version of the log sent every mass email as its own simultaneous
+ * request; with 42 recipients only 10 got through and the rest failed.)
+ */
+async function deliverMany(msgs: Outgoing[]): Promise<{ ok: boolean; error: string | null }[]> {
+  const resend = getResend();
+  const results: { ok: boolean; error: string | null }[] = msgs.map(() => ({ ok: false, error: "Email sending isn't configured." }));
+  if (!resend) return results;
+
+  for (let start = 0; start < msgs.length; start += 100) {
+    const chunk = msgs.slice(start, start + 100);
+    let error: string | null = null;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        const res = await resend.batch.send(
+          chunk.map((m) => ({
+            from: FROM,
+            to: m.to,
+            subject: m.subject,
+            html: m.html,
+            ...(m.replyTo ? { replyTo: m.replyTo } : {}),
+          }))
+        );
+        error = res.error ? String(res.error.message ?? res.error) : null;
+      } catch (e) {
+        error = e instanceof Error ? e.message : String(e);
+      }
+      if (!isRateLimit(error)) break;
+      await sleep(1200 * (attempt + 1));
+    }
+    if (error && !isRateLimit(error)) {
+      // A batch is all-or-nothing, so one bad address would sink everyone. Fall back
+      // to one at a time (spaced under the rate limit) to find who actually fails.
+      for (let i = 0; i < chunk.length; i++) {
+        const m = chunk[i];
+        let err: string | null = null;
+        try {
+          const res = await resend.emails.send({
+            from: FROM, to: m.to, subject: m.subject, html: m.html,
+            ...(m.replyTo ? { replyTo: m.replyTo } : {}),
+          });
+          err = res.error ? String(res.error.message ?? res.error) : null;
+        } catch (e) {
+          err = e instanceof Error ? e.message : String(e);
+        }
+        results[start + i] = { ok: !err, error: err };
+        await sleep(150);
+      }
+    } else {
+      for (let i = 0; i < chunk.length; i++) results[start + i] = { ok: !error, error };
+    }
+    await sleep(250);
+  }
+
+  await Promise.all(msgs.map((m, i) => record(m, results[i].ok, results[i].error)));
+  return results;
+}
+
+/**
+ * The one place an email leaves the app. Records every attempt in EmailLog so the
+ * admin panel can show exactly what went out (client, 10/22: "I want to see all
+ * emails that get sent out"). Logging is best-effort: the table may not exist yet
+ * on the live database, and a failed log must never turn a delivered email — or a
+ * failed one — into a different outcome.
+ */
+async function deliver(msg: Outgoing): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) return false;
+  let ok = false;
+  let error: string | null = null;
+  try {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const res = await resend.emails.send({
+        from: FROM,
+        to: msg.to,
+        subject: msg.subject,
+        html: msg.html,
+        ...(msg.replyTo ? { replyTo: msg.replyTo } : {}),
+      });
+      ok = !res?.error;
+      error = res?.error ? String(res.error.message ?? res.error) : null;
+      if (ok || !isRateLimit(error)) break;
+      await sleep(1100 * (attempt + 1));
+    }
+  } catch (e) {
+    error = e instanceof Error ? e.message : String(e);
+  }
+  await record(msg, ok, error);
   if (!ok) console.error(`[email] send failed (${msg.kind}): ${error}`);
   return ok;
 }
@@ -342,20 +416,36 @@ export async function sendFeatureNotification(firstName: string, email: string, 
  * {{firstName}} filled in. Returns how many actually went out, since a
  * partial failure shouldn't look identical to a full send.
  */
+export type MassEmailOutcome = { sent: number; failures: { email: string; error: string }[] };
+
 export async function sendMassEmail(
   recipients: { email: string; firstName: string }[],
   content: TemplateContent
-): Promise<number> {
-  if (!process.env.RESEND_API_KEY || recipients.length === 0) return 0;
+): Promise<MassEmailOutcome> {
+  if (!process.env.RESEND_API_KEY || recipients.length === 0) return { sent: 0, failures: [] };
   const batchId = randomUUID();
 
-  const results = await Promise.all(
+  const results = await deliverMany(
     recipients.map((r) => {
       const { subject, html } = renderTemplate(MASS_EMAIL_DEF, content, { firstName: r.firstName });
-      return deliver({ to: r.email, subject, html, kind: "mass-email", batchId });
+      return { to: r.email, subject, html, kind: "mass-email", batchId };
     })
   );
-  return results.filter(Boolean).length;
+  const failures = recipients.flatMap((r, i) => (results[i].ok ? [] : [{ email: r.email, error: results[i].error ?? "Unknown error" }]));
+  return { sent: recipients.length - failures.length, failures };
+}
+
+/** Re-sends the stored copy of every failed email in one mass send. Returns how many went out. */
+export async function retryFailedMassEmails(batchId: string): Promise<MassEmailOutcome> {
+  const failed = await db.emailLog.findMany({ where: { batchId, status: "failed" } });
+  if (failed.length === 0) return { sent: 0, failures: [] };
+  const results = await deliverMany(
+    failed.map((f) => ({ to: f.to, subject: f.subject, html: f.html, kind: "mass-email", batchId }))
+  );
+  // The old failed rows are superseded by the fresh attempts logged above.
+  await db.emailLog.updateMany({ where: { id: { in: failed.map((f) => f.id) } }, data: { status: "retried" } });
+  const failures = failed.flatMap((f, i) => (results[i].ok ? [] : [{ email: f.to, error: results[i].error ?? "Unknown error" }]));
+  return { sent: failed.length - failures.length, failures };
 }
 
 /** Same render path as a real mass send, sent only to the admin previewing it. */

@@ -2,7 +2,8 @@
 
 import { db } from "./db";
 import { requireAdmin } from "./session";
-import { isResendConfigured, sendMassEmail, sendMassEmailTest } from "./email";
+import { isResendConfigured, retryFailedMassEmails, sendMassEmail, sendMassEmailTest } from "./email";
+import { revalidatePath } from "next/cache";
 import { MASS_EMAIL_DEF, unknownVariables, type TemplateContent } from "./email-templates";
 import type { MassEmailRecipient } from "./mass-email-constants";
 import { segmentRecipients, toFirstName } from "./mass-email-recipients";
@@ -72,7 +73,9 @@ function validateContent(content: TemplateContent): string | null {
   return null;
 }
 
-export type MassEmailResult = { error: string } | { ok: true; message: string };
+export type MassEmailResult =
+  | { error: string }
+  | { ok: true; message: string; failures?: { email: string; error: string }[] };
 
 export async function sendMassEmailAction(
   _prev: MassEmailResult | null,
@@ -98,10 +101,11 @@ export async function sendMassEmailAction(
     return { error: "None of the selected recipients could be found anymore — try reloading the segment." };
   }
 
-  const sent = await sendMassEmail(recipients, content);
+  const { sent, failures } = await sendMassEmail(recipients, content);
   return {
     ok: true,
     message: `Sent to ${sent} of ${recipients.length} recipient${recipients.length === 1 ? "" : "s"}.`,
+    failures,
   };
 }
 
@@ -120,4 +124,14 @@ export async function sendMassEmailTestAction(
 
   await sendMassEmailTest(admin.email, content);
   return { ok: true, message: `Test email sent to ${admin.email}.` };
+}
+
+/** Admin button on a mass email's detail list: re-send only the ones that failed. */
+export async function retryFailedMassEmailAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const batchId = String(formData.get("batchId") ?? "");
+  if (!batchId || !isResendConfigured) return;
+  await retryFailedMassEmails(batchId);
+  revalidatePath("/admin/sent-emails");
+  revalidatePath("/admin/mass-email");
 }

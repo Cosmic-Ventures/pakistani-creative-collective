@@ -31,7 +31,7 @@ export async function runDueScheduledEmails(now: Date = new Date()): Promise<{ i
         seen.add(key);
         return true;
       });
-      const sent = await sendMassEmail(recipients, {
+      const { sent } = await sendMassEmail(recipients, {
         subject: email.subject,
         preheader: email.preheader,
         body: email.body,

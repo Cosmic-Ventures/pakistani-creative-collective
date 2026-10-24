@@ -221,9 +221,24 @@ export default function MassEmailComposer({
             </p>
           )}
           {sendState && "ok" in sendState && (
-            <p className="text-sm text-emerald-300 bg-emerald-950/40 border border-emerald-800 rounded-lg px-4 py-2">
-              {sendState.message}
-            </p>
+            <div className="text-sm text-emerald-300 bg-emerald-950/40 border border-emerald-800 rounded-lg px-4 py-2">
+              <p>{sendState.message}</p>
+              {sendState.failures && sendState.failures.length > 0 && (
+                <div className="mt-2 text-red-300">
+                  <p className="font-semibold">
+                    {sendState.failures.length} did not send. Reason: {sendState.failures[0].error}
+                  </p>
+                  <ul className="mt-1 list-disc ml-5 max-h-40 overflow-y-auto">
+                    {sendState.failures.map((f) => (
+                      <li key={f.email}>{f.email}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-1">
+                    Find this send under Sent Emails → Mass emails; it has a button to retry just these.
+                  </p>
+                </div>
+              )}
+            </div>
           )}
           {testNotice && "error" in testNotice && (
             <p className="text-sm text-red-300 bg-red-950/50 border border-red-800 rounded-lg px-4 py-2">
