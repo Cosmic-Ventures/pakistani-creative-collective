@@ -71,7 +71,7 @@ export default function ApplicationPreview({ className = "" }: { className?: str
                 What the application asks
               </h2>
               <p className="mt-2 text-sm text-brand-brown/70">
-                Five short steps. You can save your progress and come back, and nothing is submitted until the last step.
+                You can save your progress and come back, and nothing is submitted until the last step.
               </p>
             </div>
             <button
