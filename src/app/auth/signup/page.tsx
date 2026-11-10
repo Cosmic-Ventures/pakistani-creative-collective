@@ -25,7 +25,7 @@ export default async function SignupPage({
       <div className="w-full max-w-sm">
         <h1 className="font-heading font-bold text-2xl text-brand-green mb-2">Create an account</h1>
         <p className="text-brand-brown/70 text-sm mb-8">
-          Free to sign up. A paid subscription unlocks the full directory.
+          Create an account to apply to join the Pakistani Creative Collective. Applications are currently open, and the full website and creative directory will launch by the end of this year.
         </p>
         <AuthForm mode="signup" action={signupAction} next={next} />
         <p className="text-center text-sm text-brand-brown/50 mt-6">
