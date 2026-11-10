@@ -11,7 +11,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { GATE_COOKIE, gateEnabled, gateToken, tokensMatch, isPrelaunchAllowed } from "@/lib/site-gate";
+import { gateEnabled, isPrelaunchAllowed } from "@/lib/site-gate";
 
 const SESSION_COOKIE = "pcc_session";
 
@@ -50,31 +50,12 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  // ── Pre-launch gate ────────────────────────────────────────────────────────
-  // Active only while SITE_GATE_PASSWORD is set; clearing it opens the site.
-  if (gateEnabled()) {
-    const unlocked = tokensMatch(req.cookies.get(GATE_COOKIE)?.value, await gateToken());
-
-    if (!unlocked && pathname !== "/gate") {
-      const url = new URL("/gate", req.url);
-      // The homepage is itself a prelaunch-allowed destination (08/24 round),
-      // so always carry `next` through — including for "/" — so someone who
-      // hits the gate from the homepage lands back on it after entering the
-      // password, instead of being bounced to /enroll by gate-actions.ts's
-      // default.
-      url.searchParams.set("next", returnTo);
-      return NextResponse.redirect(url);
-    }
-
-    // Past the gate, applicants get the application and nothing else — the
-    // remaining tabs aren't published yet. Admins keep full access so the rest
-    // can still be worked on. This uses the JWT's role claim rather than the
-    // database because it runs on the edge; it's a curtain over unfinished
-    // pages, not an authorization boundary, and every protected page and admin
-    // action still re-checks the real role server-side.
-    if (unlocked && claimedRole !== "ADMIN" && !isPrelaunchAllowed(pathname)) {
-      return NextResponse.redirect(new URL("/enroll", req.url));
-    }
+  // ── Pre-launch curtain ─────────────────────────────────────────────────────
+  // The home page and application are public; other tabs stay hidden until
+  // launch. Admins keep full access. This uses the JWT's role claim because it
+  // runs on the edge; it is not an authorization boundary.
+  if (gateEnabled() && claimedRole !== "ADMIN" && !isPrelaunchAllowed(pathname, signedIn)) {
+    return NextResponse.redirect(new URL("/enroll", req.url));
   }
 
   // NOTE: there is deliberately no "already signed in, bounce away from the auth
@@ -103,8 +84,7 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  // Everything except Next's own assets, the brand images (the gate page needs
-  // them before anyone is through it) and the Stripe webhook, which is a
+  // Everything except Next's own assets, the brand images and the Stripe webhook, which is a
   // machine-to-machine POST that must never be redirected to a password page.
   matcher: [
     "/((?!_next/static|_next/image|api/webhooks|brand/|favicon.ico|icon.png|apple-icon.png|robots.txt|sitemap.xml).*)",
