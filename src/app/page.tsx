@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import ApplicationPreview from "@/components/ApplicationPreview";
 import Reveal from "@/components/Reveal";
 import StackedSection from "@/components/StackedSection";
 import AccessComparison from "@/components/AccessComparison";
@@ -114,6 +115,9 @@ export default async function Home() {
                 >
                   Apply to Join
                 </Link>
+              )}
+              {HOMEPAGE_CTAS.applyToJoin && (
+                <ApplicationPreview className="text-brand-cream/90 hover:text-brand-cream font-semibold px-4 py-3 underline underline-offset-4 decoration-brand-cream/40 hover:decoration-brand-cream transition-colors" />
               )}
             </div>
           </div>

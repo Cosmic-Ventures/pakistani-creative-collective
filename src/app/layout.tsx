@@ -3,6 +3,7 @@ import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import NavProgress from "@/components/NavProgress";
 
 const bodyFont = DM_Sans({
   variable: "--font-body-sans",
@@ -37,6 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${bodyFont.variable} ${headingFont.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-brand-cream text-brand-brown font-body antialiased">
+        <NavProgress />
         <Nav />
         <main className="flex-1">{children}</main>
         <Footer />
