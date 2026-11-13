@@ -1,6 +1,14 @@
 import Link from "next/link";
+import { getSession } from "@/lib/session";
+import { gateEnabled } from "@/lib/site-gate";
 
-export default function Footer() {
+export default async function Footer() {
+  const session = await getSession();
+  const isAdmin = session?.role === "ADMIN";
+  // 11/12: match Nav.tsx — while the gate is up, don't link a non-admin to a
+  // page the proxy will just bounce them back from.
+  const prelaunch = gateEnabled() && !isAdmin;
+
   return (
     <footer className="border-t border-brand-green/15 mt-auto py-8 px-4 print:hidden">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-brand-green/60">
@@ -17,18 +25,24 @@ export default function Footer() {
           </a>
         </p>
         <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-          <Link href="/about" className="hover:text-brand-green transition-colors">
-            About
-          </Link>
-          <Link href="/directory" className="hover:text-brand-green transition-colors">
-            Directory
-          </Link>
+          {!prelaunch && (
+            <>
+              <Link href="/about" className="hover:text-brand-green transition-colors">
+                About
+              </Link>
+              <Link href="/directory" className="hover:text-brand-green transition-colors">
+                Directory
+              </Link>
+            </>
+          )}
           <Link href="/join" className="hover:text-brand-green transition-colors">
             Join
           </Link>
-          <Link href="/request" className="hover:text-brand-green transition-colors">
-            Hire Talent
-          </Link>
+          {!prelaunch && (
+            <Link href="/request" className="hover:text-brand-green transition-colors">
+              Hire Talent
+            </Link>
+          )}
           <Link href="/privacy" className="hover:text-brand-green transition-colors">
             Privacy
           </Link>

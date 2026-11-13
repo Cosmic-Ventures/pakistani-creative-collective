@@ -29,14 +29,11 @@ export default async function Nav() {
   let cta: Item | null = null;
 
   if (prelaunch) {
+    // 11/12: no non-admin reaches /directory, /community or /account while
+    // the gate is up (site-gate.ts) — not even a signed-in paid member — so
+    // don't offer those links here either, the way NAV_SUBSCRIBE_TAB_ENABLED
+    // already keeps /subscribe off this list.
     if (NAV_SUBSCRIBE_TAB_ENABLED && !isMember) links.push({ href: "/subscribe", label: "Subscribe" });
-    if (session && isMember) {
-      links.push(
-        { href: "/directory", label: "Directory" },
-        { href: "/community", label: "Community" },
-        { href: "/account", label: "Account" }
-      );
-    }
     // Apply sits last, as a white pill: the one thing we want people to do before launch.
     cta = { href: "/enroll", label: "Apply" };
   } else {
