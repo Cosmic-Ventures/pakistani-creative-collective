@@ -5,6 +5,7 @@ import EnrollForm from "@/components/EnrollForm";
 import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { loadEnrollmentDraft } from "@/lib/enroll-draft-actions";
+import { gateEnabled } from "@/lib/site-gate";
 
 export const metadata: Metadata = {
   title: "Apply to Join",
@@ -31,18 +32,28 @@ export default async function EnrollPage() {
     select: { status: true },
   });
   if (existingCreative) {
+    // /account is behind the pre-launch gate for everyone but admins (see
+    // site-gate.ts), so pointing applicants at "My Account" there is a dead
+    // link until launch — it just bounces them back to this page.
+    const accountIsReachable = !gateEnabled();
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
         <h1 className="font-heading font-bold text-3xl text-black mb-2">Apply to Join the PCC</h1>
         <p className="text-black/70">
-          This account already has an application on file
-          {existingCreative.status === "APPROVED"
-            ? " and it's approved — edit it from "
-            : ` (currently ${existingCreative.status.toLowerCase()}) — email pcc@aneesatalks.com if you need to change it, or head to `}
-          <Link href="/account?tab=profile" className="text-brand-green font-semibold hover:underline">
-            My Account → My Profile
-          </Link>
-          .
+          {existingCreative.status === "APPROVED" && accountIsReachable ? (
+            <>
+              This account already has an application on file and it&apos;s approved — edit it from{" "}
+              <Link href="/account?tab=profile" className="text-brand-green font-semibold hover:underline">
+                My Account → My Profile
+              </Link>
+              .
+            </>
+          ) : (
+            <>
+              This account already has an application on file (currently{" "}
+              {existingCreative.status.toLowerCase()}) — email pcc@aneesatalks.com if you need to change it.
+            </>
+          )}
         </p>
       </div>
     );
