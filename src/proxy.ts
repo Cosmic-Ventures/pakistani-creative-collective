@@ -54,7 +54,7 @@ export async function proxy(req: NextRequest) {
   // The home page and application are public; other tabs stay hidden until
   // launch. Admins keep full access. This uses the JWT's role claim because it
   // runs on the edge; it is not an authorization boundary.
-  if (gateEnabled() && claimedRole !== "ADMIN" && !isPrelaunchAllowed(pathname, signedIn)) {
+  if (gateEnabled() && claimedRole !== "ADMIN" && !isPrelaunchAllowed(pathname)) {
     return NextResponse.redirect(new URL("/enroll", req.url));
   }
 
